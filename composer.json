@@ -1,0 +1,37 @@
+{
+	"name": "mvps/lumis-framework",
+	"description": "The Miva Professional Services Lumis Framework.",
+	"keywords": ["framework", "MVPS", "Miva Professional Services", "Miva", "Lumis"],
+	"license": "MIT",
+	"authors": [
+        {
+            "name": "Patrick Stearns",
+            "email": "pstearns@miva.com"
+        }
+    ],
+	"require": {
+		"php": "^8.1",
+		"psr/container": "^2.0",
+		"nesbot/carbon": "^2.66",
+		"vlucas/phpdotenv": "^5.5",
+		"pdeans/debuggers-vardumper": "^1.1"
+	},
+	"autoload": {
+		"files": [
+			"src/Framework/helpers.php",
+			"src/Framework/Collections/helpers.php",
+			"src/Framework/Support/helpers.php"
+		],
+		"psr-4": {
+			"MVPS\\Lumis\\Framework\\": "src/Framework/"
+		}
+	},
+	"config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
+        }
+    },
+	"minimum-stability": "stable",
+    "prefer-stable": true
+}
