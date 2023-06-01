@@ -4,6 +4,4 @@
 
 ## MVPS Lumis Framework
 
-> **Note:** This repository contains the core code of the MVPS Lumis framework. If you want to build an application using Lumis, visit the main [Lumis repository](https://bitbucket.mivamerchant.net/projects/PSIR/repos/mvps-lumis/browse).
-
-Utilizing the Lumis framework can be found in the Lumis application <a href="#" target="_blank">documentation</a>.
+> **Note:** This repository contains the core code of the MVPS Lumis framework. If you want to build an application using Lumis, visit the main <a href="#" target="_blank">Lumis documentation</a> or [Lumis repository](https://bitbucket.mivamerchant.net/projects/PSIR/repos/mvps-lumis/browse).
