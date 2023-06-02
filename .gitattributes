@@ -13,3 +13,4 @@
 .gitignore export-ignore
 CHANGELOG-* export-ignore
 CONTRIBUTING.md export-ignore
+README.md export-ignore
