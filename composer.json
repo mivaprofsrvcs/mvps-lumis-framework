@@ -14,7 +14,7 @@
 		"psr/container": "^2.0",
 		"nesbot/carbon": "^2.66",
 		"vlucas/phpdotenv": "^5.5",
-		"pdeans/debuggers-vardumper": "^1.1"
+		"pdeans/debuggers-vardumper": "^1.2"
 	},
 	"autoload": {
 		"files": [
