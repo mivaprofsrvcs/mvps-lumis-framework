@@ -78,6 +78,14 @@ abstract class Logger
 	}
 
 	/**
+	 * Get the full log file path.
+	 */
+	public function getLogFilePath(): string
+	{
+		return $this->directory . $this->logFile;
+	}
+
+	/**
 	 * Move a file to another location.
 	 */
 	public function moveFile(string $from, string $to): bool
