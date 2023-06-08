@@ -43,6 +43,18 @@ abstract class Logger
 	}
 
 	/**
+	 * Copy a file to another location.
+	 */
+	public function copyFile(string $from, string $to): bool
+	{
+		if (!file_exists($from)) {
+			return false;
+		}
+
+		return copy($from, $to);
+	}
+
+	/**
 	 * Create a directory if it does not exist.
 	 */
 	public function createDirectory(string $directory): string
