@@ -43,6 +43,14 @@ abstract class Logger
 	}
 
 	/**
+	 * Clear the contents of the log file.
+	 */
+	public function clearLogFile(): int|false
+	{
+		return file_put_contents($this->logFile, '');
+	}
+
+	/**
 	 * Copy a file to another location.
 	 */
 	public function copyFile(string $from, string $to): bool
