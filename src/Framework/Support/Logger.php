@@ -47,7 +47,7 @@ abstract class Logger
 	 */
 	public function clearLogFile(): int|false
 	{
-		return file_put_contents($this->logFile, '');
+		return file_put_contents($this->getLogFilePath(), '');
 	}
 
 	/**
