@@ -11,10 +11,11 @@
     ],
 	"require": {
 		"php": "^8.1",
-		"psr/container": "^2.0",
 		"nesbot/carbon": "^2.66",
-		"vlucas/phpdotenv": "^5.5",
-		"pdeans/debuggers-vardumper": "^1.2"
+		"pdeans/debuggers-vardumper": "^1.2",
+		"pdeans/http": "^2.0",
+		"psr/container": "^2.0",
+		"vlucas/phpdotenv": "^5.5"
 	},
 	"autoload": {
 		"files": [
