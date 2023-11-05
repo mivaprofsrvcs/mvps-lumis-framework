@@ -2,7 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Http;
 
-use Psr\Http\Message\ServerRequestInterface;
+use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Http\Response;
 
 interface Kernel
 {
@@ -14,5 +15,5 @@ interface Kernel
 	/**
 	 * Handle an incoming HTTP request.
 	 */
-	public function handle(ServerRequestInterface $request): void;
+	public function handle(Request $request): Response;
 }

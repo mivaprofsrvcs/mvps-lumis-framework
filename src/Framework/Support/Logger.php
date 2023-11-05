@@ -144,7 +144,7 @@ abstract class Logger
 	/**
 	 * Set the log directory. Creates the log directory if it does not exist.
 	 */
-	public function setDirectory(string $directory): self
+	public function setDirectory(string $directory): static
 	{
 		$this->directory = rtrim($this->createDirectory($directory), '/') . '/';
 
@@ -154,7 +154,7 @@ abstract class Logger
 	/**
 	 * Set the log file.
 	 */
-	public function setLogFile(string $logFile): self
+	public function setLogFile(string $logFile): static
 	{
 		$file = str_replace($this->directory, '', $logFile);
 

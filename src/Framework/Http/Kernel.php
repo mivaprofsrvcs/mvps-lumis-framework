@@ -8,11 +8,18 @@ use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as KernelContract;
+use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Router;
-use Psr\Http\Message\ServerRequestInterface;
 
 class Kernel implements KernelContract
 {
+	/**
+	 * The application instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Application
+	 */
+	protected Application $app;
+
 	/**
 	 * The bootstrap classes for the application.
 	 *
@@ -28,10 +35,19 @@ class Kernel implements KernelContract
 	];
 
 	/**
+	 * The router instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Routing\Router
+	 */
+	protected Router $router;
+
+	/**
 	 * Create a new HTTP kernel instance.
 	 */
-	public function __construct(protected Application $app, protected Router $router)
+	public function __construct(Application $app)
 	{
+		$this->app = $app;
+		$this->router = $this->app->make('router') ?: new Router($this->app);
 	}
 
 	/**
@@ -56,19 +72,23 @@ class Kernel implements KernelContract
 
 	/**
 	 * Handle an incoming HTTP request.
+	 *
+	 * TODO: Add try/catch handling for sendRequestThroughRouter() method.
 	 */
-	public function handle(ServerRequestInterface $request): void
+	public function handle(Request $request): Response
 	{
-		$this->sendRequestThroughRouter($request);
-		exit;
+		return $this->sendRequestThroughRouter($request);
 	}
 
-	protected function sendRequestThroughRouter(ServerRequestInterface $request)
+	/**
+	 * Send the given request through the router.
+	 */
+	protected function sendRequestThroughRouter(Request $request): Response
 	{
 		$this->app->instance('request', $request);
 
-		// $this->bootstrap();
+		$this->bootstrap();
 
-		$this->router->dispatch($request);
+		return $this->router->dispatch($request);
 	}
 }

@@ -108,13 +108,3 @@ if (! function_exists('object_get')) {
 		return $object;
 	}
 }
-
-if (! function_exists('vd')) {
-	/**
-	 * Pretty var dumper with optional label.
-	 */
-	function vd(mixed $data, string $label = ''): void
-	{
-		(new Dumper)->dump($data, $label);
-	}
-}

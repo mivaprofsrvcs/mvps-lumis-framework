@@ -10,9 +10,9 @@ interface ExceptionHandler
 	/**
 	 * Render an exception into an HTTP response.
 	 *
-	 * @param  \Illuminate\Http\Request  $request
+	 * @param  Request  $request
 	 * @param  \Throwable  $e
-	 * @return \Symfony\Component\HttpFoundation\Response
+	 * @return \MVPS\Lumis\Framework\Http\Response
 	 *
 	 * @throws \Throwable
 	 */
