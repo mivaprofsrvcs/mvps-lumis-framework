@@ -1,6 +1,10 @@
 <?php
 
+use Carbon\Carbon;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Http\ResponseFactory;
 
 if (! function_exists('app')) {
 	/**
@@ -67,6 +71,16 @@ if (! function_exists('config_path')) {
 	}
 }
 
+if (! function_exists('now')) {
+	/**
+	 * Create a new carbon instance for the current time.
+	 */
+	function now(DateTimeZone|string|null $timezone = null): Carbon
+	{
+		return Carbon::now($timezone);
+	}
+}
+
 if (! function_exists('public_path')) {
 	/**
 	 * Get the path to the public directory.
@@ -74,6 +88,28 @@ if (! function_exists('public_path')) {
 	function public_path(string $path = ''): string
 	{
 		return app()->publicPath($path);
+	}
+}
+
+if (! function_exists('request')) {
+	/**
+	 * Get an instance of the current request or an input item from the request.
+	 */
+	function request(array|string|null $key = null, mixed $default = null): Request|string|array|null
+	{
+		$request = app('request');
+
+		if (is_null($key)) {
+			return $request;
+		}
+
+		if (is_array($key)) {
+			return $request->only($key);
+		}
+
+		$value = $request->input($key);
+
+		return is_null($value) ? value($default) : $value;
 	}
 }
 
@@ -97,12 +133,19 @@ if (! function_exists('resources_path')) {
 	}
 }
 
+if (! function_exists('response')) {
+	/**
+	 * Create and return a new response from the application.
+	 */
+	function response(mixed $content = '', $status = 200, array $headers = []): Response
+	{
+		return (new ResponseFactory)->make($content, $status, $headers);
+	}
+}
+
 if (! function_exists('storage_path')) {
 	/**
 	 * Get the path to the storage directory.
-	 *
-	 * @param  string  $path
-	 * @return string
 	 */
 	function storage_path(string $path = ''): string
 	{

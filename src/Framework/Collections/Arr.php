@@ -16,6 +16,26 @@ class Arr
 	}
 
 	/**
+	 * Collapse an array of arrays into a single array.
+	 */
+	public static function collapse(iterable $array): array
+	{
+		$results = [];
+
+		foreach ($array as $values) {
+			if ($values instanceof Collection) {
+				$values = $values->all();
+			} elseif (! is_array($values)) {
+				continue;
+			}
+
+			$results[] = $values;
+		}
+
+		return array_merge([], ...$results);
+	}
+
+	/**
 	 * Determine if the given key exists in the provided array.
 	 */
 	public static function exists(ArrayAccess|array $array, string|int $key): bool
@@ -33,6 +53,69 @@ class Arr
 		}
 
 		return array_key_exists($key, $array);
+	}
+
+	/**
+	 * Return the first element in an array passing a given truth test.
+	 */
+	public static function first(iterable $array, callable $callback = null, mixed $default = null): mixed
+	{
+		if (is_null($callback)) {
+			if (empty($array)) {
+				return value($default);
+			}
+
+			foreach ($array as $item) {
+				return $item;
+			}
+		}
+
+		foreach ($array as $key => $value) {
+			if ($callback($value, $key)) {
+				return $value;
+			}
+		}
+
+		return value($default);
+	}
+
+	/**
+	 * Remove one or many array items from a given array using "dot" notation.
+	 */
+	public static function forget(array &$array, array|string|int|float $keys): void
+	{
+		$original = &$array;
+
+		$keys = (array) $keys;
+
+		if (count($keys) === 0) {
+			return;
+		}
+
+		foreach ($keys as $key) {
+			// If the exact key exists in the top-level, remove it
+			if (static::exists($array, $key)) {
+				unset($array[$key]);
+
+				continue;
+			}
+
+			$parts = explode('.', $key);
+
+			$array = &$original;
+
+			while (count($parts) > 1) {
+				$part = array_shift($parts);
+
+				if (isset($array[$part]) && static::accessible($array[$part])) {
+					$array = &$array[$part];
+				} else {
+					continue 2;
+				}
+			}
+
+			unset($array[array_shift($parts)]);
+		}
 	}
 
 	/**
@@ -95,6 +178,34 @@ class Arr
 		}
 
 		return true;
+	}
+
+	/**
+	 * Determine if any of the keys exist in an array using "dot" notation.
+	 */
+	public static function hasAny(ArrayAccess|array $array, string|array|null $keys): bool
+	{
+		if (is_null($keys)) {
+			return false;
+		}
+
+		if (! $array) {
+			return false;
+		}
+
+		$keys = (array) $keys;
+
+		if ($keys === []) {
+			return false;
+		}
+
+		foreach ($keys as $key) {
+			if (static::has($array, $key)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

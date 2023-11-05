@@ -3,8 +3,9 @@
 namespace MVPS\Lumis\Framework;
 
 use MVPS\Lumis\Framework\Collections\Arr;
-use MVPS\Lumis\Framework\Config\Repository;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Debugging\DumperServiceProvider;
+use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
 use MVPS\Lumis\Framework\Support\ServiceProvider;
 
 class Application extends Container
@@ -376,7 +377,10 @@ class Application extends Container
 			return $registered;
 		}
 
-		$provider = $this->resolveProvider($provider);
+		if (is_string($provider)) {
+			$provider = $this->resolveProvider($provider);
+		}
+
 		$provider->register();
 
 		// If there are bindings / singletons set as properties on the provider we
@@ -424,8 +428,8 @@ class Application extends Container
 	 */
 	protected function registerBaseServiceProviders(): void
 	{
-		// TODO: Come back to this once routing is being implemented
-		// $this->register(new RoutingServiceProvider($this));
+		$this->register(new DumperServiceProvider($this));
+		$this->register(new RoutingServiceProvider($this));
 	}
 
 	/**
@@ -446,19 +450,21 @@ class Application extends Container
 	 */
 	public function registerCoreContainerAliases(): void
 	{
-		$aliases = [
-			'app' => self::class,
-			'config' => Repository::class,
+		$coreAliases = [
+			'app' => [static::class],
+			'config' => [\MVPS\Lumis\Framework\Config\Repository::class],
+			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
+			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
 			// TODO: Implement these
 			// encrypter => Encrypter::class,
-			// request => Request::class,
-			// router => Router::class,
 			// url => UrlGenerator::class,
 			// view => View\Factory::class,
 		];
 
-		foreach ($aliases as $key => $alias) {
-			$this->alias($key, $alias);
+		foreach ($coreAliases as $key => $aliases) {
+			foreach ($aliases as $alias) {
+				$this->alias($key, $alias);
+			}
 		}
 	}
 
@@ -481,7 +487,7 @@ class Application extends Container
 	/**
 	 * Set the base path for the application.
 	 */
-	public function setBasePath(string $basePath): self
+	public function setBasePath(string $basePath): static
 	{
 		$this->basePath = rtrim($basePath, '\/');
 
