@@ -454,7 +454,7 @@ class Application extends Container
 			'app' => [self::class],
 			'config' => [\MVPS\Lumis\Framework\Config\Repository::class],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
-			'router' => [\MVPS\Lumis\Framework\Http\Router::class],
+			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
 			// TODO: Implement these
 			// encrypter => Encrypter::class,
 			// url => UrlGenerator::class,
