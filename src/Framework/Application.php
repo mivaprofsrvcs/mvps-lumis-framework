@@ -451,7 +451,7 @@ class Application extends Container
 	public function registerCoreContainerAliases(): void
 	{
 		$coreAliases = [
-			'app' => [self::class],
+			'app' => [static::class],
 			'config' => [\MVPS\Lumis\Framework\Config\Repository::class],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],

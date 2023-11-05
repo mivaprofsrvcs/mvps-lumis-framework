@@ -32,7 +32,7 @@ trait InteractsWithContent
 			return json_encode($content, JSON_THROW_ON_ERROR);
 		} catch (JsonException $exception) {
 			throw new InvalidArgumentException(
-				'Unable to encode data to JSON in ' . self::class . ': ' . $exception->getMessage(),
+				'Unable to encode data to JSON in ' . static::class . ': ' . $exception->getMessage(),
 				0,
 				$exception
 			);

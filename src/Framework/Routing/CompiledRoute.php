@@ -119,12 +119,12 @@ class CompiledRoute
 				);
 			}
 
-			if (strlen($variableName) > self::VARIABLE_MAXIMUM_LENGTH) {
+			if (strlen($variableName) > static::VARIABLE_MAXIMUM_LENGTH) {
 				throw new DomainException(
 					sprintf(
 						'Variable name "%s" cannot be longer than %d characters in route pattern "%s".',
 						$variableName,
-						self::VARIABLE_MAXIMUM_LENGTH,
+						static::VARIABLE_MAXIMUM_LENGTH,
 						$pattern
 					)
 				);

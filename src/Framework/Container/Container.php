@@ -126,7 +126,7 @@ class Container implements ContainerInterface
 		if (! $concrete instanceof Closure) {
 			if (! is_string($concrete)) {
 				throw new TypeError(
-					self::class . '::bind(): Argument #2 ($concrete) must be of type Closure|string|null'
+					static::class . '::bind(): Argument #2 ($concrete) must be of type Closure|string|null'
 				);
 			}
 
