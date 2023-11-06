@@ -44,10 +44,10 @@ class Kernel implements KernelContract
 	/**
 	 * Create a new HTTP kernel instance.
 	 */
-	public function __construct(Application $app)
+	public function __construct(Application $app, Router $router)
 	{
 		$this->app = $app;
-		$this->router = $this->app->make('router') ?: new Router($this->app);
+		$this->router = $router;
 	}
 
 	/**
