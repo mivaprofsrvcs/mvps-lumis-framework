@@ -7,9 +7,9 @@ use SplFileInfo;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 use MVPS\Lumis\Framework\Application;
-use MVPS\Lumis\Framework\Config\Repository;
+use MVPS\Lumis\Framework\Configuration\Repository;
 use MVPS\Lumis\Framework\Contracts\Bootstrap\Bootstrapper;
-use MVPS\Lumis\Framework\Contracts\Config\Repository as ConfigRepositoryContract;
+use MVPS\Lumis\Framework\Contracts\Configuration\Repository as ConfigRepositoryContract;
 
 class LoadConfiguration implements Bootstrapper
 {

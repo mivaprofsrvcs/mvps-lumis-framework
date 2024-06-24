@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Contracts\Config;
+namespace MVPS\Lumis\Framework\Contracts\Configuration;
 
 interface Repository
 {

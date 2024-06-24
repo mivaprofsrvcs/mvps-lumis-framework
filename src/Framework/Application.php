@@ -2,11 +2,16 @@
 
 namespace MVPS\Lumis\Framework;
 
+use Composer\Autoload\ClassLoader;
 use MVPS\Lumis\Framework\Collections\Arr;
+use MVPS\Lumis\Framework\Configuration\ApplicationBuilder;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
 use MVPS\Lumis\Framework\Debugging\DumperServiceProvider;
+use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
 use MVPS\Lumis\Framework\Support\ServiceProvider;
+use MVPS\Lumis\Framework\Support\Str;
 
 class Application extends Container
 {
@@ -15,7 +20,7 @@ class Application extends Container
 	 *
 	 * @var string
 	 */
-	protected const VERSION = '1.0.0';
+	protected const VERSION = '2.0.0';
 
 	/**
 	 * The "app" directory path for the application.
@@ -85,7 +90,7 @@ class Application extends Container
 	 *
 	 * @var bool
 	 */
-	protected $hasBeenBootstrapped = false;
+	protected bool $hasBeenBootstrapped = false;
 
 	/**
 	 * The loaded service providers.
@@ -104,7 +109,7 @@ class Application extends Container
 	 /**
 	 * All of the registered service providers.
 	 *
-	 * @var \MVPS\Lumis\Framework\Support\ServiceProvider[]
+	 * @var array<string, \MVPS\Lumis\Framework\Support\ServiceProvider>
 	 */
 	protected array $serviceProviders = [];
 
@@ -125,9 +130,12 @@ class Application extends Container
 	/**
 	 * Create a new Lumis application instance.
 	 */
-	public function __construct(string $basePath)
+	public function __construct(string|null $basePath = null)
 	{
-		$this->setBasePath($basePath);
+		if ($basePath) {
+			$this->setBasePath($basePath);
+		}
+
 		$this->registerBaseBindings();
 		$this->registerBaseServiceProviders();
 		$this->registerCoreContainerAliases();
@@ -139,6 +147,22 @@ class Application extends Container
 	public function basePath(string $path = ''): string
 	{
 		return $this->joinPaths($this->basePath, $path);
+	}
+
+	/**
+	 * Get the version number of the application.
+	 */
+	protected function bindPathsInContainer(): void
+	{
+		$this->instance('path', $this->path());
+		$this->instance('path.base', $this->basePath());
+		$this->instance('path.config', $this->configPath());
+		$this->instance('path.public', $this->publicPath());
+		$this->instance('path.resources', $this->resourcesPath());
+		$this->instance('path.storage', $this->storagePath());
+		$this->instance('path.tasks', $this->tasksPath());
+
+		$this->useBootstrapPath($this->basePath('bootstrap'));
 	}
 
 	/**
@@ -216,20 +240,6 @@ class Application extends Container
 	}
 
 	/**
-	 * Get the version number of the application.
-	 */
-	protected function bindPathsInContainer(): void
-	{
-		$this->instance('path', $this->path());
-		$this->instance('path.base', $this->basePath());
-		$this->instance('path.config', $this->configPath());
-		$this->instance('path.public', $this->publicPath());
-		$this->instance('path.resources', $this->resourcesPath());
-		$this->instance('path.storage', $this->storagePath());
-		$this->instance('path.tasks', $this->tasksPath());
-	}
-
-	/**
 	 * Call the booting callbacks for the application.
 	 */
 	protected function callAppCallbacks(array &$callbacks): void
@@ -252,11 +262,48 @@ class Application extends Container
 	}
 
 	/**
+	 * Begin configuring a new Lumis application instance.
+	 */
+	public static function configure(string|null $basePath = null): ApplicationBuilder
+	{
+		$basePath = match (true) {
+			is_string($basePath) => $basePath,
+			default => static::inferBasePath(),
+		};
+
+		return (new ApplicationBuilder(new static($basePath)))
+			->withKernels()
+			->withProviders();
+	}
+
+	/**
+	 * Get the current application environment.
+	 */
+	public function environment(string|array ...$environments): string|bool
+	{
+		if (count($environments) > 0) {
+			$patterns = is_array($environments[0]) ? $environments[0] : $environments;
+
+			return Str::is($patterns, $this['env']);
+		}
+
+		return $this['env'];
+	}
+
+	/**
 	 * Get the environment file the application is using.
 	 */
 	public function environmentFile(): string
 	{
 		return $this->environmentFile ?: '.env';
+	}
+
+	/**
+	 * Get the fully qualified path to the environment file.
+	 */
+	public function environmentFilePath(): string
+	{
+		return $this->environmentPath() . DIRECTORY_SEPARATOR . $this->environmentFile();
 	}
 
 	/**
@@ -283,11 +330,21 @@ class Application extends Container
 	}
 
 	/**
+	 * Get the path to the service provider list in the bootstrap directory.
+	 */
+	public function getBootstrapProvidersPath(): string
+	{
+		return $this->bootstrapPath('providers.php');
+	}
+
+	/**
 	 * Get the registered service provider instance if it exists.
 	 */
 	public function getProvider(ServiceProvider|string $provider): ServiceProvider|null
 	{
-		return array_values($this->getProviders($provider))[0] ?? null;
+		$name = is_string($provider) ? $provider : get_class($provider);
+
+		return $this->serviceProviders[$name] ?? null;
 	}
 
 	/**
@@ -301,11 +358,33 @@ class Application extends Container
 	}
 
 	/**
+	 * Handle the incoming HTTP request and send the response to the browser.
+	 */
+	public function handleRequest(Request $request): void
+	{
+		$kernel = $this->make(HttpKernelContract::class);
+
+		$response = $kernel->handle($request)
+			->send();
+	}
+
+	/**
 	 * Determine if the application has been bootstrapped before.
 	 */
 	public function hasBeenBootstrapped(): bool
 	{
 		return $this->hasBeenBootstrapped;
+	}
+
+	/**
+	 * Infer the application's base directory from the environment.
+	 */
+	public static function inferBasePath(): string
+	{
+		return match (true) {
+			isset($_ENV['APP_BASE_PATH']) => $_ENV['APP_BASE_PATH'],
+			default => dirname(array_keys(ClassLoader::getRegisteredLoaders())[0]),
+		};
 	}
 
 	/**
@@ -345,9 +424,11 @@ class Application extends Container
 	 */
 	protected function markAsRegistered(ServiceProvider $provider): void
 	{
-		$this->serviceProviders[] = $provider;
+		$class = get_class($provider);
 
-		$this->loadedProviders[get_class($provider)] = true;
+		$this->serviceProviders[$class] = $provider;
+
+		$this->loadedProviders[$class] = true;
 	}
 
 	/**
@@ -452,7 +533,10 @@ class Application extends Container
 	{
 		$coreAliases = [
 			'app' => [static::class],
-			'config' => [\MVPS\Lumis\Framework\Config\Repository::class],
+			'config' => [
+				\MVPS\Lumis\Framework\Configuration\Repository::class,
+				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class
+			],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
 			// TODO: Implement these
@@ -510,6 +594,18 @@ class Application extends Container
 	public function tasksPath(string $path = ''): string
 	{
 		return $this->joinPaths($this->tasksPath ?: $this->basePath('tasks'), $path);
+	}
+
+	/**
+	 * Set the bootstrap file directory.
+	 */
+	public function useBootstrapPath(string $path): static
+	{
+		$this->bootstrapPath = $path;
+
+		$this->instance('path.bootstrap', $path);
+
+		return $this;
 	}
 
 	/**
