@@ -106,6 +106,13 @@ class Application extends Container
 	 */
 	protected string $publicPath = '';
 
+	/**
+	 * The list of registered callbacks.
+	 *
+	 * @var callable[]
+	 */
+	protected array $registeredCallbacks = [];
+
 	 /**
 	 * All of the registered service providers.
 	 *
@@ -524,6 +531,8 @@ class Application extends Container
 		foreach ($providers as $provider) {
 			$this->register($provider);
 		}
+
+		$this->callAppCallbacks($this->registeredCallbacks);
 	}
 
 	/**
@@ -550,6 +559,14 @@ class Application extends Container
 				$this->alias($key, $alias);
 			}
 		}
+	}
+
+	/**
+	 * Register a new registered listener.
+	 */
+	public function registered(callable $callback): void
+	{
+		$this->registeredCallbacks[] = $callback;
 	}
 
 	/**

@@ -33,6 +33,26 @@ class ApplicationBuilder
 	}
 
 	/**
+	 * Register a callback to be invoked when the application is "booted".
+	 */
+	public function booted(callable $callback): static
+	{
+		$this->app->booted($callback);
+
+		return $this;
+	}
+
+	/**
+	 * Register a callback to be invoked when the application is "booting".
+	 */
+	public function booting(callable $callback): static
+	{
+		$this->app->booting($callback);
+
+		return $this;
+	}
+
+	/**
 	 * Create the routing callback for the application.
 	 */
 	protected function buildRoutingCallback(array|string|null $web, callable|null $then): Closure
@@ -67,6 +87,28 @@ class ApplicationBuilder
 	}
 
 	/**
+	 * Register a callback to be invoked when the application's service providers are registered.
+	 */
+	public function registered(callable $callback): static
+	{
+		$this->app->registered($callback);
+
+		return $this;
+	}
+
+	/**
+	 * Register an array of container bindings to be bound when the application is booting.
+	 */
+	public function withBindings(array $bindings): static
+	{
+		return $this->registered(function ($app) use ($bindings) {
+			foreach ($bindings as $abstract => $concrete) {
+				$app->bind($abstract, $concrete);
+			}
+		});
+	}
+
+	/**
 	 * Register the standard kernel classes for the application.
 	 */
 	public function withKernels(): static
@@ -91,9 +133,7 @@ class ApplicationBuilder
 	{
 		RegisterProviders::merge(
 			$providers,
-			$withBootstrapProviders
-				? $this->app->getBootstrapProvidersPath()
-				: null
+			$withBootstrapProviders ? $this->app->getBootstrapProvidersPath() : null
 		);
 
 		return $this;
@@ -118,5 +158,21 @@ class ApplicationBuilder
 		});
 
 		return $this;
+	}
+
+	/**
+	 * Register an array of singleton container bindings to be bound when the application is booting.
+	 */
+	public function withSingletons(array $singletons): static
+	{
+		return $this->registered(function ($app) use ($singletons) {
+			foreach ($singletons as $abstract => $concrete) {
+				if (is_string($abstract)) {
+					$app->singleton($abstract, $concrete);
+				} else {
+					$app->singleton($concrete);
+				}
+			}
+		});
 	}
 }
