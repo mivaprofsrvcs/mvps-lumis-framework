@@ -183,7 +183,9 @@ class AboutCommand extends Command
 		// 	'Config' => static::format($this->lumis->configurationIsCached(), console: $formatCachedStatus),
 		// 	'Events' => static::format($this->lumis->eventsAreCached(), console: $formatCachedStatus),
 		// 	'Routes' => static::format($this->lumis->routesAreCached(), console: $formatCachedStatus),
-		// 	'Views' => static::format($this->hasPhpFiles($this->lumis->storagePath('framework/views')), console: $formatCachedStatus),
+		// 	'Views' => static::format(
+		// 		$this->hasPhpFiles($this->lumis->storagePath('framework/views')), console: $formatCachedStatus
+		// 	),
 		// ]);
 
 		// TODO: Implement this when adding caching & driver support
