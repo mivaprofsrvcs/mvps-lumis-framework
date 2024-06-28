@@ -2,15 +2,34 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Console;
 
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
 interface Kernel
 {
 	/**
-	 * Bootstrap the application.
+	 * Get all of the commands registered with the console.
+	 */
+	public function all(): array;
+
+	/**
+	 * Bootstrap the application for artisan commands.
 	 */
 	public function bootstrap(): void;
 
 	/**
-	 * Handle a console command.
+	 * Run a Lumis console command by name.
 	 */
-	public function handle(): void;
+	public function call(string $command, array $parameters = [], OutputInterface|null $outputBuffer = null): int;
+
+	/**
+	 * Handle an incoming console command.
+	 */
+	public function handle(InputInterface $input, OutputInterface $output = null): int;
+
+	/**
+	 * Get the output for the last run command.
+	 */
+	public function output(): string;
 }
+

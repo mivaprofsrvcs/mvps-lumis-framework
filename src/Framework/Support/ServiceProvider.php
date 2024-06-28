@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Support;
 
 use Closure;
 use MVPS\Lumis\Framework\Application;
+use MVPS\Lumis\Framework\Console\Application as ConsoleApplication;
 
 abstract class ServiceProvider
 {
@@ -76,6 +77,34 @@ abstract class ServiceProvider
 
 			$index++;
 		}
+	}
+
+	/**
+	 * Register the package's custom Lumis commands.
+	 */
+	public function commands(mixed $commands): void
+	{
+		$commands = is_array($commands) ? $commands : func_get_args();
+
+		ConsoleApplication::starting(function ($lumis) use ($commands) {
+			$lumis->resolveCommands($commands);
+		});
+	}
+
+	/**
+	 * Get the default providers for a Lumis application.
+	 */
+	public static function defaultProviders(): DefaultProviders
+	{
+		return new DefaultProviders;
+	}
+
+	/**
+	 * Get the services provided by the provider.
+	 */
+	public function provides(): array
+	{
+		return [];
 	}
 
 	/**

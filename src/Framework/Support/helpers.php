@@ -1,6 +1,7 @@
 <?php
 
-use pdeans\Debuggers\Vardumper\Dumper;
+use MVPS\Lumis\Framework\Contracts\Support\DeferringDisplayableValue;
+use MVPS\Lumis\Framework\Contracts\Support\Htmlable;
 use MVPS\Lumis\Framework\Support\Env;
 
 if (! function_exists('blank')) {
@@ -77,6 +78,30 @@ if (! function_exists('dpx')) {
 	}
 }
 
+if (! function_exists('e')) {
+	/**
+	 * Encode HTML special characters in a string.
+	 */
+	function e(
+		DeferringDisplayableValue|Htmlable|BackedEnum|string|int|float|null $value,
+		bool $doubleEncode = true
+	): string {
+		if ($value instanceof DeferringDisplayableValue) {
+			$value = $value->resolveDisplayableValue();
+		}
+
+		if ($value instanceof Htmlable) {
+			return $value->toHtml();
+		}
+
+		if ($value instanceof BackedEnum) {
+			$value = $value->value;
+		}
+
+		return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', $doubleEncode);
+	}
+}
+
 if (! function_exists('env')) {
 	/**
 	 * Gets the value of an environment variable.
@@ -106,5 +131,59 @@ if (! function_exists('object_get')) {
 		}
 
 		return $object;
+	}
+}
+
+if (! function_exists('throw_if')) {
+	/**
+	 * Throw the given exception if the given condition is true.
+	 *
+	 * @throws \Throwable
+	 */
+	function throw_if(mixed $condition, string $exception = 'RuntimeException', mixed ...$parameters): mixed
+	{
+		if ($condition) {
+			if (is_string($exception) && class_exists($exception)) {
+				$exception = new $exception(...$parameters);
+			}
+
+			throw is_string($exception) ? new RuntimeException($exception) : $exception;
+		}
+
+		return $condition;
+	}
+}
+
+if (! function_exists('throw_unless')) {
+	/**
+	 * Throw the given exception unless the given condition is true.
+	 *
+	 * @throws \Throwable
+	 */
+	function throw_unless(mixed $condition, string $exception = 'RuntimeException', mixed ...$parameters): mixed
+	{
+		throw_if(! $condition, $exception, ...$parameters);
+
+		return $condition;
+	}
+}
+
+if (! function_exists('windows_os')) {
+	/**
+	 * Determine whether the current environment is Windows based.
+	 */
+	function windows_os(): bool
+	{
+		return PHP_OS_FAMILY === 'Windows';
+	}
+}
+
+if (! function_exists('with')) {
+	/**
+	 * Return the given value, optionally passed through the given callback.
+	 */
+	function with(mixed $value, callable|null $callback = null): mixed
+	{
+		return is_null($callback) ? $value : $callback($value);
 	}
 }

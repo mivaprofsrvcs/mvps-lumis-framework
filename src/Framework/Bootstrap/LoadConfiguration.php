@@ -3,13 +3,12 @@
 namespace MVPS\Lumis\Framework\Bootstrap;
 
 use Exception;
-use SplFileInfo;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
 use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Configuration\Repository;
 use MVPS\Lumis\Framework\Contracts\Bootstrap\Bootstrapper;
 use MVPS\Lumis\Framework\Contracts\Configuration\Repository as ConfigRepositoryContract;
+use SplFileInfo;
+use Symfony\Component\Finder\Finder;
 
 class LoadConfiguration implements Bootstrapper
 {
@@ -18,17 +17,52 @@ class LoadConfiguration implements Bootstrapper
 	 */
 	public function bootstrap(Application $app): void
 	{
-		$config = new Repository;
+		$items = [];
 
-		// Iterate through all of the configuration files in the configuration
-		// directory and load each one into the repository.
+		// Check if a cache configuration file exists. If it does, load the
+		// configuration items from that file for quick access. If not,
+		// iterate through all configuration files and load them individually.
+		$cached = $app->getCachedConfigPath();
+
+		if (file_exists($cached)) {
+			$items = require $cached;
+
+			$app->instance('config_loaded_from_cache', $loadedFromCache = true);
+		}
+
+		// Iterate through all configuration files in the configuration directory
+		// and load each one into the repository. This process makes all options
+		// available to the developer for use throughout the application.
+		$config = new Repository($items);
+
 		$app->instance('config', $config);
 
-		$this->loadConfigurationFiles($app, $config);
+		if (! isset($loadedFromCache)) {
+			$this->loadConfigurationFiles($app, $config);
+		}
+
+		// Set the application's environment based on the loaded configuration
+		// values. If the "--env" switch is not present (e.g., in a web context),
+		// we will use a callback to determine the environment.
+		$app->detectEnvironment(fn () => $config->get('app.env', 'production'));
 
 		date_default_timezone_set($config->get('app.timezone', 'UTC'));
 
 		mb_internal_encoding('UTF-8');
+	}
+
+	/**
+	 * Get the base configuration files.
+	 */
+	protected function getBaseConfiguration(): array
+	{
+		$config = [];
+
+		foreach (Finder::create()->files()->name('*.php')->in(Application::FRAMEWORK_CONFIG_PATH) as $file) {
+			$config[basename($file->getRealPath(), '.php')] = require $file->getRealPath();
+		}
+
+		return $config;
 	}
 
 	/**
@@ -37,14 +71,15 @@ class LoadConfiguration implements Bootstrapper
 	protected function getConfigurationFiles(Application $app): array
 	{
 		$files = [];
-		$directoryIterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($app->configPath()));
 
-		foreach ($directoryIterator as $file) {
-			if ($file->isDir() || $file->getExtension() !== 'php') {
-				continue;
-			}
+		$configPath = realpath($app->configPath());
 
-			$directory = $this->getNestedDirectory($file, $app->configPath());
+		if (! $configPath) {
+			return [];
+		}
+
+		foreach (Finder::create()->files()->name('*.php')->in($configPath) as $file) {
+			$directory = $this->getNestedDirectory($file, $configPath);
 
 			$files[$directory . basename($file->getRealPath(), '.php')] = $file->getRealPath();
 		}
@@ -70,6 +105,34 @@ class LoadConfiguration implements Bootstrapper
 	}
 
 	/**
+	 * Load the given configuration file.
+	 */
+	protected function loadConfigurationFile(
+		ConfigRepositoryContract $repository,
+		string $name,
+		string $path,
+		array $base
+	): array {
+		$config = require $path;
+
+		if (isset($base[$name])) {
+			$config = array_merge($base[$name], $config);
+
+			foreach ($this->mergeableOptions($name) as $option) {
+				if (isset($config[$option])) {
+					$config[$option] = array_merge($base[$name][$option], $config[$option]);
+				}
+			}
+
+			unset($base[$name]);
+		}
+
+		$repository->set($name, $config);
+
+		return $base;
+	}
+
+	/**
 	 * Load the configuration items from all of the files.
 	 *
 	 * @throws \Exception
@@ -78,12 +141,41 @@ class LoadConfiguration implements Bootstrapper
 	{
 		$files = $this->getConfigurationFiles($app);
 
-		if (! isset($files['app'])) {
-			throw new Exception('Unable to load the "app" configuration file.');
+		$shouldMerge = method_exists($app, 'shouldMergeFrameworkConfiguration')
+			? $app->shouldMergeFrameworkConfiguration()
+			: true;
+
+		$base = $shouldMerge
+			? $this->getBaseConfiguration()
+			: [];
+
+		foreach (array_diff(array_keys($base), array_keys($files)) as $name => $config) {
+			$repository->set($name, $config);
 		}
 
-		foreach ($files as $key => $path) {
-			$repository->set($key, require $path);
+		foreach ($files as $name => $path) {
+			$base = $this->loadConfigurationFile($repository, $name, $path, $base);
 		}
+
+		foreach ($base as $name => $config) {
+			$repository->set($name, $config);
+		}
+	}
+
+	/**
+	 * Get the options within the configuration file that should be merged again.
+	 */
+	protected function mergeableOptions(string $name): array
+	{
+		return [
+			// 'auth' => ['guards', 'providers', 'passwords'],
+			// 'broadcasting' => ['connections'],
+			'cache' => ['stores'],
+			// 'database' => ['connections'],
+			// 'filesystems' => ['disks'],
+			// 'logging' => ['channels'],
+			// 'mail' => ['mailers'],
+			// 'queue' => ['connections'],
+		][$name] ?? [];
 	}
 }

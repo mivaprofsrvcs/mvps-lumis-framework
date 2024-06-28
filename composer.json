@@ -11,9 +11,16 @@
     ],
 	"require": {
 		"php": "^8.1",
+		"illuminate/console": "^11.12",
+		"illuminate/validation": "^11.12",
+		"laravel/prompts": "^0.1.24",
 		"nesbot/carbon": "^2.66",
+		"nunomaduro/termwind": "^2.0",
 		"pdeans/http": "^2.0",
 		"psr/container": "^2.0",
+		"symfony/console": "^7.1",
+		"symfony/event-dispatcher": "^7.1",
+		"symfony/finder": "^7.1",
 		"symfony/var-dumper": "^6.3",
 		"vlucas/phpdotenv": "^5.5"
 	},

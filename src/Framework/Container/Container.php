@@ -2,18 +2,19 @@
 
 namespace MVPS\Lumis\Framework\Container;
 
+use ArrayAccess;
 use Closure;
 use Exception;
-use TypeError;
-use LogicException;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionException;
-use ReflectionParameter;
 use InvalidArgumentException;
+use LogicException;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionFunction;
+use ReflectionParameter;
+use TypeError;
 
-class Container implements ContainerInterface
+class Container implements ArrayAccess, ContainerInterface
 {
 	/**
 	 * The current globally available container (if any).
@@ -28,6 +29,13 @@ class Container implements ContainerInterface
 	 * @var array[]
 	 */
 	protected array $abstractAliases = [];
+
+	/**
+	 * All of the after resolving callbacks by class type.
+	 *
+	 * @var array[]
+	 */
+	protected array $afterResolvingCallbacks = [];
 
 	/**
 	 * The registered type aliases.
@@ -56,6 +64,13 @@ class Container implements ContainerInterface
 	 * @var array[]
 	 */
 	public array $contextual = [];
+
+	/**
+	 * All of the global after resolving callbacks.
+	 *
+	 * @var \Closure[]
+	 */
+	protected array $globalAfterResolvingCallbacks = [];
 
 	/**
 	 * The container's shared instances.
@@ -91,6 +106,22 @@ class Container implements ContainerInterface
 	 * @var array[]
 	 */
 	protected array $with = [];
+
+	/**
+	 * Register a new after resolving callback for all types.
+	 */
+	public function afterResolving(Closure|string $abstract, Closure|null $callback = null): void
+	{
+		if (is_string($abstract)) {
+			$abstract = $this->getAlias($abstract);
+		}
+
+		if ($abstract instanceof Closure && is_null($callback)) {
+			$this->globalAfterResolvingCallbacks[] = $abstract;
+		} else {
+			$this->afterResolvingCallbacks[$abstract][] = $callback;
+		}
+	}
 
 	/**
 	 * Alias a type to a different name.
@@ -505,6 +536,40 @@ class Container implements ContainerInterface
 	}
 
 	/**
+	 * Determine if a given offset exists.
+	 */
+	public function offsetExists(mixed $key): bool
+	{
+		return $this->bound((string) $key);
+	}
+
+	/**
+	 * Get the value at a given offset.
+	 */
+	public function offsetGet(mixed $key): mixed
+	{
+		return $this->make((string) $key);
+	}
+
+	/**
+	 * Set the value at a given offset.
+	 */
+	public function offsetSet(mixed $key, mixed $value): void
+	{
+		$this->bind((string) $key, $value instanceof Closure ? $value : fn () => $value);
+	}
+
+	/**
+	 * Unset the value at a given offset.
+	 */
+	public function offsetUnset(mixed $key): void
+	{
+		$offsetKey = (string) $key;
+
+		unset($this->bindings[$offsetKey], $this->instances[$offsetKey], $this->resolved[$offsetKey]);
+	}
+
+	/**
 	 * Fire the "rebound" callbacks for the given abstract type.
 	 */
 	protected function rebound(string $abstract): void
@@ -704,5 +769,21 @@ class Container implements ContainerInterface
 	public function singleton(string $abstract, Closure|string|null $concrete = null): void
 	{
 		$this->bind($abstract, $concrete, true);
+	}
+
+	/**
+	 * Dynamically access container services.
+	 */
+	public function __get(string $key): mixed
+	{
+		return $this[$key];
+	}
+
+	/**
+	 * Dynamically set container services.
+	 */
+	public function __set(string $key, mixed $value): void
+	{
+		$this[$key] = $value;
 	}
 }

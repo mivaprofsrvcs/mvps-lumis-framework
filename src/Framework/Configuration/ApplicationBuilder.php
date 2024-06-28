@@ -20,6 +20,9 @@ class ApplicationBuilder
 	 */
 	protected array $pendingProviders = [];
 
+	/**
+	 * Create a new application builder instance.
+	 */
 	public function __construct(protected Application $app)
 	{
 	}
@@ -101,6 +104,29 @@ class ApplicationBuilder
 	}
 
 	/**
+	 * Register additional Lumis commands with the application.
+	 */
+	public function withCommands(array $commands = []): static
+	{
+		if (empty($commands)) {
+			$commands = [$this->app->path('Console/Commands')];
+		}
+
+		$this->app->afterResolving(ConsoleKernel::class, function ($kernel) use ($commands) {
+			[$commands, $paths] = collection($commands)->partition(fn ($command) => class_exists($command));
+			[$routes, $paths] = $paths->partition(fn ($path) => is_file($path));
+
+			$this->app->booted(static function () use ($kernel, $commands, $paths, $routes) {
+				$kernel->addCommands($commands->all());
+				$kernel->addCommandPaths($paths->all());
+				$kernel->addCommandRoutePaths($routes->all());
+			});
+		});
+
+		return $this;
+	}
+
+	/**
 	 * Register the standard kernel classes for the application.
 	 */
 	public function withKernels(): static
@@ -137,6 +163,7 @@ class ApplicationBuilder
 	public function withRouting(
 		Closure|null $using = null,
 		array|string|null $web = null,
+		string|null $commands = null,
 		callable|null $then = null
 	): static {
 		if (is_null($using) && (is_string($web) || is_array($web) || is_callable($then))) {
@@ -148,6 +175,10 @@ class ApplicationBuilder
 		$this->app->booting(function () {
 			$this->app->register(AppRouteServiceProvider::class, force: true);
 		});
+
+		if (is_string($commands) && realpath($commands) !== false) {
+			$this->withCommands([$commands]);
+		}
 
 		return $this;
 	}
