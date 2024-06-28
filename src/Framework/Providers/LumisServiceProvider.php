@@ -3,6 +3,7 @@
 namespace MVPS\Lumis\Framework\Providers;
 
 use Illuminate\Console\Signals;
+use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Support\ServiceProvider;
@@ -15,7 +16,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	 * @var array
 	 */
 	protected array $commands = [
-		// 'About' => AboutCommand::class,
+		'About' => AboutCommand::class,
 		// 'CacheClear' => CacheClearCommand::class,
 		// 'CacheForget' => CacheForgetCommand::class,
 		// 'ClearCompiled' => ClearCompiledCommand::class,
