@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Providers;
 
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
+use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Support\ServiceProvider;
@@ -23,7 +24,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ConfigCache' => ConfigCacheCommand::class,
 		// 'ConfigClear' => ConfigClearCommand::class,
 		// 'ConfigShow' => ConfigShowCommand::class,
-		// 'Environment' => EnvironmentCommand::class,
+		'Environment' => EnvironmentCommand::class,
 		// 'EnvironmentDecrypt' => EnvironmentDecryptCommand::class,
 		// 'EnvironmentEncrypt' => EnvironmentEncryptCommand::class,
 		// 'KeyGenerate' => KeyGenerateCommand::class,
