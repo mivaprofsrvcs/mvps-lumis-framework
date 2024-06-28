@@ -14,6 +14,6 @@ class ConsoleSupportServiceProvider extends AggregateServiceProvider implements 
 	 */
 	protected array $providers = [
 		LumisServiceProvider::class,
-		// ComposerServiceProvider::class,
+		ComposerServiceProvider::class,
 	];
 }
