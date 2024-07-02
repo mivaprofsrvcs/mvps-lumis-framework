@@ -129,6 +129,14 @@ trait InteractsWithRequestInput
 	}
 
 	/**
+	 * Get the query string for the request.
+	 */
+	public function queryString(): string
+	{
+		return http_build_query($this->getQueryParams());
+	}
+
+	/**
 	 * Determine if the given input key is an empty string.
 	 */
 	protected function isEmptyString(string $key): bool

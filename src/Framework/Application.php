@@ -2,20 +2,53 @@
 
 namespace MVPS\Lumis\Framework;
 
+use Closure;
+use Composer\Autoload\ClassLoader;
 use MVPS\Lumis\Framework\Collections\Arr;
+use MVPS\Lumis\Framework\Configuration\ApplicationBuilder;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
+use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
+use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
 use MVPS\Lumis\Framework\Debugging\DumperServiceProvider;
+use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
+use MVPS\Lumis\Framework\Support\Env;
 use MVPS\Lumis\Framework\Support\ServiceProvider;
+use MVPS\Lumis\Framework\Support\Str;
+use RuntimeException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
-class Application extends Container
+class Application extends Container implements CachesConfiguration
 {
+	/**
+	 * The base configuration directory path.
+	 *
+	 * @var string
+	 */
+	public const FRAMEWORK_CONFIG_PATH = __DIR__ . '/config';
+
+	/**
+	 * The base configuration directory path.
+	 *
+	 * @var string
+	 */
+	public const FRAMEWORK_RESOURCES_PATH = __DIR__ . '/resources';
+
 	/**
 	 * The Lumis framework version
 	 *
 	 * @var string
 	 */
-	protected const VERSION = '1.0.0';
+	protected const VERSION = '2.0.0';
+
+	/**
+	 * The prefixes of absolute cache paths for use during normalization.
+	 *
+	 * @var string[]
+	 */
+	protected array $absoluteCachePathPrefixes = ['/', '\\'];
 
 	/**
 	 * The "app" directory path for the application.
@@ -85,7 +118,14 @@ class Application extends Container
 	 *
 	 * @var bool
 	 */
-	protected $hasBeenBootstrapped = false;
+	protected bool $hasBeenBootstrapped = false;
+
+	/**
+	 * Indicates if the application is running in the console.
+	 *
+	 * @var bool|null
+	 */
+	protected bool|null $isRunningInConsole = null;
 
 	/**
 	 * The loaded service providers.
@@ -95,16 +135,37 @@ class Application extends Container
 	protected array $loadedProviders = [];
 
 	/**
+	 * Indicates if the framework's base configuration should be merged.
+	 *
+	 * @var bool
+	 */
+	protected bool $mergeFrameworkConfiguration = true;
+
+	/**
+	 * The application namespace.
+	 *
+	 * @var string
+	 */
+	protected string $namespace = '';
+
+	/**
 	 * The public web path for the application.
 	 *
 	 * @var string
 	 */
 	protected string $publicPath = '';
 
+	/**
+	 * The list of registered callbacks.
+	 *
+	 * @var callable[]
+	 */
+	protected array $registeredCallbacks = [];
+
 	 /**
 	 * All of the registered service providers.
 	 *
-	 * @var \MVPS\Lumis\Framework\Support\ServiceProvider[]
+	 * @var array<string, \MVPS\Lumis\Framework\Support\ServiceProvider>
 	 */
 	protected array $serviceProviders = [];
 
@@ -125,12 +186,25 @@ class Application extends Container
 	/**
 	 * Create a new Lumis application instance.
 	 */
-	public function __construct(string $basePath)
+	public function __construct(string|null $basePath = null)
 	{
-		$this->setBasePath($basePath);
+		if ($basePath) {
+			$this->setBasePath($basePath);
+		}
+
 		$this->registerBaseBindings();
 		$this->registerBaseServiceProviders();
 		$this->registerCoreContainerAliases();
+	}
+
+	/**
+	 * Add new prefix to list of absolute path prefixes.
+	 */
+	public function addAbsoluteCachePathPrefix(string $prefix): static
+	{
+		$this->absoluteCachePathPrefixes[] = $prefix;
+
+		return $this;
 	}
 
 	/**
@@ -139,6 +213,22 @@ class Application extends Container
 	public function basePath(string $path = ''): string
 	{
 		return $this->joinPaths($this->basePath, $path);
+	}
+
+	/**
+	 * Get the version number of the application.
+	 */
+	protected function bindPathsInContainer(): void
+	{
+		$this->instance('path', $this->path());
+		$this->instance('path.base', $this->basePath());
+		$this->instance('path.config', $this->configPath());
+		$this->instance('path.public', $this->publicPath());
+		$this->instance('path.resources', $this->resourcesPath());
+		$this->instance('path.storage', $this->storagePath());
+		$this->instance('path.tasks', $this->tasksPath());
+
+		$this->useBootstrapPath($this->basePath('bootstrap'));
 	}
 
 	/**
@@ -216,20 +306,6 @@ class Application extends Container
 	}
 
 	/**
-	 * Get the version number of the application.
-	 */
-	protected function bindPathsInContainer(): void
-	{
-		$this->instance('path', $this->path());
-		$this->instance('path.base', $this->basePath());
-		$this->instance('path.config', $this->configPath());
-		$this->instance('path.public', $this->publicPath());
-		$this->instance('path.resources', $this->resourcesPath());
-		$this->instance('path.storage', $this->storagePath());
-		$this->instance('path.tasks', $this->tasksPath());
-	}
-
-	/**
 	 * Call the booting callbacks for the application.
 	 */
 	protected function callAppCallbacks(array &$callbacks): void
@@ -252,11 +328,67 @@ class Application extends Container
 	}
 
 	/**
+	 * Determine if the application configuration is cached.
+	 */
+	public function configurationIsCached(): bool
+	{
+		return is_file($this->getCachedConfigPath());
+	}
+
+	/**
+	 * Begin configuring a new Lumis application instance.
+	 */
+	public static function configure(string|null $basePath = null): ApplicationBuilder
+	{
+		$basePath = match (true) {
+			is_string($basePath) => $basePath,
+			default => static::inferBasePath(),
+		};
+
+		return (new ApplicationBuilder(new static($basePath)))
+			->withKernels()
+			->withCommands()
+			->withProviders();
+	}
+
+	/**
+	 * Detect the application's current environment.
+	 */
+	public function detectEnvironment(Closure $callback): string
+	{
+		$args = $_SERVER['argv'] ?? null;
+
+		return $this['env'] = (new EnvironmentDetector)->detect($callback, $args);
+	}
+
+	/**
+	 * Get the current application environment.
+	 */
+	public function environment(string|array ...$environments): string|bool
+	{
+		if (count($environments) > 0) {
+			$patterns = is_array($environments[0]) ? $environments[0] : $environments;
+
+			return Str::is($patterns, $this['env']);
+		}
+
+		return $this['env'];
+	}
+
+	/**
 	 * Get the environment file the application is using.
 	 */
 	public function environmentFile(): string
 	{
 		return $this->environmentFile ?: '.env';
+	}
+
+	/**
+	 * Get the fully qualified path to the environment file.
+	 */
+	public function environmentFilePath(): string
+	{
+		return $this->environmentPath() . DIRECTORY_SEPARATOR . $this->environmentFile();
 	}
 
 	/**
@@ -282,12 +414,72 @@ class Application extends Container
 		$this->serviceProviders = [];
 	}
 
+	public function frameworkConigPath(): string
+	{
+		return static::FRAMEWORK_CONFIG_PATH;
+	}
+
+	public function frameworkResourcesPath(): string
+	{
+		return static::FRAMEWORK_RESOURCES_PATH;
+	}
+
+	/**
+	 * Get the path to the service provider list in the bootstrap directory.
+	 */
+	public function getBootstrapProvidersPath(): string
+	{
+		return $this->bootstrapPath('providers.php');
+	}
+
+	/**
+	 * Get the path to the configuration cache file.
+	 */
+	public function getCachedConfigPath(): string
+	{
+		return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
+	}
+
+	/**
+	 * Get the path to the cached services.php file.
+	 */
+	public function getCachedServicesPath(): string
+	{
+		return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
+	}
+
+	/**
+	 * Get the application namespace.
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getNamespace(): string
+	{
+		if ($this->namespace !== '') {
+			return $this->namespace;
+		}
+
+		$composer = json_decode(file_get_contents($this->basePath('composer.json')), true);
+
+		foreach ((array) data_get($composer, 'autoload.psr-4') as $namespace => $path) {
+			foreach ((array) $path as $pathChoice) {
+				if (realpath($this->path()) === realpath($this->basePath($pathChoice))) {
+					return $this->namespace = $namespace;
+				}
+			}
+		}
+
+		throw new RuntimeException('Unable to detect application namespace.');
+	}
+
 	/**
 	 * Get the registered service provider instance if it exists.
 	 */
 	public function getProvider(ServiceProvider|string $provider): ServiceProvider|null
 	{
-		return array_values($this->getProviders($provider))[0] ?? null;
+		$name = is_string($provider) ? $provider : get_class($provider);
+
+		return $this->serviceProviders[$name] ?? null;
 	}
 
 	/**
@@ -301,11 +493,45 @@ class Application extends Container
 	}
 
 	/**
+	 * Handle the incoming Lumis command.
+	 */
+	public function handleCommand(InputInterface $input): int
+	{
+		$kernel = $this->make(ConsoleKernelContract::class);
+
+		$status = $kernel->handle($input, new ConsoleOutput);
+
+		return $status;
+	}
+
+	/**
+	 * Handle the incoming HTTP request and send the response to the browser.
+	 */
+	public function handleRequest(Request $request): void
+	{
+		$kernel = $this->make(HttpKernelContract::class);
+
+		$response = $kernel->handle($request)
+			->send();
+	}
+
+	/**
 	 * Determine if the application has been bootstrapped before.
 	 */
 	public function hasBeenBootstrapped(): bool
 	{
 		return $this->hasBeenBootstrapped;
+	}
+
+	/**
+	 * Infer the application's base directory from the environment.
+	 */
+	public static function inferBasePath(): string
+	{
+		return match (true) {
+			isset($_ENV['APP_BASE_PATH']) => $_ENV['APP_BASE_PATH'],
+			default => dirname(array_keys(ClassLoader::getRegisteredLoaders())[0]),
+		};
 	}
 
 	/**
@@ -345,9 +571,25 @@ class Application extends Container
 	 */
 	protected function markAsRegistered(ServiceProvider $provider): void
 	{
-		$this->serviceProviders[] = $provider;
+		$class = get_class($provider);
 
-		$this->loadedProviders[get_class($provider)] = true;
+		$this->serviceProviders[$class] = $provider;
+
+		$this->loadedProviders[$class] = true;
+	}
+
+	/**
+	 * Normalize a relative or absolute path to a cache file.
+	 */
+	protected function normalizeCachePath(string $key, string $default): string
+	{
+		if (is_null($env = Env::get($key))) {
+			return $this->bootstrapPath($default);
+		}
+
+		return Str::startsWith($env, $this->absoluteCachePathPrefixes)
+			? $env
+			: $this->basePath($env);
 	}
 
 	/**
@@ -443,6 +685,8 @@ class Application extends Container
 		foreach ($providers as $provider) {
 			$this->register($provider);
 		}
+
+		$this->callAppCallbacks($this->registeredCallbacks);
 	}
 
 	/**
@@ -452,13 +696,20 @@ class Application extends Container
 	{
 		$coreAliases = [
 			'app' => [static::class],
-			'config' => [\MVPS\Lumis\Framework\Config\Repository::class],
+			'config' => [
+				\MVPS\Lumis\Framework\Configuration\Repository::class,
+				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
+			],
+			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
+			'url' => [
+				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
+				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
+			],
 			// TODO: Implement these
-			// encrypter => Encrypter::class,
-			// url => UrlGenerator::class,
-			// view => View\Factory::class,
+			// 'encrypter' => [Encrypter::class],
+			// 'view' => [View\Factory::class],
 		];
 
 		foreach ($coreAliases as $key => $aliases) {
@@ -466,6 +717,14 @@ class Application extends Container
 				$this->alias($key, $alias);
 			}
 		}
+	}
+
+	/**
+	 * Register a new registered listener.
+	 */
+	public function registered(callable $callback): void
+	{
+		$this->registeredCallbacks[] = $callback;
 	}
 
 	/**
@@ -485,6 +744,27 @@ class Application extends Container
 	}
 
 	/**
+	 * Determine if the application is running in the console.
+	 */
+	public function runningInConsole(): bool
+	{
+		if ($this->isRunningInConsole === null) {
+			$this->isRunningInConsole = Env::get('APP_RUNNING_IN_CONSOLE') ??
+				(PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
+		}
+
+		return $this->isRunningInConsole;
+	}
+
+	/**
+	 * Determine if the application is running unit tests.
+	 */
+	public function runningUnitTests(): bool
+	{
+		return $this->bound('env') && $this['env'] === 'testing';
+	}
+
+	/**
 	 * Set the base path for the application.
 	 */
 	public function setBasePath(string $basePath): static
@@ -494,6 +774,14 @@ class Application extends Container
 		$this->bindPathsInContainer();
 
 		return $this;
+	}
+
+	/**
+	 * Determine if the framework's base configuration should be merged.
+	 */
+	public function shouldMergeFrameworkConfiguration(): bool
+	{
+		return $this->mergeFrameworkConfiguration;
 	}
 
 	/**
@@ -510,6 +798,18 @@ class Application extends Container
 	public function tasksPath(string $path = ''): string
 	{
 		return $this->joinPaths($this->tasksPath ?: $this->basePath('tasks'), $path);
+	}
+
+	/**
+	 * Set the bootstrap file directory.
+	 */
+	public function useBootstrapPath(string $path): static
+	{
+		$this->bootstrapPath = $path;
+
+		$this->instance('path.bootstrap', $path);
+
+		return $this;
 	}
 
 	/**

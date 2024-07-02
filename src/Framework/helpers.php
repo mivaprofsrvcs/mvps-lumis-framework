@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
@@ -123,11 +124,11 @@ if (! function_exists('resolve')) {
 	}
 }
 
-if (! function_exists('resources_path')) {
+if (! function_exists('resource_path')) {
 	/**
 	 * Get the path to the resources directory.
 	 */
-	function resources_path(string $path = ''): string
+	function resource_path(string $path = ''): string
 	{
 		return app()->resourcePath($path);
 	}
@@ -160,5 +161,19 @@ if (! function_exists('tasks_path')) {
 	function tasks_path(string $path = ''): string
 	{
 		return app()->tasksPath($path);
+	}
+}
+
+if (! function_exists('url')) {
+	/**
+	 * Generate a url for the application.
+	 */
+	function url(string|null $path = null, mixed $parameters = [], bool|null $secure = null): UrlGenerator|string
+	{
+		if (is_null($path)) {
+			return app(UrlGenerator::class);
+		}
+
+		return app(UrlGenerator::class)->to($path, $parameters, $secure);
 	}
 }

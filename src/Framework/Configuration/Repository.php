@@ -1,10 +1,10 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Config;
+namespace MVPS\Lumis\Framework\Configuration;
 
 use ArrayAccess;
 use MVPS\Lumis\Framework\Collections\Arr;
-use MVPS\Lumis\Framework\Contracts\Config\Repository as ConfigRepositoryContract;
+use MVPS\Lumis\Framework\Contracts\Configuration\Repository as ConfigRepositoryContract;
 
 class Repository implements ArrayAccess, ConfigRepositoryContract
 {

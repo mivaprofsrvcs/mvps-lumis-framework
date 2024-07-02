@@ -2,6 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Collections;
 
-class Collection
+use Illuminate\Support\Collection as IlluminateCollection;
+
+class Collection extends IlluminateCollection
 {
 }

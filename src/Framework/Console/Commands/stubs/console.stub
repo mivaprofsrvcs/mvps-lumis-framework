@@ -1,0 +1,30 @@
+<?php
+
+namespace {{ namespace }};
+
+use MVPS\Lumis\Framework\Console\Command;
+
+class {{ class }} extends Command
+{
+	/**
+	 * The console command description.
+	 *
+	 * @var string
+	 */
+	protected $description = 'Command description';
+
+	/**
+	 * The name and signature of the console command.
+	 *
+	 * @var string
+	 */
+	protected $signature = '{{ command }}';
+
+	/**
+	 * Execute the console command.
+	 */
+	public function handle(): void
+	{
+		//
+	}
+}

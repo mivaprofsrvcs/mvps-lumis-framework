@@ -4,11 +4,13 @@ namespace MVPS\Lumis\Framework\Routing;
 
 use Closure;
 use LogicException;
+use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Support\Str;
+use Symfony\Component\Routing\Route as SymfonyRoute;
 
 class Route
 {
@@ -18,6 +20,13 @@ class Route
 	 * @var array
 	 */
 	public array $action;
+
+	/**
+	 * The fields that implicit binding should use for a given parameter.
+	 *
+	 * @var array
+	 */
+	protected array $bindingFields = [];
 
 	/**
 	 * The compiled version of the route.
@@ -41,11 +50,25 @@ class Route
 	public mixed $controller = null;
 
 	/**
-	 * The HTTP method the route relates to.
+	 * The default values for the route.
 	 *
-	 * @var string
+	 * @var array
 	 */
-	public string $method;
+	public array $defaults = [];
+
+	/**
+	 * Indicates whether the route is a fallback route.
+	 *
+	 * @var bool
+	 */
+	public bool $isFallback = false;
+
+	/**
+	 * The HTTP methods the route responds to.
+	 *
+	 * @var array
+	 */
+	public array $methods;
 
 	/**
 	 * The array of matched parameters' original values.
@@ -80,16 +103,27 @@ class Route
 	 *
 	 * @var string
 	 */
-	protected string $uri;
+	public string $uri;
+
+	/**
+	 * The regular expression requirements.
+	 *
+	 * @var array
+	 */
+	public array $wheres = [];
 
 	/**
 	 * Create a new Route instance,
 	 */
-	public function __construct(string $method, string $uri, Closure|array|string|null $action)
+	public function __construct(array|string $methods, string $uri, Closure|array|string|null $action)
 	{
-		$this->method = $method;
+		$this->methods = (array) $methods;
 		$this->uri = $this->formatUri($uri);
 		$this->action = $this->parseAction($action);
+
+		if (in_array('GET', $this->methods) && ! in_array('HEAD', $this->methods)) {
+			$this->methods[] = 'HEAD';
+		}
 	}
 
 	/**
@@ -104,6 +138,24 @@ class Route
 		$this->originalParameters = $this->parameters;
 
 		return $this;
+	}
+
+	/**
+	 * Get the binding field for the given parameter.
+	 */
+	public function bindingFieldFor(string|int $parameter): string|null
+	{
+		$fields = is_int($parameter) ? array_values($this->bindingFields) : $this->bindingFields;
+
+		return $fields[$parameter] ?? null;
+	}
+
+	/**
+	 * Get the binding fields for the route.
+	 */
+	public function bindingFields(): array
+	{
+		return $this->bindingFields ?? [];
 	}
 
 	/**
@@ -122,10 +174,48 @@ class Route
 	protected function compileRoute(): CompiledRoute
 	{
 		if (is_null($this->compiled)) {
-			$this->compiled = (new CompiledRoute($this->getUri()))->compile();
+			$this->compiled = (new CompiledRoute($this->uri()))->compile();
 		}
 
 		return $this->compiled;
+	}
+
+	/**
+	 * Set a default value for the route.
+	 */
+	public function defaults(string $key, mixed $value): static
+	{
+		$this->defaults[$key] = $value;
+
+		return $this;
+	}
+
+	/**
+	 * Get or set the domain for the route.
+	 */
+	public function domain(string|null $domain = null): static|string|null
+	{
+		if (is_null($domain)) {
+			return $this->getDomain();
+		}
+
+		$parsed = RouteUri::parse($domain);
+
+		$this->action['domain'] = $parsed->uri;
+
+		$this->bindingFields = array_merge($this->bindingFields, $parsed->bindingFields);
+
+		return $this;
+	}
+
+	/**
+	 * Mark this route as a fallback route.
+	 */
+	public function fallback(): static
+	{
+		$this->isFallback = true;
+
+		return $this;
 	}
 
 	/**
@@ -138,6 +228,30 @@ class Route
 		}
 
 		return trim(trim($uri), '/');
+	}
+
+	/**
+	 * Get the action array or one of its properties for the route.
+	 */
+	public function getAction(string|null $key = null): mixed
+	{
+		return Arr::get($this->action, $key);
+	}
+
+	/**
+	 * Get the method name of the route action.
+	 */
+	public function getActionMethod(): string
+	{
+		return Arr::last(explode('@', $this->getActionName()));
+	}
+
+	/**
+	 * Get the action name for the route.
+	 */
+	public function getActionName(): string
+	{
+		return $this->action['controller'] ?? 'Closure';
 	}
 
 	/**
@@ -191,15 +305,31 @@ class Route
 	}
 
 	/**
-	 * Get the parameter names for the route.
+	 * Get the domain defined for the route.
 	 */
-	public function getParameterNames(): array
+	public function getDomain(): string|null
 	{
-		if (is_null($this->parameterNames)) {
-			$this->parameterNames = $this->compileParameterNames();
-		}
+		return isset($this->action['domain'])
+			? str_replace(['http://', 'https://'], '', $this->action['domain'])
+			: null;
+	}
 
-		return $this->parameterNames;
+	/**
+	 * Get the name of the route instance.
+	 */
+	public function getName(): string|null
+	{
+		return $this->action['as'] ?? null;
+	}
+
+	/**
+	 * Get the optional parameter names for the route.
+	 */
+	protected function getOptionalParameterNames(): array
+	{
+		preg_match_all('/\{(\w+?)\?\}/', $this->uri(), $matches);
+
+		return isset($matches[1]) ? array_fill_keys($matches[1], null) : [];
 	}
 
 	/**
@@ -214,6 +344,18 @@ class Route
 		}
 
 		return $this->originalParameters;
+	}
+
+	/**
+	 * Get the parameter names for the route.
+	 */
+	public function getParameterNames(): array
+	{
+		if (is_null($this->parameterNames)) {
+			$this->parameterNames = $this->compileParameterNames();
+		}
+
+		return $this->parameterNames;
 	}
 
 	/**
@@ -239,11 +381,19 @@ class Route
 	}
 
 	/**
-	 * Get the URI associated with the route.
+	 * Determine if the route only responds to HTTP requests.
 	 */
-	public function getUri(): string
+	public function httpOnly(): bool
 	{
-		return $this->uri;
+		return in_array('http', $this->action, true);
+	}
+
+	/**
+	 * Determine if the route only responds to HTTPS requests.
+	 */
+	public function httpsOnly(): bool
+	{
+		return $this->secure();
 	}
 
 	/**
@@ -267,6 +417,24 @@ class Route
 	}
 
 	/**
+	 * Get the HTTP verbs the route responds to.
+	 */
+	public function methods(): array
+	{
+		return $this->methods;
+	}
+
+	/**
+	 * Add or change the route name.
+	 */
+	public function name(string $name): static
+	{
+		$this->action['as'] = isset($this->action['as']) ? $this->action['as'] . $name : $name;
+
+		return $this;
+	}
+
+	/**
 	 * Parse the route action into a standard array.
 	 */
 	protected function parseAction(callable|array|string|null $action): array
@@ -280,6 +448,14 @@ class Route
 	protected function parseControllerCallback(): array
 	{
 		return Str::parseCallback($this->action['uses']);
+	}
+
+	/**
+	 * Parse arguments to the where method into an array.
+	 */
+	protected function parseWhere(array|string $name, string $expression): array
+	{
+		return is_array($name) ? $name : [$name => $expression];
 	}
 
 	/**
@@ -309,7 +485,7 @@ class Route
 	{
 		$callable = $this->action['uses'];
 
-		return $this->container->make(CallableDispatcher::class)
+		return $this->container[CallableDispatcher::class]
 			->dispatch($this, $callable);
 	}
 
@@ -323,6 +499,38 @@ class Route
 	}
 
 	/**
+	 * Determine if the route only responds to HTTPS requests.
+	 */
+	public function secure(): bool
+	{
+		return in_array('https', $this->action, true);
+	}
+
+	/**
+	 * Set the action array for the route.
+	 */
+	public function setAction(array $action): static
+	{
+		$this->action = $action;
+
+		if (isset($this->action['domain'])) {
+			$this->domain($this->action['domain']);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Set the binding fields for the route.
+	 */
+	public function setBindingFields(array $bindingFields): static
+	{
+		$this->bindingFields = $bindingFields;
+
+		return $this;
+	}
+
+	/**
 	 * Set the container instance on the route.
 	 */
 	public function setContainer(Container $container): static
@@ -333,11 +541,79 @@ class Route
 	}
 
 	/**
+	 * Set the default values for the route.
+	 */
+	public function setDefaults(array $defaults): static
+	{
+		$this->defaults = $defaults;
+
+		return $this;
+	}
+
+	/**
+	 * Set the fallback value.
+	 */
+	public function setFallback(bool $isFallback): static
+	{
+		$this->isFallback = $isFallback;
+
+		return $this;
+	}
+
+	/**
 	 * Set the router instance on the route.
 	 */
 	public function setRouter(Router $router): static
 	{
 		$this->router = $router;
+
+		return $this;
+	}
+
+	/**
+	 * Set a list of regular expression requirements on the route.
+	 */
+	public function setWheres(array $wheres): static
+	{
+		foreach ($wheres as $name => $expression) {
+			$this->where($name, $expression);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Convert the route to a Symfony route.
+	 */
+	public function toSymfonyRoute(): SymfonyRoute
+	{
+		return new SymfonyRoute(
+			preg_replace('/\{(\w+?)\?\}/', '{$1}', $this->uri()),
+			$this->getOptionalParameterNames(),
+			$this->wheres,
+			['utf8' => true],
+			$this->getDomain() ?: '',
+			[],
+			$this->methods
+		);
+	}
+
+	/**
+	 * Get the URI associated with the route.
+	 */
+	public function uri(): string
+	{
+		return $this->uri;
+	}
+
+	/**
+	 * Set a regular expression requirement on the route.
+	 */
+	public function where(array|string $name, string|null $expression = null): static
+	{
+		foreach ($this->parseWhere($name, $expression) as $name => $expression) {
+			$this->wheres[$name] = $expression;
+		}
 
 		return $this;
 	}

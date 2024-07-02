@@ -8,17 +8,42 @@ use MVPS\Lumis\Framework\Support\ServiceProvider;
 class RouteServiceProvider extends ServiceProvider
 {
 	/**
+	 * The global callback that should be used to load the application's routes.
+	 *
+	 * @var \Closure|null
+	 */
+	protected static Closure|null $alwaysLoadRoutesUsing;
+
+	/**
 	 * The callback that should be used to load the application's routes.
 	 *
 	 * @var \Closure|null
 	 */
-	protected $loadRoutesUsing = null;
+	protected Closure|null $loadRoutesUsing = null;
+
+	/**
+	 * The controller namespace for the application.
+	 *
+	 * @var string|null
+	 */
+	protected string|null $namespace = null;
+
+	/**
+	 * Bootstrap any application services.
+	 */
+	public function boot(): void
+	{
+	}
 
 	/**
 	 * Load the application routes.
 	 */
 	protected function loadRoutes(): void
 	{
+		if (! is_null(self::$alwaysLoadRoutesUsing)) {
+			$this->app->call(self::$alwaysLoadRoutesUsing);
+		}
+
 		if (! is_null($this->loadRoutesUsing)) {
 			$this->app->call($this->loadRoutesUsing);
 		} elseif (method_exists($this, 'map')) {
@@ -27,12 +52,32 @@ class RouteServiceProvider extends ServiceProvider
 	}
 
 	/**
+	 * Register the callback that will be used to load the application's routes.
+	 */
+	public static function loadRoutesUsing(Closure|null $routesCallback): void
+	{
+		self::$alwaysLoadRoutesUsing = $routesCallback;
+	}
+
+	/**
 	 * Register application routes service.
 	 */
 	public function register(): void
 	{
 		$this->booted(function () {
+			$this->setRootControllerNamespace();
+
 			$this->loadRoutes();
+
+			$this->app->booted(function () {
+				$this->app['router']
+					->getRoutes()
+					->refreshNameLookups();
+
+				$this->app['router']
+					->getRoutes()
+					->refreshActionLookups();
+			});
 		});
 	}
 
@@ -44,5 +89,15 @@ class RouteServiceProvider extends ServiceProvider
 		$this->loadRoutesUsing = $routesCallback;
 
 		return $this;
+	}
+
+	/**
+	 * Set the root controller namespace for the application.
+	 */
+	protected function setRootControllerNamespace(): void
+	{
+		if (! is_null($this->namespace)) {
+			$this->app[UrlGenerator::class]->setRootControllerNamespace($this->namespace);
+		}
 	}
 }
