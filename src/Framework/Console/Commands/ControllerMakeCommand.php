@@ -58,6 +58,7 @@ class ControllerMakeCommand extends GeneratorCommand
 			$input->setOption($type, true);
 		}
 
+		// TODO: Implement this when adding model support.
 		// if (in_array($type, ['api', 'resource', 'singleton'])) {
 		// 	$model = suggest(
 		// 		"What model should this {$type} controller be for? (Optional)",
