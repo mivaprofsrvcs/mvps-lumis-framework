@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Providers;
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
+use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Support\ServiceProvider;
@@ -32,7 +33,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'OptimizeClear' => OptimizeClearCommand::class,
 		// 'RouteCache' => RouteCacheCommand::class,
 		// 'RouteClear' => RouteClearCommand::class,
-		// 'RouteList' => RouteListCommand::class,
+		'RouteList' => RouteListCommand::class,
 		// 'ViewCache' => ViewCacheCommand::class,
 		// 'ViewClear' => ViewClearCommand::class,
 	];
@@ -90,5 +91,15 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		}
 
 		$this->commands(array_values($commands));
+	}
+
+	/**
+	 * Register the command.
+	 */
+	protected function registerRouteListCommand(): void
+	{
+		$this->app->singleton(RouteListCommand::class, function ($app) {
+			return new RouteListCommand($app['router']);
+		});
 	}
 }

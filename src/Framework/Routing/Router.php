@@ -7,8 +7,6 @@ use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
-use MVPS\Lumis\Framework\Routing\Exceptions\MethodNotFoundException;
-use MVPS\Lumis\Framework\Routing\Exceptions\RouteNotFoundException;
 
 class Router
 {
@@ -36,9 +34,16 @@ class Router
 	/**
 	 * The list of registered routes.
 	 *
-	 * @var array
+	 * @var \MVPS\Lumis\Framework\Contracts\Routing\RouteCollection
 	 */
-	protected array $routes = [];
+	protected RouteCollection $routes;
+
+	/**
+	 * All of the verbs supported by the router.
+	 *
+	 * @var string[]
+	 */
+	public static array $verbs = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
 
 	/**
 	 * Create a new Router instance.
@@ -46,6 +51,7 @@ class Router
 	public function __construct(Container $container = null)
 	{
 		$this->container = $container ?: new Container;
+		$this->routes = new RouteCollection;
 	}
 
 	/**
@@ -63,17 +69,15 @@ class Router
 	/**
 	 * Add a route to the routes list.
 	 */
-	public function addRoute(string $method, string $uri, array|callable|string|null $action): Route
+	public function addRoute(array|string $methods, string $uri, array|callable|string|null $action): Route
 	{
 		if ($this->actionReferencesController($action)) {
 			$action = $this->convertToControllerAction($action);
 		}
 
-		$route = $this->createRoute($method, $uri, $action);
+		$route = $this->createRoute($methods, $uri, $action);
 
-		$this->routes[$method][$route->getUri()] = $route;
-
-		return $route;
+		return $this->routes->add($route);
 	}
 
 	/**
@@ -93,9 +97,9 @@ class Router
 	/**
 	 * Create a new Route instance.
 	 */
-	protected function createRoute(string $method, string $uri, array|callable|string|null $action): Route
+	protected function createRoute(array|string $methods, string $uri, array|callable|string|null $action): Route
 	{
-		return (new Route($method, $uri, $action))
+		return (new Route($methods, $uri, $action))
 			->setRouter($this)
 			->setContainer($this->container);
 	}
@@ -120,44 +124,18 @@ class Router
 
 	/**
 	 * Find the route matching a given request.
-	 *
-	 * @throws \MVPS\Lumis\Framework\Routing\Exceptions\MethodNotFoundException
-	 * @throws \MVPS\Lumis\Framework\Routing\Exceptions\RouteNotFoundException
 	 */
 	protected function findRoute(Request $request): Route
 	{
-		$method = $request->getMethod();
-		$routes = $this->routes[$method] ?? null;
+		$route = $this->routes->match($request);
 
-		if (is_null($routes)) {
-			throw new MethodNotFoundException('No routes registered for method "' . $method . '"');
-		}
+		$this->current = $route;
 
-		$matchedRoute = null;
+		$route->setContainer($this->container);
 
-		foreach ($routes as $route) {
-			if ($route->matches($request)) {
-				$matchedRoute = $route;
+		$this->container->instance(Route::class, $route);
 
-				break;
-			}
-		}
-
-		if (! $matchedRoute instanceof Route) {
-			throw new RouteNotFoundException(
-				'No routes registered for method "' . $method . '" with uri "' . $request->getUri()->getPath() . '"'
-			);
-		}
-
-		$matchedRoute->bind($request);
-
-		$this->current = $matchedRoute;
-
-		$matchedRoute->setContainer($this->container);
-
-		$this->container->instance(Route::class, $matchedRoute);
-
-		return $matchedRoute;
+		return $route;
 	}
 
 	/**
@@ -165,7 +143,7 @@ class Router
 	 */
 	public function get(string $uri, array|callable|string|null $action): Route
 	{
-		return $this->addRoute('GET', $uri, $action);
+		return $this->addRoute(['GET', 'HEAD'], $uri, $action);
 	}
 
 	/**
@@ -187,7 +165,7 @@ class Router
 	/**
 	 * Get the list of registered routes.
 	 */
-	public function getRoutes(): array
+	public function getRoutes(): RouteCollection
 	{
 		return $this->routes;
 	}
@@ -202,6 +180,14 @@ class Router
 		} else {
 			require $routes;
 		}
+	}
+
+	/**
+	 * Register a new OPTIONS route with the router.
+	 */
+	public function options(string $uri, array|callable|string|null $action = null): Route
+	{
+		return $this->addRoute('OPTIONS', $uri, $action);
 	}
 
 	/**
@@ -248,5 +234,20 @@ class Router
 		$request->setRouteResolver(fn () => $route);
 
 		return $this->prepareResponse($request, $route->run());
+	}
+
+	/**
+	 * Set the route collection instance.
+	 */
+	public function setRoutes(RouteCollection $routes): void
+	{
+		foreach ($routes as $route) {
+			$route->setRouter($this)
+				->setContainer($this->container);
+		}
+
+		$this->routes = $routes;
+
+		$this->container->instance('routes', $this->routes);
 	}
 }

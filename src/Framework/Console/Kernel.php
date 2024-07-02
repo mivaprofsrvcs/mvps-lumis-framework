@@ -9,6 +9,7 @@ use MVPS\Lumis\Framework\Bootstrap\BootProviders;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
+use MVPS\Lumis\Framework\Bootstrap\SetRequestForConsole;
 use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Console\Application as LumisConsoleApp;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as KernelContract;
@@ -42,6 +43,7 @@ class Kernel implements KernelContract
 	protected array $bootstrappers = [
 		LoadEnvironmentVariables::class,
 		LoadConfiguration::class,
+		SetRequestForConsole::class,
 		RegisterProviders::class,
 		BootProviders::class,
 		// TODO: Implement these
@@ -193,7 +195,7 @@ class Kernel implements KernelContract
 	public function bootstrapWithoutBootingProviders(): void
 	{
 		$this->app->bootstrapWith(
-			collect($this->bootstrappers())->reject(function ($bootstrapper) {
+			collection($this->bootstrappers())->reject(function ($bootstrapper) {
 				return $bootstrapper === BootProviders::class;
 			})->all()
 		);

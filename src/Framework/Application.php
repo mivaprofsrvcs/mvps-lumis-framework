@@ -698,14 +698,17 @@ class Application extends Container implements CachesConfiguration
 			'app' => [static::class],
 			'config' => [
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
-				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class
+				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
 			],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
+			'url' => [
+				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
+				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
+			],
 			// TODO: Implement these
-			// encrypter => Encrypter::class,
-			// url => UrlGenerator::class,
-			// view => View\Factory::class,
+			// 'encrypter' => [Encrypter::class],
+			// 'view' => [View\Factory::class],
 		];
 
 		foreach ($coreAliases as $key => $aliases) {
