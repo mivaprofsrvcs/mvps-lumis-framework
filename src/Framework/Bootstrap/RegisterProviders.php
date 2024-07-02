@@ -33,10 +33,8 @@ class RegisterProviders implements Bootstrapper
 
 	/**
 	 * Flush the bootstrapper's global state.
-	 *
-	 * @return void
 	 */
-	public static function flushState()
+	public static function flushState(): void
 	{
 		static::$bootstrapProviderPath = null;
 
