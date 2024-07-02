@@ -32,4 +32,3 @@ interface Kernel
 	 */
 	public function output(): string;
 }
-
