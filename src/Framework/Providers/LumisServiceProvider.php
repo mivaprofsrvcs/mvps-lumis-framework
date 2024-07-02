@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Providers;
 
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
+use MVPS\Lumis\Framework\Console\Commands\ControllerMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
@@ -47,7 +48,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ComponentMake' => ComponentMakeCommand::class,
 		// 'ConfigPublish' => ConfigPublishCommand::class,
 		// 'ConsoleMake' => ConsoleMakeCommand::class,
-		// 'ControllerMake' => ControllerMakeCommand::class,
+		'ControllerMake' => ControllerMakeCommand::class,
 		'Serve' => ServeCommand::class,
 		// 'ViewMake' => ViewMakeCommand::class,
 	];
@@ -91,6 +92,16 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		}
 
 		$this->commands(array_values($commands));
+	}
+
+	/**
+	 * Register the command.
+	 */
+	protected function registerControllerMakeCommand(): void
+	{
+		$this->app->singleton(ControllerMakeCommand::class, function ($app) {
+			return new ControllerMakeCommand($app['files']);
+		});
 	}
 
 	/**

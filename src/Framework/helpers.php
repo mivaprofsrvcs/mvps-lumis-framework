@@ -124,11 +124,11 @@ if (! function_exists('resolve')) {
 	}
 }
 
-if (! function_exists('resources_path')) {
+if (! function_exists('resource_path')) {
 	/**
 	 * Get the path to the resources directory.
 	 */
-	function resources_path(string $path = ''): string
+	function resource_path(string $path = ''): string
 	{
 		return app()->resourcePath($path);
 	}

@@ -700,6 +700,7 @@ class Application extends Container implements CachesConfiguration
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
 			],
+			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
 			'url' => [

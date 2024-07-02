@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Support;
 
+use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
 use MVPS\Lumis\Framework\Providers\ConsoleSupportServiceProvider;
 
 class DefaultProviders
@@ -22,6 +23,7 @@ class DefaultProviders
 			// CacheServiceProvider::class,
 			ConsoleSupportServiceProvider::class,
 			// EncryptionServiceProvider::class,
+			FilesystemServiceProvider::class,
 			// FrameworkServiceProvider::class,
 			// ViewServiceProvider::class,
 		];

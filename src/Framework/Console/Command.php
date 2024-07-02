@@ -119,7 +119,7 @@ class Command extends IlluminateCommand
 		$this->configurePrompts($input);
 
 		try {
-			return parent::run($this->input = $input, $this->output);
+			return SymfonyCommand::run($this->input = $input, $this->output);
 		} finally {
 			$this->untrap();
 		}
