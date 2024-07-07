@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Http\Traits;
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Collections\Collection;
+use MVPS\Lumis\Framework\Support\Stringable;
 use stdClass;
 
 trait InteractsWithRequestInput
@@ -215,6 +216,14 @@ trait InteractsWithRequestInput
 		}
 
 		return $results;
+	}
+
+	/**
+	 * Retrieve input from the request as a Stringable instance.
+	 */
+	public function string(string $key, mixed $default = null): Stringable
+	{
+		return stringable($this->input($key, $default));
 	}
 
 	/**
