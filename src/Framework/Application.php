@@ -516,6 +516,16 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Handle the incoming task.
+	 */
+	public function handleTask(): void
+	{
+		$kernel = $this->make(ConsoleKernelContract::class);
+
+		$kernel->handleTask();
+	}
+
+	/**
 	 * Determine if the application has been bootstrapped before.
 	 */
 	public function hasBeenBootstrapped(): bool
