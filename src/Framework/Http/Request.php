@@ -438,4 +438,23 @@ class Request extends ServerRequest
 
 		return $this;
 	}
+
+	/**
+	 * Check if an input element is set on the request.
+	 */
+	public function __isset(string $key): bool
+	{
+		return ! is_null($this->__get($key));
+	}
+
+	/**
+	 * Get an input element from the request.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function __get(string $key): mixed
+	{
+		return Arr::get($this->input(), $key, fn () => $this->route($key));
+	}
 }
