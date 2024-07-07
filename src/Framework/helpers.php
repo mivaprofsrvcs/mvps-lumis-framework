@@ -144,6 +144,16 @@ if (! function_exists('response')) {
 	}
 }
 
+if (! function_exists('route')) {
+	/**
+	 * Generate the URL to a named route.
+	 */
+	function route(string $name, mixed $parameters = [], bool $absolute = true): string
+	{
+		return app('url')->route($name, $parameters, $absolute);
+	}
+}
+
 if (! function_exists('storage_path')) {
 	/**
 	 * Get the path to the storage directory.
