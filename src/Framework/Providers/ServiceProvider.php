@@ -35,6 +35,44 @@ abstract class ServiceProvider
 		$this->app = $app;
 	}
 
+	protected static function providerBootstrapFileContent(string $providers): string
+	{
+		return implode("\n", [
+			"<?php\n",
+			'return [',
+			$providers,
+			'];'
+		]);
+	}
+
+	/**
+	 * Add the given provider to the application's provider bootstrap file.
+	 */
+	public static function addProviderToBootstrapFile(string $provider, string|null $path = null): bool
+	{
+		$path ??= app()->getBootstrapProvidersPath();
+
+		if (! file_exists($path)) {
+			return false;
+		}
+
+		if (function_exists('opcache_invalidate')) {
+			opcache_invalidate($path, true);
+		}
+
+		$providers = collection(require $path)
+			->merge([$provider])
+			->unique()
+			->sort()
+			->values()
+			->map(fn ($p) => "\t" . $p . '::class,')
+			->implode(PHP_EOL);
+
+		file_put_contents($path, static::providerBootstrapFileContent($providers) . PHP_EOL);
+
+		return true;
+	}
+
 	/**
 	 * Register a booted callback to be run after the "boot" method is called.
 	 */
