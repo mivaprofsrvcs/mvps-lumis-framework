@@ -81,6 +81,40 @@ class Router
 	}
 
 	/**
+	 * Route an API resource to a controller.
+	 */
+	public function apiResource(string $name, string $controller, array $options = []): PendingResourceRegistration
+	{
+		$only = [
+			'index',
+			'show',
+			'store',
+			'update',
+			'destroy',
+		];
+
+		if (isset($options['except'])) {
+			$only = array_diff($only, (array) $options['except']);
+		}
+
+		return $this->resource(
+			$name,
+			$controller,
+			array_merge(['only' => $only], $options)
+		);
+	}
+
+	/**
+	 * Register an array of API resource controllers.
+	 */
+	public function apiResources(array $resources, array $options = []): void
+	{
+		foreach ($resources as $name => $controller) {
+			$this->apiResource($name, $controller, $options);
+		}
+	}
+
+	/**
 	 * Add a controller based route action to an action.
 	 */
 	protected function convertToControllerAction(array|string $action): array
