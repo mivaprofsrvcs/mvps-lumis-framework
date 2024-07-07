@@ -35,16 +35,6 @@ abstract class ServiceProvider
 		$this->app = $app;
 	}
 
-	protected static function providerBootstrapFileContent(string $providers): string
-	{
-		return implode("\n", [
-			"<?php\n",
-			'return [',
-			$providers,
-			'];'
-		]);
-	}
-
 	/**
 	 * Add the given provider to the application's provider bootstrap file.
 	 */
@@ -135,6 +125,19 @@ abstract class ServiceProvider
 	public static function defaultProviders(): DefaultProviders
 	{
 		return new DefaultProviders;
+	}
+
+	/**
+	 * Get the provider bootstrap file content.
+	 */
+	protected static function providerBootstrapFileContent(string $providers): string
+	{
+		return implode("\n", [
+			"<?php\n",
+			'return [',
+			$providers,
+			'];'
+		]);
 	}
 
 	/**
