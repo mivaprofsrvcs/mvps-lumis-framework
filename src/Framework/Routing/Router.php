@@ -259,6 +259,28 @@ class Router
 	}
 
 	/**
+	 * Route a resource to a controller.
+	 */
+	public function resource(string $name, string $controller, array $options = []): PendingResourceRegistration
+	{
+		$registrar = $this->container && $this->container->bound(ResourceRegistrar::class)
+			? $this->container->make(ResourceRegistrar::class)
+			: new ResourceRegistrar($this);
+
+		return new PendingResourceRegistration($registrar, $name, $controller, $options);
+	}
+
+	/**
+	 * Register an array of resource controllers.
+	 */
+	public function resources(array $resources, array $options = []): void
+	{
+		foreach ($resources as $name => $controller) {
+			$this->resource($name, $controller, $options);
+		}
+	}
+
+	/**
 	 * Run the given route and return the response.
 	 */
 	protected function runRoute(Request $request, Route $route): Response
