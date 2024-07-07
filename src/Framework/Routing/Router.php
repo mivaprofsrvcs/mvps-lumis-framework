@@ -105,6 +105,30 @@ class Router
 	}
 
 	/**
+	 * Get the currently dispatched route instance.
+	 */
+	public function current(): Route|null
+	{
+		return $this->current;
+	}
+
+	/**
+	 * Get the current route action.
+	 */
+	public function currentRouteAction(): string|null
+	{
+		return $this->current()?->getAction()['controller'] ?? null;
+	}
+
+	/**
+	 * Get the current route name.
+	 */
+	public function currentRouteName(): string|null
+	{
+		return $this->current()?->getName();
+	}
+
+	/**
 	 * Add a new DELETE route to the router.
 	 */
 	public function delete(string $uri, array|callable|string|null $action): Route
