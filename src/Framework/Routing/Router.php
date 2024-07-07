@@ -183,6 +183,14 @@ class Router
 	}
 
 	/**
+	 * Register a new route with the given verbs.
+	 */
+	public function match(array|string $methods, string $uri, array|string|callable|null $action = null): Route
+	{
+		return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
+	}
+
+	/**
 	 * Register a new OPTIONS route with the router.
 	 */
 	public function options(string $uri, array|callable|string|null $action = null): Route
