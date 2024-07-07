@@ -7,6 +7,16 @@ use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
 
+if (! function_exists('action')) {
+	/**
+	 * Generate the URL to a controller action.
+	 */
+	function action(string|array $name, mixed $parameters = [], bool $absolute = true): string
+	{
+		return app('url')->action($name, $parameters, $absolute);
+	}
+}
+
 if (! function_exists('app')) {
 	/**
 	 * Get the available container instance.
