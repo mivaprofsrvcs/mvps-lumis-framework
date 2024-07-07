@@ -3,8 +3,8 @@
 namespace MVPS\Lumis\Framework\Providers;
 
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Support\Composer;
-use MVPS\Lumis\Framework\Support\ServiceProvider;
 
 class ComposerServiceProvider extends ServiceProvider implements DeferrableProvider
 {

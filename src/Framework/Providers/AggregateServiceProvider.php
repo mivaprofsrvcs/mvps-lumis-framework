@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Support;
+namespace MVPS\Lumis\Framework\Providers;
 
 class AggregateServiceProvider extends ServiceProvider
 {

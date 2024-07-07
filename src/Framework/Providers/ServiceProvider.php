@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Support;
+namespace MVPS\Lumis\Framework\Providers;
 
 use Closure;
 use MVPS\Lumis\Framework\Application;

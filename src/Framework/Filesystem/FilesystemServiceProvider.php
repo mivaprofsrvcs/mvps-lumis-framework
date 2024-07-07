@@ -2,7 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Filesystem;
 
-use MVPS\Lumis\Framework\Support\ServiceProvider;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
 class FilesystemServiceProvider extends ServiceProvider
 {

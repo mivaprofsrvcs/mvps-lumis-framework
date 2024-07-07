@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Support;
+namespace MVPS\Lumis\Framework\Providers;
 
 use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
 use MVPS\Lumis\Framework\Providers\ConsoleSupportServiceProvider;

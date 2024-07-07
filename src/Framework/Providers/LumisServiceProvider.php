@@ -10,7 +10,7 @@ use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
-use MVPS\Lumis\Framework\Support\ServiceProvider;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
 class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 {

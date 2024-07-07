@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Debugging;
 
 use MVPS\Lumis\Framework\Container\Container;
-use MVPS\Lumis\Framework\Support\ServiceProvider;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use Symfony\Component\VarDumper\Caster\StubCaster;
 use Symfony\Component\VarDumper\Cloner\AbstractCloner;
 
