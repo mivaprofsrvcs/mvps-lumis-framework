@@ -173,10 +173,8 @@ class ControllerMakeCommand extends GeneratorCommand
 
 	/**
 	 * Get the console command options.
-	 *
-	 * @return array
 	 */
-	protected function getOptions()
+	protected function getOptions(): array
 	{
 		return [
 			[
