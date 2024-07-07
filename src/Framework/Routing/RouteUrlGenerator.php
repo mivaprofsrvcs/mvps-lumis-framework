@@ -150,9 +150,9 @@ class RouteUrlGenerator
 	 */
 	protected function getRouteScheme(Route $route): string
 	{
-		if ($route->httpOnly()) {
+		if ($route->isHttpOnly()) {
 			return 'http://';
-		} elseif ($route->httpsOnly()) {
+		} elseif ($route->isHttpsOnly()) {
 			return 'https://';
 		}
 
