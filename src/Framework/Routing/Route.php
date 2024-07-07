@@ -9,7 +9,12 @@ use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Routing\Matching\HostValidator;
+use MVPS\Lumis\Framework\Routing\Matching\MethodValidator;
+use MVPS\Lumis\Framework\Routing\Matching\SchemeValidator;
+use MVPS\Lumis\Framework\Routing\Matching\UriValidator;
 use MVPS\Lumis\Framework\Support\Str;
+use Symfony\Component\Routing\CompiledRoute;
 use Symfony\Component\Routing\Route as SymfonyRoute;
 
 class Route
@@ -31,7 +36,7 @@ class Route
 	/**
 	 * The compiled version of the route.
 	 *
-	 * @var \MVPS\Lumis\Framework\Routing\CompiledRoute|null
+	 * @var \Symfony\Component\Routing\CompiledRoute|null
 	 */
 	public CompiledRoute|null $compiled = null;
 
@@ -106,6 +111,13 @@ class Route
 	public string $uri;
 
 	/**
+	 * The validators used by the routes.
+	 *
+	 * @var array
+	 */
+	public static array $validators = [];
+
+	/**
 	 * The regular expression requirements.
 	 *
 	 * @var array
@@ -169,12 +181,12 @@ class Route
 	}
 
 	/**
-	 * Compile the route into a CompiledRoute instance.
+	 * Compile the route into a Symfony CompiledRoute instance.
 	 */
 	protected function compileRoute(): CompiledRoute
 	{
-		if (is_null($this->compiled)) {
-			$this->compiled = (new CompiledRoute($this->uri()))->compile();
+		if (! $this->compiled) {
+			$this->compiled = $this->toSymfonyRoute()->compile();
 		}
 
 		return $this->compiled;
@@ -381,19 +393,23 @@ class Route
 	}
 
 	/**
-	 * Determine if the route only responds to HTTP requests.
+	 * Get the route validators for the instance.
 	 */
-	public function httpOnly(): bool
+	public static function getValidators(): array
 	{
-		return in_array('http', $this->action, true);
-	}
+		if (! empty(static::$validators)) {
+			return static::$validators;
+		}
 
-	/**
-	 * Determine if the route only responds to HTTPS requests.
-	 */
-	public function httpsOnly(): bool
-	{
-		return $this->secure();
+		// We use a chain of responsibility pattern with validator implementations
+		// to match the route. Each validator checks if a part of the route passes
+		// its validation. If all validators pass, the route matches the request.
+		return static::$validators = [
+			new UriValidator,
+			new MethodValidator,
+			new SchemeValidator,
+			new HostValidator,
+		];
 	}
 
 	/**
@@ -405,15 +421,47 @@ class Route
 	}
 
 	/**
+	 * Determine if the route only responds to HTTP requests.
+	 */
+	public function isHttpOnly(): bool
+	{
+		return in_array('http', $this->action, true);
+	}
+
+	/**
+	 * Determine if the route only responds to HTTPS requests.
+	 */
+	public function isHttpsOnly(): bool
+	{
+		return $this->isSecure();
+	}
+
+	/**
+	 * Determine if the route only responds to HTTPS requests.
+	 */
+	public function isSecure(): bool
+	{
+		return in_array('https', $this->action, true);
+	}
+
+	/**
 	 * Determine if the route matches a given request.
 	 */
-	public function matches(Request $request): bool
+	public function matches(Request $request, bool $includingMethod = true): bool
 	{
 		$this->compileRoute();
 
-		$path = rtrim($request->getUri()->getPath(), '/') ?: '/';
+		foreach (self::getValidators() as $validator) {
+			if (! $includingMethod && $validator instanceof MethodValidator) {
+				continue;
+			}
 
-		return preg_match($this->compiled->getRegex(), rawurldecode($path));
+			if (! $validator->matches($this, $request)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -432,6 +480,34 @@ class Route
 		$this->action['as'] = isset($this->action['as']) ? $this->action['as'] . $name : $name;
 
 		return $this;
+	}
+
+	/**
+	 * Determine whether the route's name matches the given patterns.
+	 */
+	public function named(mixed ...$patterns): bool
+	{
+		$routeName = $this->getName();
+
+		if (is_null($routeName)) {
+			return false;
+		}
+
+		foreach ($patterns as $pattern) {
+			if (Str::is($pattern, $routeName)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get a given parameter from the route.
+	 */
+	public function parameter(string $name, string|object|null $default = null): string|object|null
+	{
+		return Arr::get($this->getParameters(), $name, $default);
 	}
 
 	/**
@@ -496,14 +572,6 @@ class Route
 	{
 		return $this->getControllerDispatcher()
 			->dispatch($this, $this->getController(), $this->getControllerMethod());
-	}
-
-	/**
-	 * Determine if the route only responds to HTTPS requests.
-	 */
-	public function secure(): bool
-	{
-		return in_array('https', $this->action, true);
 	}
 
 	/**

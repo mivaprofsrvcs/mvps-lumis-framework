@@ -4,7 +4,10 @@ namespace MVPS\Lumis\Framework\Http;
 
 use Closure;
 use Laminas\Diactoros\ServerRequest;
+use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
+use MVPS\Lumis\Framework\Routing\Route;
+use MVPS\Lumis\Framework\Support\Str;
 use pdeans\Http\Factories\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -50,6 +53,14 @@ class Request extends ServerRequest
 	}
 
 	/**
+	 * Get the current decoded path info for the request.
+	 */
+	public function decodedPath(): string
+	{
+		return rawurldecode($this->getPath());
+	}
+
+	/**
 	 * Returns the root path (not urldecoded) from which this request is executed.
 	 *
 	 * Suppose that an index.php file instantiates this request object:
@@ -83,6 +94,30 @@ class Request extends ServerRequest
 	public function getFullUrl(): string
 	{
 		return $this->getUri();
+	}
+
+	/**
+	 * Get the full URL for the request with the added query string parameters.
+	 */
+	public function getFullUrlWithQuery(array $query): string
+	{
+		$separator = $this->getBaseUrl() . $this->getUri()->getPath() === '/' ? '/?' : '?';
+		$queryParams = $this->query();
+
+		return count($queryParams) > 0
+			? $this->getUrl() . $separator . Arr::query(array_merge($queryParams, $query))
+			: $this->getFullUrl() . $separator . Arr::query($query);
+	}
+
+	public function getFullUrlWithoutQuery(array|string $keys): string
+	{
+		$query = Arr::except($this->query(), $keys);
+
+		$separator = $this->getBaseUrl() . $this->getUri()->getPath() === '/' ? '/?' : '?';
+
+		return count($query) > 0
+			? $this->getUrl() . $separator . Arr::query($query)
+			: $this->getUrl();
 	}
 
 	/**
@@ -155,7 +190,9 @@ class Request extends ServerRequest
 	 */
 	public function getPath(): string
 	{
-		return $this->getUri()->getPath();
+		$path = trim($this->getUri()->getPath(), '/');
+
+		return $path === '' ? '/' : $path;
 	}
 
 	/**
@@ -224,6 +261,17 @@ class Request extends ServerRequest
 		}
 
 		return null;
+	}
+
+	/**
+	 * Determine if the current request URI matches a pattern.
+	 */
+	public function is(mixed ...$patterns): bool
+	{
+		$path = $this->decodedPath();
+
+		return collection($patterns)
+			->contains(fn ($pattern) => Str::is($pattern, $path));
 	}
 
 	/**
@@ -355,6 +403,30 @@ class Request extends ServerRequest
 		}
 
 		return rtrim($baseUrl, '/' . DIRECTORY_SEPARATOR);
+	}
+
+	/**
+	 * Get the route handling the request.
+	 */
+	public function route(string|null $param = null, mixed $default = null): Route|string|null
+	{
+		$route = call_user_func($this->getRouteResolver());
+
+		if (is_null($route) || is_null($param)) {
+			return $route;
+		}
+
+		return $route->parameter($param, $default);
+	}
+
+	/**
+	 * Determine if the route name matches a given pattern.
+	 */
+	public function routeIs(mixed ...$patterns): bool
+	{
+		$route = $this->route();
+
+		return $route && $route->named(...$patterns);
 	}
 
 	/**

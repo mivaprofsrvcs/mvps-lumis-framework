@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Http\Traits;
 
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Collections\Arr;
+use MVPS\Lumis\Framework\Collections\Collection;
 use stdClass;
 
 trait InteractsWithRequestInput
@@ -31,6 +32,14 @@ trait InteractsWithRequestInput
 	public function boolean(string|null $key = null, bool $default = false): bool
 	{
 		return filter_var($this->input($key, $default), FILTER_VALIDATE_BOOLEAN);
+	}
+
+	/**
+	 * Retrieve input from the request as a collection.
+	 */
+	public function collection(array|string|null $key = null): Collection
+	{
+		return collection(is_array($key) ? $this->only($key) : $this->input($key));
 	}
 
 	/**
@@ -104,6 +113,22 @@ trait InteractsWithRequestInput
 		$keys = is_array($keys) ? $keys : func_get_args();
 
 		return Arr::hasAny($input, $keys);
+	}
+
+	/**
+	 * Retrieve a header from the request.
+	 */
+	public function header(string|null $key = null, string|array|null $default = null): string|array|null
+	{
+		if (is_null($key)) {
+			return $this->getHeaders();
+		}
+
+		if (! $this->hasHeader($key)) {
+			return $default ?? '';
+		}
+
+		return $this->getHeaderLine($key);
 	}
 
 	/**
