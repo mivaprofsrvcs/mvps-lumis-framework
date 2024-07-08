@@ -115,6 +115,42 @@ class Router
 	}
 
 	/**
+	 * Route an API singleton resource to a controller.
+	 */
+	public function apiSingleton(
+		string $name,
+		string $controller,
+		array $options = []
+	): PendingSingletonResourceRegistration {
+		$only = [
+			'store',
+			'show',
+			'update',
+			'destroy',
+		];
+
+		if (isset($options['except'])) {
+			$only = array_diff($only, (array) $options['except']);
+		}
+
+		return $this->singleton(
+			$name,
+			$controller,
+			array_merge(['only' => $only], $options)
+		);
+	}
+
+	/**
+	 * Register an array of API singleton resource controllers.
+	 */
+	public function apiSingletons(array $singletons, array $options = []): void
+	{
+		foreach ($singletons as $name => $controller) {
+			$this->apiSingleton($name, $controller, $options);
+		}
+	}
+
+	/**
 	 * Add a controller based route action to an action.
 	 */
 	protected function convertToControllerAction(array|string $action): array
@@ -337,5 +373,30 @@ class Router
 		$this->routes = $routes;
 
 		$this->container->instance('routes', $this->routes);
+	}
+
+	/**
+	 * Route a singleton resource to a controller.
+	 */
+	public function singleton(
+		string $name,
+		string $controller,
+		array $options = []
+	): PendingSingletonResourceRegistration {
+		$registrar = $this->container && $this->container->bound(ResourceRegistrar::class)
+			? $this->container->make(ResourceRegistrar::class)
+			: new ResourceRegistrar($this);
+
+		return new PendingSingletonResourceRegistration($registrar, $name, $controller, $options);
+	}
+
+	/**
+	 * Register an array of singleton resource controllers.
+	 */
+	public function singletons(array $singletons, array $options = []): void
+	{
+		foreach ($singletons as $name => $controller) {
+			$this->singleton($name, $controller, $options);
+		}
 	}
 }
