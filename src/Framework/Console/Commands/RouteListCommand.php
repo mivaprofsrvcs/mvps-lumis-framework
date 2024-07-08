@@ -373,7 +373,7 @@ class RouteListCommand extends Command
 	/**
 	 * Get the route information for a given route.
 	 */
-	protected function getRouteInformation(Route $route): array
+	protected function getRouteInformation(Route $route): array|null
 	{
 		return $this->filterRoute([
 			'domain' => $route->domain(),

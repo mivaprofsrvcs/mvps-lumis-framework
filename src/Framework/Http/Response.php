@@ -126,6 +126,20 @@ class Response extends BaseResponse
 	}
 
 	/**
+	 * Add an array of headers to the response.
+	 */
+	public function withHeaders(array $headers): Response
+	{
+		$response = clone $this;
+
+		foreach ($headers as $name => $value) {
+			$response = $response->withHeader($name, $value);
+		}
+
+		return $response;
+	}
+
+	/**
 	 * Returns the response as an HTTP string.
 	 *
 	 * The string representation of the response is the same as the one

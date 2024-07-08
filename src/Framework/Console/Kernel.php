@@ -190,6 +190,18 @@ class Kernel implements KernelContract
 	}
 
 	/**
+	 * Bootstrap the application for a task.
+	 */
+	public function bootstrapTask(): void
+	{
+		if ($this->app->hasBeenBootstrapped()) {
+			return;
+		}
+
+		$this->app->bootstrapWith($this->bootstrappers());
+	}
+
+	/**
 	 * Bootstrap the application without booting service providers.
 	 */
 	public function bootstrapWithoutBootingProviders(): void
@@ -273,6 +285,14 @@ class Kernel implements KernelContract
 
 		return $this->getLumis()
 			->run($input, $output);
+	}
+
+	/**
+	 * Run the console application for a task.
+	 */
+	public function handleTask(): void
+	{
+		$this->bootstrapTask();
 	}
 
 	/**

@@ -26,7 +26,7 @@ class RouteParameterBinder
 	 */
 	protected function bindPathParameters(Request $request): array
 	{
-		$path = '/' . trim(rawurldecode($request->getUri()->getPath()), '/');
+		$path = '/' . trim(rawurldecode($request->getPath()), '/');
 
 		preg_match($this->route->compiled->getRegex(), $path, $matches);
 

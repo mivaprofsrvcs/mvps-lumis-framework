@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Providers;
 
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
-use MVPS\Lumis\Framework\Support\AggregateServiceProvider;
+use MVPS\Lumis\Framework\Providers\AggregateServiceProvider;
 
 class ConsoleSupportServiceProvider extends AggregateServiceProvider implements DeferrableProvider
 {

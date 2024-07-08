@@ -12,9 +12,9 @@ use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
 use MVPS\Lumis\Framework\Debugging\DumperServiceProvider;
 use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
 use MVPS\Lumis\Framework\Support\Env;
-use MVPS\Lumis\Framework\Support\ServiceProvider;
 use MVPS\Lumis\Framework\Support\Str;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
@@ -165,7 +165,7 @@ class Application extends Container implements CachesConfiguration
 	 /**
 	 * All of the registered service providers.
 	 *
-	 * @var array<string, \MVPS\Lumis\Framework\Support\ServiceProvider>
+	 * @var array<string, \MVPS\Lumis\Framework\Providers\ServiceProvider>
 	 */
 	protected array $serviceProviders = [];
 
@@ -513,6 +513,16 @@ class Application extends Container implements CachesConfiguration
 
 		$response = $kernel->handle($request)
 			->send();
+	}
+
+	/**
+	 * Handle the incoming task.
+	 */
+	public function handleTask(): void
+	{
+		$kernel = $this->make(ConsoleKernelContract::class);
+
+		$kernel->handleTask();
 	}
 
 	/**

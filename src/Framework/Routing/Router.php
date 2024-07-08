@@ -81,6 +81,76 @@ class Router
 	}
 
 	/**
+	 * Route an API resource to a controller.
+	 */
+	public function apiResource(string $name, string $controller, array $options = []): PendingResourceRegistration
+	{
+		$only = [
+			'index',
+			'show',
+			'store',
+			'update',
+			'destroy',
+		];
+
+		if (isset($options['except'])) {
+			$only = array_diff($only, (array) $options['except']);
+		}
+
+		return $this->resource(
+			$name,
+			$controller,
+			array_merge(['only' => $only], $options)
+		);
+	}
+
+	/**
+	 * Register an array of API resource controllers.
+	 */
+	public function apiResources(array $resources, array $options = []): void
+	{
+		foreach ($resources as $name => $controller) {
+			$this->apiResource($name, $controller, $options);
+		}
+	}
+
+	/**
+	 * Route an API singleton resource to a controller.
+	 */
+	public function apiSingleton(
+		string $name,
+		string $controller,
+		array $options = []
+	): PendingSingletonResourceRegistration {
+		$only = [
+			'store',
+			'show',
+			'update',
+			'destroy',
+		];
+
+		if (isset($options['except'])) {
+			$only = array_diff($only, (array) $options['except']);
+		}
+
+		return $this->singleton(
+			$name,
+			$controller,
+			array_merge(['only' => $only], $options)
+		);
+	}
+
+	/**
+	 * Register an array of API singleton resource controllers.
+	 */
+	public function apiSingletons(array $singletons, array $options = []): void
+	{
+		foreach ($singletons as $name => $controller) {
+			$this->apiSingleton($name, $controller, $options);
+		}
+	}
+
+	/**
 	 * Add a controller based route action to an action.
 	 */
 	protected function convertToControllerAction(array|string $action): array
@@ -102,6 +172,30 @@ class Router
 		return (new Route($methods, $uri, $action))
 			->setRouter($this)
 			->setContainer($this->container);
+	}
+
+	/**
+	 * Get the currently dispatched route instance.
+	 */
+	public function current(): Route|null
+	{
+		return $this->current;
+	}
+
+	/**
+	 * Get the current route action.
+	 */
+	public function currentRouteAction(): string|null
+	{
+		return $this->current()?->getAction()['controller'] ?? null;
+	}
+
+	/**
+	 * Get the current route name.
+	 */
+	public function currentRouteName(): string|null
+	{
+		return $this->current()?->getName();
 	}
 
 	/**
@@ -183,6 +277,14 @@ class Router
 	}
 
 	/**
+	 * Register a new route with the given verbs.
+	 */
+	public function match(array|string $methods, string $uri, array|string|callable|null $action = null): Route
+	{
+		return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
+	}
+
+	/**
 	 * Register a new OPTIONS route with the router.
 	 */
 	public function options(string $uri, array|callable|string|null $action = null): Route
@@ -227,6 +329,28 @@ class Router
 	}
 
 	/**
+	 * Route a resource to a controller.
+	 */
+	public function resource(string $name, string $controller, array $options = []): PendingResourceRegistration
+	{
+		$registrar = $this->container && $this->container->bound(ResourceRegistrar::class)
+			? $this->container->make(ResourceRegistrar::class)
+			: new ResourceRegistrar($this);
+
+		return new PendingResourceRegistration($registrar, $name, $controller, $options);
+	}
+
+	/**
+	 * Register an array of resource controllers.
+	 */
+	public function resources(array $resources, array $options = []): void
+	{
+		foreach ($resources as $name => $controller) {
+			$this->resource($name, $controller, $options);
+		}
+	}
+
+	/**
 	 * Run the given route and return the response.
 	 */
 	protected function runRoute(Request $request, Route $route): Response
@@ -249,5 +373,30 @@ class Router
 		$this->routes = $routes;
 
 		$this->container->instance('routes', $this->routes);
+	}
+
+	/**
+	 * Route a singleton resource to a controller.
+	 */
+	public function singleton(
+		string $name,
+		string $controller,
+		array $options = []
+	): PendingSingletonResourceRegistration {
+		$registrar = $this->container && $this->container->bound(ResourceRegistrar::class)
+			? $this->container->make(ResourceRegistrar::class)
+			: new ResourceRegistrar($this);
+
+		return new PendingSingletonResourceRegistration($registrar, $name, $controller, $options);
+	}
+
+	/**
+	 * Register an array of singleton resource controllers.
+	 */
+	public function singletons(array $singletons, array $options = []): void
+	{
+		foreach ($singletons as $name => $controller) {
+			$this->singleton($name, $controller, $options);
+		}
 	}
 }

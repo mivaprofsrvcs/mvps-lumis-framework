@@ -6,6 +6,17 @@ use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
+use MVPS\Lumis\Framework\Support\Str;
+
+if (! function_exists('action')) {
+	/**
+	 * Generate the URL to a controller action.
+	 */
+	function action(string|array $name, mixed $parameters = [], bool $absolute = true): string
+	{
+		return app('url')->action($name, $parameters, $absolute);
+	}
+}
 
 if (! function_exists('app')) {
 	/**
@@ -144,6 +155,16 @@ if (! function_exists('response')) {
 	}
 }
 
+if (! function_exists('route')) {
+	/**
+	 * Generate the URL to a named route.
+	 */
+	function route(string $name, mixed $parameters = [], bool $absolute = true): string
+	{
+		return app('url')->route($name, $parameters, $absolute);
+	}
+}
+
 if (! function_exists('storage_path')) {
 	/**
 	 * Get the path to the storage directory.
@@ -151,6 +172,31 @@ if (! function_exists('storage_path')) {
 	function storage_path(string $path = ''): string
 	{
 		return app()->storagePath($path);
+	}
+}
+
+if (! function_exists('stringable')) {
+	/**
+	 * Get a new stringable object from the given string.
+	 */
+	function stringable(string|null $string = null): mixed
+	{
+		if (func_num_args() === 0) {
+			return new class
+			{
+				public function __call($method, $parameters)
+				{
+					return Str::$method(...$parameters);
+				}
+
+				public function __toString()
+				{
+					return '';
+				}
+			};
+		}
+
+		return Str::of($string);
 	}
 }
 

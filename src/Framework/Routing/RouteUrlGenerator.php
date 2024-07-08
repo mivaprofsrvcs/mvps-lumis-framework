@@ -120,7 +120,7 @@ class RouteUrlGenerator
 	/**
 	 * Get the formatted domain for a given route.
 	 */
-	protected function getRouteDomain(Route $route): string
+	protected function getRouteDomain(Route $route): string|null
 	{
 		return $route->getDomain() ? $this->formatDomain($route) : null;
 	}
@@ -150,9 +150,9 @@ class RouteUrlGenerator
 	 */
 	protected function getRouteScheme(Route $route): string
 	{
-		if ($route->httpOnly()) {
+		if ($route->isHttpOnly()) {
 			return 'http://';
-		} elseif ($route->httpsOnly()) {
+		} elseif ($route->isHttpsOnly()) {
 			return 'https://';
 		}
 
@@ -188,7 +188,7 @@ class RouteUrlGenerator
 	/**
 	 * Replace the parameters on the root path.
 	 */
-	protected function replaceRootParameters(Route $route, string $domain, array &$parameters): string
+	protected function replaceRootParameters(Route $route, string|null $domain, array &$parameters): string
 	{
 		$scheme = $this->getRouteScheme($route);
 

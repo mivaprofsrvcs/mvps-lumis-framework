@@ -136,7 +136,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 	/**
 	 * Build the class with the given name.
 	 *
-	 * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
 	 */
 	protected function buildClass(string $name): string
 	{
@@ -202,7 +202,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 	/**
 	 * Execute the console command.
 	 *
-	 * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
 	 */
 	public function handle(): bool|null
 	{

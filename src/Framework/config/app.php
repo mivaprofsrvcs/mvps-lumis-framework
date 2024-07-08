@@ -1,6 +1,6 @@
 <?php
 
-use MVPS\Lumis\Framework\Support\ServiceProvider;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
 return [
 	'asset_url' => env('ASSET_URL'),

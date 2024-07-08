@@ -6,9 +6,9 @@ use Closure;
 use MVPS\Lumis\Framework\Contracts\Routing\CallableDispatcher as CallableDispatcherContract;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
+use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\CallableDispatcher;
 use MVPS\Lumis\Framework\Routing\ControllerDispatcher;
-use MVPS\Lumis\Framework\Support\ServiceProvider;
 
 class RoutingServiceProvider extends ServiceProvider
 {
