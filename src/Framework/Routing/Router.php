@@ -3,13 +3,19 @@
 namespace MVPS\Lumis\Framework\Routing;
 
 use Closure;
+use Illuminate\Support\Traits\Macroable;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
+use MVPS\Lumis\Framework\Support\Str;
 
 class Router
 {
+	use Macroable {
+		__call as macroCall;
+	}
+
 	/**
 	 * The IoC container instance.
 	 *
@@ -398,5 +404,27 @@ class Router
 		foreach ($singletons as $name => $controller) {
 			$this->singleton($name, $controller, $options);
 		}
+	}
+
+	/**
+	 * Dynamically handle calls into the router instance.
+	 */
+	public function __call(string $method, array $parameters): mixed
+	{
+		if (static::hasMacro($method)) {
+			return $this->macroCall($method, $parameters);
+		}
+
+		if ($method === 'middleware') {
+			return (new RouteRegistrar($this))
+				->attribute($method, is_array($parameters[0]) ? $parameters[0] : $parameters);
+		}
+
+		if ($method !== 'where' && Str::startsWith($method, 'where')) {
+			return (new RouteRegistrar($this))->{$method}(...$parameters);
+		}
+
+		return (new RouteRegistrar($this))
+			->attribute($method, array_key_exists(0, $parameters) ? $parameters[0] : true);
 	}
 }
