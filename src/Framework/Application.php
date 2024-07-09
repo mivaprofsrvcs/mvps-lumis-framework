@@ -181,7 +181,7 @@ class Application extends Container implements CachesConfiguration
 	 *
 	 * @var string
 	 */
-	protected string $tasksPath = '';
+	protected string $taskPath = '';
 
 	/**
 	 * Create a new Lumis application instance.
@@ -226,7 +226,7 @@ class Application extends Container implements CachesConfiguration
 		$this->instance('path.public', $this->publicPath());
 		$this->instance('path.resources', $this->resourcesPath());
 		$this->instance('path.storage', $this->storagePath());
-		$this->instance('path.tasks', $this->tasksPath());
+		$this->instance('path.tasks', $this->taskPath());
 
 		$this->useBootstrapPath($this->basePath('bootstrap'));
 	}
@@ -805,9 +805,9 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the path to the tasks directory.
 	 */
-	public function tasksPath(string $path = ''): string
+	public function taskPath(string $path = ''): string
 	{
-		return $this->joinPaths($this->tasksPath ?: $this->basePath('tasks'), $path);
+		return $this->joinPaths($this->taskPath ?: $this->basePath('tasks'), $path);
 	}
 
 	/**
