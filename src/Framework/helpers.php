@@ -206,7 +206,7 @@ if (! function_exists('task_path')) {
 	 */
 	function task_path(string $path = ''): string
 	{
-		return app()->tasksPath($path);
+		return app()->taskPath($path);
 	}
 }
 

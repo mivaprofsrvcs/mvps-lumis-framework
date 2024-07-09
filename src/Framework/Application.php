@@ -224,7 +224,7 @@ class Application extends Container implements CachesConfiguration
 		$this->instance('path.base', $this->basePath());
 		$this->instance('path.config', $this->configPath());
 		$this->instance('path.public', $this->publicPath());
-		$this->instance('path.resources', $this->resourcesPath());
+		$this->instance('path.resources', $this->resourcePath());
 		$this->instance('path.storage', $this->storagePath());
 		$this->instance('path.tasks', $this->taskPath());
 
@@ -419,7 +419,7 @@ class Application extends Container implements CachesConfiguration
 		return static::FRAMEWORK_CONFIG_PATH;
 	}
 
-	public function frameworkResourcesPath(): string
+	public function frameworkResourcePath(): string
 	{
 		return static::FRAMEWORK_RESOURCES_PATH;
 	}
@@ -748,7 +748,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the path to the resources directory.
 	 */
-	public function resourcesPath(string $path = ''): string
+	public function resourcePath(string $path = ''): string
 	{
 		return $this->joinPaths($this->basePath('resources'), $path);
 	}
