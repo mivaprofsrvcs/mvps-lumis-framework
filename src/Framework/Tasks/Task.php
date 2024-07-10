@@ -50,7 +50,7 @@ abstract class Task extends Command
 	protected string $taskName = '';
 
 	/**
-	 * The task's fully qualified root directory path.
+	 * The task's root directory path.
 	 *
 	 * @var string
 	 */
@@ -111,27 +111,29 @@ abstract class Task extends Command
 	}
 
 	/**
-	 * Generates a task name based on the current class name.
+	 * Generates a task name based on the provided name. If a name is not provided,
+	 * the current class name will be used to generate the task name.
 	 */
-	public static function generateTaskName(): string
+	public static function generateTaskName(string $name = ''): string
 	{
-		return static::generateTaskPath(true);
+		return static::generateTaskPath($name, true);
 	}
 
 	/**
-	 * Generates a task path based on the current class name.
+	 * Generates a path relative to the application's 'tasks' based on the
+	 * provided path. If a path is not provided, the task path will be generated
+	 * from the current class namespace.
 	 *
-	 * This method constructs a task path relative to the application's 'tasks'
-	 * directory using the current class name. If the optional base name parameter
-	 * is set to true, the method returns only the base name of the path.
+	 * If the optional base name parameter is set to true, the method returns
+	 * only the base name of the path.
 	 */
-	public static function generateTaskPath(bool $baseName = false): string
+	public static function generateTaskPath(string $path = '', bool $baseName = false): string
 	{
 		// Create a formatted namespace by removing the root namespace for the
 		// application's tasks and trimming any "task" references from the end
 		// of the class name.
 		$namespace =  Str::chopEnd(
-			Str::chopStart(static::class, static::defaultNamespace() . '\\'),
+			Str::chopStart($path ?: static::class, static::defaultNamespace() . '\\'),
 			['Task', 'task', 'TASK']
 		);
 

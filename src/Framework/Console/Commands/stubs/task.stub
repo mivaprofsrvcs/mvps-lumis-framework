@@ -1,0 +1,58 @@
+<?php
+
+namespace {{ namespace }};
+
+use MVPS\Lumis\Framework\Tasks\Task;
+
+class {{ class }} extends Task
+{
+	/**
+	 * The archive directory path relative to the task's root path.
+	 *
+	 * @var string
+	 */
+	protected string $archivePath = '{{ archivePath }}';
+
+	/**
+	 * The task's command description.
+	 *
+	 * @var string
+	 */
+	protected $description = 'Task command description';
+
+	/**
+	 * The log directory path relative to the task's root path.
+	 *
+	 * @var string
+	 */
+	protected string $logPath = '{{ logPath }}';
+
+	/**
+	 * The name and signature of the task's console command.
+	 *
+	 * @var string
+	 */
+	protected $signature = '{{ command }}';
+
+	/**
+	 * The task's log directory path.
+	 *
+	 * @var string
+	 */
+	protected string $taskName = '{{ taskName }}';
+
+	/**
+	 * The task's root directory path.
+	 *
+	 * @var string
+	 */
+	protected string $taskPath = '{{ taskPath }}';
+
+	/**
+	 * Execute the task's console command.
+	 */
+	public function handle()
+	{
+		//
+	}
+}
