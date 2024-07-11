@@ -109,7 +109,10 @@ class ApplicationBuilder
 	public function withCommands(array $commands = []): static
 	{
 		if (empty($commands)) {
-			$commands = [$this->app->path('Console/Commands')];
+			$commands = [
+				$this->app->path('Console/Commands'),
+				$this->app->path('Tasks'),
+			];
 		}
 
 		$this->app->afterResolving(ConsoleKernel::class, function ($kernel) use ($commands) {

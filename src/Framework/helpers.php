@@ -200,13 +200,13 @@ if (! function_exists('stringable')) {
 	}
 }
 
-if (! function_exists('tasks_path')) {
+if (! function_exists('task_path')) {
 	/**
 	 * Get the path to the tasks directory.
 	 */
-	function tasks_path(string $path = ''): string
+	function task_path(string $path = ''): string
 	{
-		return app()->tasksPath($path);
+		return app()->taskPath($path);
 	}
 }
 

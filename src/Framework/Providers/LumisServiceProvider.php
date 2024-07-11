@@ -10,6 +10,7 @@ use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
+use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
@@ -52,6 +53,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'ConsoleMake' => ConsoleMakeCommand::class,
 		'ControllerMake' => ControllerMakeCommand::class,
 		'ProviderMake' => ProviderMakeCommand::class,
+		'TaskMake' => TaskMakeCommand::class,
 		'Serve' => ServeCommand::class,
 		// 'ViewMake' => ViewMakeCommand::class,
 	];
@@ -98,7 +100,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the console make command.
 	 */
 	protected function registerConsoleMakeCommand(): void
 	{
@@ -108,7 +110,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the controller make command.
 	 */
 	protected function registerControllerMakeCommand(): void
 	{
@@ -118,7 +120,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the provider make command.
 	 */
 	protected function registerProviderMakeCommand(): void
 	{
@@ -128,12 +130,22 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the route list command.
 	 */
 	protected function registerRouteListCommand(): void
 	{
 		$this->app->singleton(RouteListCommand::class, function ($app) {
 			return new RouteListCommand($app['router']);
+		});
+	}
+
+	/**
+	 * Register the task make command.
+	 */
+	protected function registerTaskMakeCommand(): void
+	{
+		$this->app->singleton(TaskMakeCommand::class, function ($app) {
+			return new TaskMakeCommand($app['files']);
 		});
 	}
 }
