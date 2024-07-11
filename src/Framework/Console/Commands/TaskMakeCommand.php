@@ -17,25 +17,11 @@ use function Laravel\Prompts\text;
 class TaskMakeCommand extends GeneratorCommand
 {
 	/**
-	 * The archive path input value.
-	 *
-	 * @var string|null
-	 */
-	protected string|null $archivePath = null;
-
-	/**
 	 * {@inheritdoc}
 	 *
 	 * @var string
 	 */
 	protected $description = 'Create a new Task class';
-
-	/**
-	 * The log path input value.
-	 *
-	 * @var string|null
-	 */
-	protected string|null $logPath = null;
 
 	/**
 	 * {@inheritdoc}
@@ -53,17 +39,9 @@ class TaskMakeCommand extends GeneratorCommand
 		'archive_path' => 'archive-dir',
 		'force' => 'force',
 		'log_path' => 'log-dir',
-		'make_paths' => 'make-dirs',
 		'no_task_path' => 'no-dir',
 		'task_path' => 'dir',
 	];
-
-	/**
-	 * The task path input value.
-	 *
-	 * @var string|null
-	 */
-	protected string|null $taskPath = null;
 
 	/**
 	 * {@inheritdoc}
@@ -81,7 +59,8 @@ class TaskMakeCommand extends GeneratorCommand
 			return;
 		}
 
-		$taskPath = $this->generateTaskPathFromName($input->getArgument('name'));
+		$taskPath = $input->getOption($this->options['task_path']) ?:
+			$this->generateTaskPathFromName($input->getArgument('name'));
 
 		$taskDir = text(
 			label: 'What is the task directory path?',
@@ -120,9 +99,9 @@ class TaskMakeCommand extends GeneratorCommand
 	 */
 	protected function buildClass(string $name): string
 	{
-		$class = parent::buildClass($name);
-
 		$taskName = Task::generateTaskName($name);
+
+		$class = parent::buildClass($name);
 
 		$class = $this->replaceArchivePath($class);
 
@@ -163,31 +142,28 @@ class TaskMakeCommand extends GeneratorCommand
 				$this->options['no_task_path'],
 				'nd',
 				InputOption::VALUE_NONE,
-				'Exclude the generation of a task directory path for your Task.',
-			],
-			[
-				$this->options['make_paths'],
-				'md',
-				InputOption::VALUE_NONE,
-				'Make all task directories for your Task.',
+				'Exclude the creation of a task directory path for your Task.',
 			],
 			[
 				$this->options['task_path'],
 				'd',
 				InputOption::VALUE_REQUIRED,
 				"The task directory path relative to the root 'tasks' directory.",
+				'',
 			],
 			[
 				$this->options['log_path'],
 				'l',
 				InputOption::VALUE_REQUIRED,
 				"The task log directory path relative to the task directory.",
+				'logs',
 			],
 			[
 				$this->options['archive_path'],
 				'a',
 				InputOption::VALUE_REQUIRED,
 				"The task archive directory path relative to the task directory.",
+				'archive',
 			],
 			[
 				'force',
@@ -220,7 +196,10 @@ class TaskMakeCommand extends GeneratorCommand
 	{
 		parent::handle();
 
-		if ((bool) $this->input->getOption($this->options['no_task_path']) || (string) $this->taskPath === '') {
+		if (
+			(bool) $this->input->getOption($this->options['no_task_path']) ||
+			(string) $this->input->getOption($this->options['task_path']) === ''
+		) {
 			return null;
 		}
 
@@ -234,27 +213,20 @@ class TaskMakeCommand extends GeneratorCommand
 	/**
 	 * {@inheritdoc}
 	 */
-	protected function interact(InputInterface $input, OutputInterface $output)
+	protected function initialize(InputInterface $input, OutputInterface $output)
 	{
-		parent::interact($input, $output);
-
-		if ($this instanceof PromptsForMissingInputContract) {
-			$this->promptForMissingArguments($input, $output);
-		}
-
-		if ((bool) $input->getOption($this->options['no_task_path'])) {
+		if (
+			is_null($input->getArgument('name')) ||
+			(bool) $input->getOption($this->options['no_task_path']) ||
+			(string) $input->getOption($this->options['task_path']) !== ''
+		) {
 			return;
 		}
 
-		if ((bool) $this->input->getOption($this->options['make_paths'])) {
-			$this->taskPath = $this->generateTaskPathFromName($this->input->getArgument('name'));
-			$this->logPath = 'logs';
-			$this->archivePath = 'archive';
-		} else {
-			$this->taskPath = $this->trimPath((string) $this->input->getOption($this->options['task_path']));
-			$this->logPath = $this->trimPath((string) $this->input->getOption($this->options['log_path']));
-			$this->archivePath = $this->trimPath((string) $this->input->getOption($this->options['archive_path']));
-		}
+		$input->setOption(
+			$this->options['task_path'],
+			$this->generateTaskPathFromName($input->getArgument('name'))
+		);
 	}
 
 	/**
@@ -262,7 +234,11 @@ class TaskMakeCommand extends GeneratorCommand
 	 */
 	protected function replaceArchivePath(string $stub): string
 	{
-		return str_replace('{{ archivePath }}', (string) $this->archivePath, $stub);
+		return str_replace(
+			'{{ archivePath }}',
+			$this->trimPath((string) $this->input->getOption($this->options['archive_path'])),
+			$stub
+		);
 	}
 
 	/**
@@ -282,7 +258,11 @@ class TaskMakeCommand extends GeneratorCommand
 	 */
 	protected function replaceLogPath(string $stub): string
 	{
-		return str_replace('{{ logPath }}', (string) $this->logPath, $stub);
+		return str_replace(
+			'{{ logPath }}',
+			$this->trimPath((string) $this->input->getOption($this->options['log_path'])),
+			$stub
+		);
 	}
 
 	/**
@@ -298,7 +278,11 @@ class TaskMakeCommand extends GeneratorCommand
 	 */
 	protected function replaceTaskPath(string $stub): string
 	{
-		return str_replace('{{ taskPath }}', (string) $this->taskPath, $stub);
+		return str_replace(
+			'{{ taskPath }}',
+			$this->trimPath((string) $this->input->getOption($this->options['task_path'])),
+			$stub
+		);
 	}
 
 	/**
@@ -315,22 +299,32 @@ class TaskMakeCommand extends GeneratorCommand
 	 */
 	protected function writeTaskPaths(callable|null $onSuccess = null): void
 	{
-		$rootPath = task_path($this->taskPath);
+		$taskPath = $this->trimPath((string) $this->input->getOption($this->options['task_path']));
+
+		if ($taskPath === '') {
+			return;
+		}
+
+		$rootPath = task_path($taskPath);
 
 		if (! $this->files->isDirectory($rootPath)) {
 			$this->files->makeDirectory($rootPath, 0777, true, true);
 		}
 
-		if ((string) $this->logPath !== '') {
-			$fullLogPath = $rootPath . '/' . $this->logPath;
+		$logPath = (string) $this->trimPath((string) $this->input->getOption($this->options['log_path']));
+
+		if ($logPath !== '') {
+			$fullLogPath = $rootPath . '/' . $logPath;
 
 			if (! $this->files->isDirectory($fullLogPath)) {
 				$this->files->makeDirectory($fullLogPath, 0777, true, true);
 			}
 		}
 
-		if ((string) $this->archivePath !== '') {
-			$fullArchivePath = $rootPath . '/' . $this->archivePath;
+		$archivePath = $this->trimPath((string) $this->input->getOption($this->options['archive_path']));
+
+		if ($archivePath !== '') {
+			$fullArchivePath = $rootPath . '/' . $archivePath;
 
 			if (! $this->files->isDirectory($fullArchivePath)) {
 				$this->files->makeDirectory($fullArchivePath, 0777, true, true);
