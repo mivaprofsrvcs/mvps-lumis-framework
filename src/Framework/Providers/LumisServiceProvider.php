@@ -100,7 +100,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the console make command.
 	 */
 	protected function registerConsoleMakeCommand(): void
 	{
@@ -110,7 +110,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the controller make command.
 	 */
 	protected function registerControllerMakeCommand(): void
 	{
@@ -120,7 +120,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the provider make command.
 	 */
 	protected function registerProviderMakeCommand(): void
 	{
@@ -130,7 +130,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the route list command.
 	 */
 	protected function registerRouteListCommand(): void
 	{
@@ -140,7 +140,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	 * Register the task make command.
 	 */
 	protected function registerTaskMakeCommand(): void
 	{
