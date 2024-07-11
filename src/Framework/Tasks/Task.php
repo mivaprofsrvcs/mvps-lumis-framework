@@ -59,8 +59,10 @@ abstract class Task extends Command
 	/**
 	 * Create a new task instance.
 	 */
-	public function __construct()
+	public function __construct(string|null $name = null)
 	{
+		parent::__construct($name);
+
 		if ($this->taskName === '') {
 			$this->setTaskName(self::generateTaskName());
 		}
