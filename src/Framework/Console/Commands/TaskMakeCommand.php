@@ -215,11 +215,15 @@ class TaskMakeCommand extends GeneratorCommand
 	 */
 	protected function initialize(InputInterface $input, OutputInterface $output)
 	{
-		if (
-			is_null($input->getArgument('name')) ||
-			(bool) $input->getOption($this->options['no_task_path']) ||
-			(string) $input->getOption($this->options['task_path']) !== ''
-		) {
+		if ((bool) $input->getOption($this->options['no_task_path'])) {
+			$input->setOption($this->options['task_path'], '');
+			$input->setOption($this->options['log_path'], '');
+			$input->setOption($this->options['archive_path'], '');
+
+			return;
+		}
+
+		if (is_null($input->getArgument('name')) || (string) $input->getOption($this->options['task_path']) !== '') {
 			return;
 		}
 
