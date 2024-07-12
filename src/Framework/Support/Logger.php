@@ -81,7 +81,9 @@ class Logger extends Filesystem
 	 */
 	public function setDirectory(string $directory): static
 	{
-		$this->directory = rtrim($this->createDirectory($directory), '/') . '/';
+		$this->directory = rtrim($directory, '/') . '/';
+
+		$this->ensureDirectoryExists($directory);
 
 		return $this;
 	}
