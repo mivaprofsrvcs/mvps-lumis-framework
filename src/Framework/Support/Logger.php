@@ -5,7 +5,7 @@ namespace MVPS\Lumis\Framework\Support;
 use DirectoryIterator;
 use MVPS\Lumis\Framework\Filesystem\Filesystem;
 
-class Logger extends Filesystem
+abstract class Logger extends Filesystem
 {
 	/**
 	 * The log directory.
