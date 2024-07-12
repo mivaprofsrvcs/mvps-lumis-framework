@@ -2,83 +2,31 @@
 
 namespace MVPS\Lumis\Framework\Support;
 
-use Carbon\Carbon;
 use DirectoryIterator;
+use MVPS\Lumis\Framework\Filesystem\Filesystem;
 
-abstract class Logger
+class Logger extends Filesystem
 {
 	/**
 	 * The log directory.
 	 *
 	 * @var string
 	 */
-	protected string $directory;
+	protected string $directory = '';
 
 	/**
 	 * The log file.
 	 *
 	 * @var string
 	 */
-	protected string $logFile;
-
-	/**
-	 * Remove all files and sub-directories from a directory.
-	 */
-	public function clearDirectory(string $directory, bool $removeSubDirs = true): void
-	{
-		$dirPath = str_replace('\\', '/', $directory);
-		$dirItems = glob(rtrim($dirPath, '/') . '/{*,.[!.]*,..?*}', GLOB_BRACE);
-
-		foreach ($dirItems as $item) {
-			if (is_dir($item)) {
-				$this->clearDirectory($item, $removeSubDirs);
-
-				if ($removeSubDirs) {
-					rmdir($item);
-				}
-			} else {
-				unlink($item);
-			}
-		}
-	}
+	protected string $logFile = '';
 
 	/**
 	 * Clear the contents of the log file.
 	 */
-	public function clearLogFile(): int|false
+	public function clearLogFile(): int|bool
 	{
 		return file_put_contents($this->getLogFilePath(), '');
-	}
-
-	/**
-	 * Copy a file to another location.
-	 */
-	public function copyFile(string $from, string $to): bool
-	{
-		if (!file_exists($from)) {
-			return false;
-		}
-
-		return copy($from, $to);
-	}
-
-	/**
-	 * Create a directory if it does not exist.
-	 */
-	public function createDirectory(string $directory): string
-	{
-		$dirNames = explode('/', rtrim(str_replace('\\', '/', $directory), '/'));
-		$dirPath = '';
-
-		foreach ($dirNames as $dirName) {
-			$dirPath .= $dirName . '/';
-
-			if ($dirPath && !is_dir($dirPath)) {
-				mkdir($dirPath, 0755);
-			}
-		}
-
-		return $dirPath;
 	}
 
 	/**
@@ -106,38 +54,25 @@ abstract class Logger
 	}
 
 	/**
-	 * Move a file to another location.
-	 */
-	public function moveFile(string $from, string $to): bool
-	{
-		if (!file_exists($from)) {
-			return false;
-		}
-
-		return rename($from, $to);
-	}
-
-	/**
 	 * Purge files from a directory that have not been modified in number of days provided.
 	 */
 	public function purgeFiles(string $directory, int $purgeDays = 14): void
 	{
-		$dirIterator = new DirectoryIterator($directory);
+		$files = $this->files($directory);
 
-		$now = Carbon::now();
+		if (empty($files)) {
+			return;
+		}
+
+		$now = now();
 		$now->subDays($purgeDays);
 
-		foreach ($dirIterator as $file) {
-			if (
-				$file->isDot()
-				|| !$file->isFile()
-				|| str_starts_with($file->getFilename(), '.git')
-				|| $file->getMTime() > $now->timestamp
-			) {
+		foreach ($files as $file) {
+			if (str_starts_with($file->getFilename(), '.git') || $file->getMTime() > $now->timestamp) {
 				continue;
 			}
 
-			unlink($file->getPathname());
+			$this->delete($file->getPathname());
 		}
 	}
 
