@@ -99,4 +99,14 @@ class Logger extends Filesystem
 
 		return $this;
 	}
+
+	/**
+	 * Write the contents to the log file.
+	 */
+	public function writeLog(mixed $contents, bool $append = false): int|bool
+	{
+		$writeMethod = $append ? 'append' : 'put';
+
+		return $this->{$writeMethod}($this->getLogFilePath(), $contents);
+	}
 }
