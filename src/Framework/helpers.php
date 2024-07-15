@@ -1,6 +1,5 @@
 <?php
 
-use App\Services\Miva\Store;
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
@@ -173,16 +172,6 @@ if (! function_exists('storage_path')) {
 	function storage_path(string $path = ''): string
 	{
 		return app()->storagePath($path);
-	}
-}
-
-if (! function_exists('store')) {
-	/**
-	 * Get a Miva store service instance.
-	 */
-	function store(array|null $config = null): Store
-	{
-		return new Store($config);
 	}
 }
 
