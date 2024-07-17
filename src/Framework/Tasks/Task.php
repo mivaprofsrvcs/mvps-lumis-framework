@@ -43,7 +43,7 @@ abstract class Task extends Command
 	protected string $logPath = 'logs';
 
 	/**
-	 * The task's log directory path.
+	 * The task's name.
 	 *
 	 * @var string
 	 */
