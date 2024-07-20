@@ -680,7 +680,6 @@ class Application extends Container implements CachesConfiguration
 	 */
 	protected function registerBaseServiceProviders(): void
 	{
-		$this->register(new DumperServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
 	}
 

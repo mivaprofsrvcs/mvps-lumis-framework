@@ -1,20 +1,28 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Debugging;
+namespace MVPS\Lumis\Framework\Providers;
 
-use MVPS\Lumis\Framework\Container\Container;
-use MVPS\Lumis\Framework\Providers\ServiceProvider;
+use MVPS\Lumis\Framework\Contracts\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
+use MVPS\Lumis\Framework\Debugging\CliDumper;
+use MVPS\Lumis\Framework\Debugging\HtmlDumper;
 use Symfony\Component\VarDumper\Caster\StubCaster;
 use Symfony\Component\VarDumper\Cloner\AbstractCloner;
 
-class DumperServiceProvider extends ServiceProvider
+class FrameworkServiceProvider extends AggregateServiceProvider
 {
 	/**
-	 * Register the dumper service provider.
+	 * Register the framework service provider.
+	 *
+	 * @return void
 	 */
 	public function register(): void
 	{
+		parent::register();
+
 		$this->registerDumper();
+		// $this->registerExceptionTracking();
+		// $this->registerExceptionRenderer();
 	}
 
 	/**
@@ -23,6 +31,7 @@ class DumperServiceProvider extends ServiceProvider
 	public function registerDumper(): void
 	{
 		AbstractCloner::$defaultCasters[Container::class] = [StubCaster::class, 'cutInternals'];
+		AbstractCloner::$defaultCasters[Dispatcher::class] ??= [StubCaster::class, 'cutInternals'];
 
 		$basePath = $this->app->basePath();
 
