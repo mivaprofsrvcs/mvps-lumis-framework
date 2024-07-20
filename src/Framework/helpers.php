@@ -6,6 +6,7 @@ use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
+use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
 
 if (! function_exists('action')) {
@@ -80,6 +81,19 @@ if (! function_exists('config_path')) {
 	function config_path(string $path = ''): string
 	{
 		return app()->configPath($path);
+	}
+}
+
+if (! function_exists('method_field')) {
+	/**
+	 * Generate a hidden form field to spoof the HTTP verb used by the form.
+	 *
+	 * This is typically used when the form method is set to 'POST' but needs
+	 * to simulate a different HTTP verb such as 'PUT', 'PATCH', or 'DELETE'.
+	 */
+	function method_field(string $method): HtmlString
+	{
+		return new HtmlString('<input type="hidden" name="_method" value="' . $method . '">');
 	}
 }
 
