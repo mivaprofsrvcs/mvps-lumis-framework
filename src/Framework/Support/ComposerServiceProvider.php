@@ -1,10 +1,9 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Providers;
+namespace MVPS\Lumis\Framework\Support;
 
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
-use MVPS\Lumis\Framework\Support\Composer;
 
 class ComposerServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -17,7 +16,7 @@ class ComposerServiceProvider extends ServiceProvider implements DeferrableProvi
 	}
 
 	/**
-	 * Register the service provider.
+	 * Register the composer service provider.
 	 */
 	public function register(): void
 	{

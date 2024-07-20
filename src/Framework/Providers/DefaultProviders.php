@@ -2,8 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Providers;
 
+use MVPS\Lumis\Framework\Console\ConsoleSupportServiceProvider;
 use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
-use MVPS\Lumis\Framework\Providers\ConsoleSupportServiceProvider;
 
 class DefaultProviders
 {

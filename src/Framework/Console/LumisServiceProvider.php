@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Providers;
+namespace MVPS\Lumis\Framework\Console;
 
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
@@ -67,7 +67,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the service provider.
+	 * Register the Lumis console command service provider.
 	 */
 	public function register(): void
 	{
