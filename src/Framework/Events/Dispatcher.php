@@ -18,13 +18,6 @@ class Dispatcher extends IlluminateEventDispatcher implements DispatcherContract
 	protected $container;
 
 	/**
-	 * The registered event listeners.
-	 *
-	 * @var array
-	 */
-	protected array $listeners = [];
-
-	/**
 	 * Create a new event dispatcher instance.
 	 */
 	#[\Override]
