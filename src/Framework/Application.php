@@ -10,7 +10,6 @@ use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
-use MVPS\Lumis\Framework\Debugging\DumperServiceProvider;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
