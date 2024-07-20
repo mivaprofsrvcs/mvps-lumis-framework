@@ -13,7 +13,7 @@ use MVPS\Lumis\Framework\Routing\ControllerDispatcher;
 class RoutingServiceProvider extends ServiceProvider
 {
 	/**
-	 * Register the service provider.
+	 * Register the routing service provider.
 	 */
 	public function register(): void
 	{

@@ -10,7 +10,7 @@ use Symfony\Component\VarDumper\Cloner\AbstractCloner;
 class DumperServiceProvider extends ServiceProvider
 {
 	/**
-	 * Register the service provider.
+	 * Register the dumper service provider.
 	 */
 	public function register(): void
 	{
