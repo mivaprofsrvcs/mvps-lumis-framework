@@ -24,7 +24,7 @@ class DefaultProviders
 			ConsoleSupportServiceProvider::class,
 			// EncryptionServiceProvider::class,
 			FilesystemServiceProvider::class,
-			// FrameworkServiceProvider::class,
+			FrameworkServiceProvider::class,
 			// ViewServiceProvider::class,
 		];
 	}
