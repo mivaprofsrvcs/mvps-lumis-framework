@@ -534,6 +534,14 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Determine if the application is running with debug mode enabled.
+	 */
+	public function hasDebugModeEnabled(): bool
+	{
+		return (bool) $this['config']->get('app.debug');
+	}
+
+	/**
 	 * Infer the application's base directory from the environment.
 	 */
 	public static function inferBasePath(): string
