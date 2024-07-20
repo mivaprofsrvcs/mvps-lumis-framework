@@ -18,7 +18,6 @@ class Dispatcher extends IlluminateEventDispatcher implements DispatcherContract
 	/**
 	 * Create a new event dispatcher instance.
 	 */
-	#[\Override]
 	public function __construct(Container|null $container = null)
 	{
 		$this->container = $container ?: new Container;
