@@ -13,7 +13,7 @@ use MVPS\Lumis\Framework\Bootstrap\SetRequestForConsole;
 use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Console\Application as LumisConsoleApp;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as KernelContract;
-use MVPS\Lumis\Framework\Events\Dispatcher;
+use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
 use SplFileInfo;
@@ -81,7 +81,7 @@ class Kernel implements KernelContract
 	/**
 	 * The event dispatcher instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Events\Dispatcher
+	 * @var \MVPS\Lumis\Framework\Contracts\Events\Dispatcher
 	 */
 	protected Dispatcher $events;
 
