@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Providers;
 
 use MVPS\Lumis\Framework\Console\ConsoleSupportServiceProvider;
 use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
+use MVPS\Lumis\Framework\View\ViewServiceProvider;
 
 class DefaultProviders
 {
@@ -25,7 +26,7 @@ class DefaultProviders
 			// EncryptionServiceProvider::class,
 			FilesystemServiceProvider::class,
 			FrameworkServiceProvider::class,
-			// ViewServiceProvider::class,
+			ViewServiceProvider::class,
 		];
 	}
 
