@@ -3,6 +3,9 @@
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
+use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
+use MVPS\Lumis\Framework\Contracts\View\View;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
@@ -235,5 +238,21 @@ if (! function_exists('url')) {
 		}
 
 		return app(UrlGenerator::class)->to($path, $parameters, $secure);
+	}
+}
+
+if (! function_exists('view')) {
+	/**
+	 * Get the evaluated view contents for the given view.
+	 */
+	function view(string|null $view = null, Arrayable|array $data = [], array $mergeData = []): View|ViewFactory
+	{
+		$factory = app(ViewFactory::class);
+
+		if (func_num_args() === 0) {
+			return $factory;
+		}
+
+		return $factory->make($view, $data, $mergeData);
 	}
 }
