@@ -13,6 +13,7 @@ trait ResolvesDumpSource
 	 */
 	protected static array $adjustableTraces = [
 		'symfony/var-dumper/Resources/functions/dump.php' => 1,
+		'Illuminate/Collections/Traits/EnumeratesValues.php' => 4,
 	];
 
 	/**
@@ -46,6 +47,36 @@ trait ResolvesDumpSource
 	protected static mixed $dumpSourceResolver = null;
 
 	/**
+	 * Don't include the location / file of the dump in dumps.
+	 */
+	public static function dontIncludeSource(): void
+	{
+		static::$dumpSourceResolver = false;
+	}
+
+	/**
+	 * Get the original view compiled file by the given compiled file.
+	 */
+	protected function getOriginalFileForCompiledView(string $file): string
+	{
+		preg_match('/\/\*\*PATH\s(.*)\sENDPATH/', file_get_contents($file), $matches);
+
+		if (isset($matches[1])) {
+			$file = $matches[1];
+		}
+
+		return $file;
+	}
+
+	/**
+	 * Determine if the given file is a view compiled.
+	 */
+	protected function isCompiledViewFile(string $file): bool
+	{
+		return str_starts_with($file, $this->compiledViewPath) && str_ends_with($file, '.php');
+	}
+
+	/**
 	 * Resolve the source of the dump call.
 	 */
 	public function resolveDumpSource(): array|null
@@ -67,7 +98,7 @@ trait ResolvesDumpSource
 				continue;
 			}
 
-			foreach (static::$adjustableTraces as $name => $key) {
+			foreach (self::$adjustableTraces as $name => $key) {
 				if (str_ends_with($traceFile['file'], str_replace('/', DIRECTORY_SEPARATOR, $name))) {
 					$sourceKey = $traceKey + $key;
 
@@ -93,11 +124,24 @@ trait ResolvesDumpSource
 
 		$relativeFile = $file;
 
+		if ($this->isCompiledViewFile($file)) {
+			$file = $this->getOriginalFileForCompiledView($file);
+			$line = null;
+		}
+
 		if (str_starts_with($file, $this->basePath)) {
 			$relativeFile = substr($file, strlen($this->basePath) + 1);
 		}
 
 		return [$file, $relativeFile, $line];
+	}
+
+	/**
+	 * Set the resolver that resolves the source of the dump call.
+	 */
+	public static function resolveDumpSourceUsing(callable|null $callable): void
+	{
+		static::$dumpSourceResolver = $callable;
 	}
 
 	/**
@@ -117,10 +161,8 @@ trait ResolvesDumpSource
 
 		$href = is_array($editor) && isset($editor['href'])
 			? $editor['href']
-			: (
-				$this->editorHrefs[$editor['name'] ?? $editor] ??
-				sprintf('%s://open?file={file}&line={line}', $editor['name'] ?? $editor)
-			);
+			: $this->editorHrefs[$editor['name'] ?? $editor] ??
+				sprintf('%s://open?file={file}&line={line}', $editor['name'] ?? $editor);
 
 		$basePath = $editor['base_path'] ?? false;
 
