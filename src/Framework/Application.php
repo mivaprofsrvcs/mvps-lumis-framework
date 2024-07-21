@@ -10,6 +10,7 @@ use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
+use MVPS\Lumis\Framework\Events\EventServiceProvider;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
@@ -40,7 +41,7 @@ class Application extends Container implements CachesConfiguration
 	 *
 	 * @var string
 	 */
-	protected const VERSION = '2.0.0';
+	public const VERSION = '2.4.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -687,6 +688,7 @@ class Application extends Container implements CachesConfiguration
 	 */
 	protected function registerBaseServiceProviders(): void
 	{
+		$this->register(new EventServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
 	}
 
@@ -712,9 +714,14 @@ class Application extends Container implements CachesConfiguration
 	{
 		$coreAliases = [
 			'app' => [static::class],
+			'blade.compiler' => [\MVPS\Lumis\Framework\View\Compilers\BladeCompiler::class],
 			'config' => [
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
+			],
+			'events' => [
+				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
+				\MVPS\Lumis\Framework\Events\Dispatcher::class,
 			],
 			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
@@ -725,7 +732,10 @@ class Application extends Container implements CachesConfiguration
 			],
 			// TODO: Implement these
 			// 'encrypter' => [Encrypter::class],
-			// 'view' => [View\Factory::class],
+			'view' => [
+				\MVPS\Lumis\Framework\Contracts\View\Factory::class,
+				\MVPS\Lumis\Framework\View\Factory::class,
+			],
 		];
 
 		foreach ($coreAliases as $key => $aliases) {
@@ -834,5 +844,17 @@ class Application extends Container implements CachesConfiguration
 	public function version(): string
 	{
 		return static::VERSION;
+	}
+
+	/**
+	 * Get the path to the views directory.
+	 *
+	 * This method returns the first configured path in the array of view paths.
+	 */
+	public function viewPath(string $path = ''): string
+	{
+		$viewPath = rtrim($this['config']->get('view.paths')[0], DIRECTORY_SEPARATOR);
+
+		return $this->joinPaths($viewPath, $path);
 	}
 }
