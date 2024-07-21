@@ -2,10 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Support;
 
-interface DeferringDisplayableValue
+use Illuminate\Contracts\Support\DeferringDisplayableValue as IlluminateDeferringDisplayableValue;
+
+interface DeferringDisplayableValue extends IlluminateDeferringDisplayableValue
 {
-	/**
-	 * Resolve the displayable value that the class is deferring.
-	 */
-	public function resolveDisplayableValue(): Htmlable|string;
 }

@@ -2,10 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Support;
 
-interface DeferrableProvider
+use Illuminate\Contracts\Support\DeferrableProvider as IlluminateDeferrableProvider;
+
+interface DeferrableProvider extends IlluminateDeferrableProvider
 {
-	/**
-	 * Get the services provided by the provider.
-	 */
-	public function provides(): array;
 }
