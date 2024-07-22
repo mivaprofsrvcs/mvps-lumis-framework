@@ -2,7 +2,9 @@
 
 namespace MVPS\Lumis\Framework\Log;
 
+use BackedEnum;
 use Closure;
+use DateTimeInterface;
 use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
@@ -15,6 +17,7 @@ use Psr\Log\LogLevel;
 use RuntimeException;
 use Stringable;
 use UnexpectedValueException;
+use UnitEnum;
 
 class LogService implements LoggerInterface
 {
@@ -67,17 +70,27 @@ class LogService implements LoggerInterface
 	protected Filesystem $logger;
 
 	/**
+	 * Determines if log message placeholders are replaced with actual values.
+	 *
+	 * @var bool
+	 */
+	protected bool $replacePlaceholders = true;
+
+	/**
 	 * Create a new log writer instance.
 	 */
 	public function __construct(
-		Application $app,
+		Application|null $app = null,
 		Filesystem|null $logger = null,
 		Dispatcher|null $dispatcher = null,
-		string|null $logFile = null
+		string|null $logFile = null,
+		bool $replacePlaceholders = true
 	) {
-		$this->logger = $logger ?: $app['files'] ?? new Filesystem;
+		$this->app = $app ?: app();
+		$this->logger = $logger ?: $this->app['files'] ?? new Filesystem;
 		$this->dispatcher = $dispatcher;
-		$this->logFile = $logFile ?: $app->storagePath('logs/lumis.log');
+		$this->logFile = $logFile ?: $this->app->storagePath('logs/lumis.log');
+		$this->replacePlaceholders = $replacePlaceholders;
 
 		$this->validateLogFile();
 	}
@@ -157,15 +170,58 @@ class LogService implements LoggerInterface
 	 */
 	public function formatMessage(Arrayable|Jsonable|Stringable|array|string $message): string
 	{
-		if (is_array($message)) {
-			return var_export($message, true);
-		} elseif ($message instanceof Arrayable) {
-			return var_export($message->toArray(), true);
-		} elseif ($message instanceof Jsonable) {
-			return $message->toJson();
+		$formattedMessage = (string) match (true) {
+			is_array($message) => var_export($message, true),
+			$message instanceof Arrayable => var_export($message->toArray(), true),
+			$message instanceof Jsonable => $message->toJson(),
+			default => $message,
+		};
+
+		return $this->replacePlaceholders
+			? $this->formatMessagePlaceholders($formattedMessage)
+			: $formattedMessage;
+	}
+
+	/**
+	 * Replaces placeholders within a log message with corresponding context values.
+	 */
+	protected function formatMessagePlaceholders(string $message): string
+	{
+		if (empty($this->context)) {
+			return $message;
 		}
 
-		return (string) $message;
+		$replacements = [];
+
+		foreach ($this->context as $key => $value) {
+			$placeholder = '{' . $key . '}';
+
+			if (strpos($message, $placeholder) === false) {
+				continue;
+			}
+
+			if (is_null($value) || is_scalar($value) || (is_object($value) && method_exists($value, "__toString"))) {
+				$replacements[$placeholder] = $value;
+			} elseif ($value instanceof DateTimeInterface) {
+				$replacements[$placeholder] = $value->format($this->dateFormat);
+			} elseif ($value instanceof UnitEnum) {
+				$replacements[$placeholder] = $value instanceof BackedEnum ? $value->value : $value->name;
+			} elseif (is_object($value)) {
+				$replacements[$placeholder] = '[object ' . get_class($value) . ']';
+			} elseif (is_array($value)) {
+				$encodedValue = @json_encode(
+					$value,
+					JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION |
+					JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR
+				);
+
+				$replacements[$placeholder] = 'array' . ($encodedValue !== false ? $encodedValue : 'null');
+			} else {
+				$replacements[$placeholder] = '[' . gettype($value) . ']';
+			}
+		}
+
+		return strtr($message, $replacements);
 	}
 
 	/**
