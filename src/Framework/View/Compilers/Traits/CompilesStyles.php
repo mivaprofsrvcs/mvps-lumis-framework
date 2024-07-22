@@ -11,6 +11,6 @@ trait CompilesStyles
 	{
 		$expression = is_null($expression) ? '([])' : $expression;
 
-		return "style=\"<?php echo \MVPS\Lumis\Framework\Collections\Arr::toCssStyles{$expression} ?>\"";
+		return "style=\"<?php echo \MVPS\Lumis\Framework\Support\Arr::toCssStyles{$expression} ?>\"";
 	}
 }

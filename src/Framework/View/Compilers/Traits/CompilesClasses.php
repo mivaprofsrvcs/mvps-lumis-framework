@@ -11,6 +11,6 @@ trait CompilesClasses
 	{
 		$expression = is_null($expression) ? '([])' : $expression;
 
-		return "class=\"<?php echo \MVPS\Lumis\Framework\Collections\Arr::toCssClasses{$expression}; ?>\"";
+		return "class=\"<?php echo \MVPS\Lumis\Framework\Support\Arr::toCssClasses{$expression}; ?>\"";
 	}
 }

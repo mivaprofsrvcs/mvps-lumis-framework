@@ -4,7 +4,6 @@ namespace MVPS\Lumis\Framework\Routing;
 
 use Closure;
 use LogicException;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
@@ -13,6 +12,7 @@ use MVPS\Lumis\Framework\Routing\Matching\HostValidator;
 use MVPS\Lumis\Framework\Routing\Matching\MethodValidator;
 use MVPS\Lumis\Framework\Routing\Matching\SchemeValidator;
 use MVPS\Lumis\Framework\Routing\Matching\UriValidator;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use Symfony\Component\Routing\CompiledRoute;
 use Symfony\Component\Routing\Route as SymfonyRoute;

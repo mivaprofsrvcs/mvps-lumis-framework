@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Collections;
+namespace MVPS\Lumis\Framework\Support;
 
 use Illuminate\Support\Arr as IlluminateArr;
 

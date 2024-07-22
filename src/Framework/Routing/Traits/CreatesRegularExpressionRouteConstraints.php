@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Routing\Traits;
 
 use BackedEnum;
-use MVPS\Lumis\Framework\Collections\Arr;
+use MVPS\Lumis\Framework\Support\Arr;
 
 trait CreatesRegularExpressionRouteConstraints
 {

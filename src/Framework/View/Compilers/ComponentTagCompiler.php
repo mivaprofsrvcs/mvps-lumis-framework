@@ -165,7 +165,7 @@ class ComponentTagCompiler extends IlluminateComponentTagCompiler
 				if ($match[1] === 'class') {
 					$match[2] = str_replace('"', "'", $match[2]);
 
-					return ":class=\"\MVPS\Lumis\Framework\Collections\Arr::toCssClasses{$match[2]}\"";
+					return ":class=\"\MVPS\Lumis\Framework\Support\Arr::toCssClasses{$match[2]}\"";
 				}
 
 				return $match[0];
@@ -186,7 +186,7 @@ class ComponentTagCompiler extends IlluminateComponentTagCompiler
 				if ($match[1] === 'style') {
 					$match[2] = str_replace('"', "'", $match[2]);
 
-					return ":style=\"\MVPS\Lumis\Framework\Collections\Arr::toCssStyles{$match[2]}\"";
+					return ":style=\"\MVPS\Lumis\Framework\Support\Arr::toCssStyles{$match[2]}\"";
 				}
 
 				return $match[0];

@@ -19,7 +19,7 @@ trait CompilesIncludes
 	{
 		$expression = $this->stripParentheses($expression);
 
-		return "<?php echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Collections\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
+		return "<?php echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 	}
 
 	/**
@@ -29,7 +29,7 @@ trait CompilesIncludes
 	{
 		$expression = $this->stripParentheses($expression);
 
-		return "<?php echo \$__env->first({$expression}, \MVPS\Lumis\Framework\Collections\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
+		return "<?php echo \$__env->first({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 	}
 
 	/**
@@ -39,7 +39,7 @@ trait CompilesIncludes
 	{
 		$expression = $this->stripParentheses($expression);
 
-		return "<?php if (\$__env->exists({$expression})) echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Collections\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
+		return "<?php if (\$__env->exists({$expression})) echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 	}
 
 	/**
@@ -49,7 +49,7 @@ trait CompilesIncludes
 	{
 		$expression = $this->stripParentheses($expression);
 
-		return "<?php echo \$__env->renderUnless($expression, \MVPS\Lumis\Framework\Collections\Arr::except(get_defined_vars(), ['__data', '__path'])); ?>";
+		return "<?php echo \$__env->renderUnless($expression, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path'])); ?>";
 	}
 
 	/**
@@ -59,6 +59,6 @@ trait CompilesIncludes
 	{
 		$expression = $this->stripParentheses($expression);
 
-		return "<?php echo \$__env->renderWhen($expression, \MVPS\Lumis\Framework\Collections\Arr::except(get_defined_vars(), ['__data', '__path'])); ?>";
+		return "<?php echo \$__env->renderWhen($expression, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path'])); ?>";
 	}
 }

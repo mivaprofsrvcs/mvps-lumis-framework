@@ -4,7 +4,6 @@ namespace MVPS\Lumis\Framework;
 
 use Closure;
 use Composer\Autoload\ClassLoader;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Configuration\ApplicationBuilder;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
@@ -14,6 +13,7 @@ use MVPS\Lumis\Framework\Events\EventServiceProvider;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Env;
 use MVPS\Lumis\Framework\Support\Str;
 use RuntimeException;

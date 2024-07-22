@@ -3,8 +3,8 @@
 namespace MVPS\Lumis\Framework\Http\Traits;
 
 use Carbon\Carbon;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Collections\Collection;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Stringable;
 use stdClass;
 

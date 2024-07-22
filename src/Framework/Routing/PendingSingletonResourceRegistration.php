@@ -3,8 +3,8 @@
 namespace MVPS\Lumis\Framework\Routing;
 
 use Illuminate\Support\Traits\Macroable;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Routing\Traits\CreatesRegularExpressionRouteConstraints;
+use MVPS\Lumis\Framework\Support\Arr;
 
 class PendingSingletonResourceRegistration
 {

@@ -3,9 +3,9 @@
 namespace MVPS\Lumis\Framework\View\Traits;
 
 use Closure;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Contracts\Support\Htmlable;
 use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\View\ComponentSlot;
 
 trait ManagesComponents

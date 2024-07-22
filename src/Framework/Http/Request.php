@@ -4,9 +4,9 @@ namespace MVPS\Lumis\Framework\Http;
 
 use Closure;
 use Laminas\Diactoros\ServerRequest;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
 use MVPS\Lumis\Framework\Routing\Route;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use pdeans\Http\Factories\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;

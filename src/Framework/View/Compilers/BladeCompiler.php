@@ -3,13 +3,13 @@
 namespace MVPS\Lumis\Framework\View\Compilers;
 
 use InvalidArgumentException;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Collections\Collection;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Support\Htmlable;
 use MVPS\Lumis\Framework\Contracts\View\Compiler as CompilerContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as FactoryContract;
 use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Traits\ReflectsClosures;
 use MVPS\Lumis\Framework\View\Component;
@@ -203,7 +203,7 @@ class BladeCompiler extends Compiler implements CompilerContract
 		$this->directive($alias, function ($expression) use ($path) {
 			$expression = $this->stripParentheses($expression) ?: '[]';
 
-			return "<?php echo \$__env->make('{$path}', {$expression}, \MVPS\Lumis\Framework\Collections\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
+			return "<?php echo \$__env->make('{$path}', {$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 		});
 	}
 

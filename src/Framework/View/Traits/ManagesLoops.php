@@ -3,8 +3,8 @@
 namespace MVPS\Lumis\Framework\View\Traits;
 
 use Countable;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Collections\LazyCollection;
+use MVPS\Lumis\Framework\Support\Arr;
 use stdClass;
 
 trait ManagesLoops
