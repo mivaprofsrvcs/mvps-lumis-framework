@@ -3,6 +3,7 @@
 namespace MVPS\Lumis\Framework\Tasks;
 
 use MVPS\Lumis\Framework\Console\Command;
+use MVPS\Lumis\Framework\Support\Logger;
 use MVPS\Lumis\Framework\Support\Str;
 
 abstract class Task extends Command
@@ -43,6 +44,20 @@ abstract class Task extends Command
 	protected string $logPath = 'logs';
 
 	/**
+	 * The task log filename.
+	 *
+	 * @var string
+	 */
+	protected string $taskLogFile = 'task.log';
+
+	/**
+	 * The task run logger.
+	 *
+	 * @var \MVPS\Lumis\Framework\Support\Logger|null
+	 */
+	protected Logger|null $taskLogger = null;
+
+	/**
 	 * The task's name.
 	 *
 	 * @var string
@@ -69,6 +84,27 @@ abstract class Task extends Command
 	}
 
 	/**
+	 * Moves the files in the log directory to the archive directory.
+	 */
+	public function archiveLogFiles(bool $hidden = false): void
+	{
+		$files = $this->taskLogger->files($this->taskLogger->getDirectory(), $hidden);
+
+		if (empty($files)) {
+			return;
+		}
+
+		$time = time();
+
+		foreach ($files as $file) {
+			$this->taskLogger->move(
+				$file->getPathname(),
+				$this->archivePath() . '/' . $time . '_' . $file->getFilename()
+			);
+		}
+	}
+
+	/**
 	 * Get the task's archive path.
 	 */
 	public function archivePath(bool $relative = false): string
@@ -82,6 +118,15 @@ abstract class Task extends Command
 		}
 
 		return $this->fullArchivePath;
+	}
+
+	/**
+	 * Removes files from the archive directory that are older than the
+	 * given number of days.
+	 */
+	public function cleanArchiveDirectory(int $days = 14): void
+	{
+		$this->taskLogger->purgeFiles($this->archivePath(), $days);
 	}
 
 	/**
@@ -236,6 +281,26 @@ abstract class Task extends Command
 	}
 
 	/**
+	 * Set the task's log filename.
+	 */
+	public function setTaskLogFile(string $filename): static
+	{
+		$this->taskLogFile = $filename;
+
+		return $this;
+	}
+
+	/**
+	 * Set the task's Logger instance.
+	 */
+	public function setTaskLogger(Logger $logger): static
+	{
+		$this->taskLogger = $logger;
+
+		return $this;
+	}
+
+	/**
 	 * Set the task's name.
 	 */
 	public function setTaskName(string $name): static
@@ -255,6 +320,22 @@ abstract class Task extends Command
 		$this->setFullTaskPath();
 
 		return $this;
+	}
+
+	/**
+	 * Get the task's log file.
+	 */
+	public function taskLogFile(): string
+	{
+		return $this->taskLogFile;
+	}
+
+	/**
+	 * Get the task's Logger instance.
+	 */
+	public function taskLogger(): Logger|null
+	{
+		return $this->taskLogger;
 	}
 
 	/**
@@ -291,5 +372,25 @@ abstract class Task extends Command
 		if (! $this->isValidTaskPath()) {
 			$this->setTaskPath(self::generateTaskPath());
 		}
+	}
+
+	/**
+	 * Writes the provided message to the task log file.
+	 *
+	 * This method handles logging messages both to the task log file and
+	 * optionally to the console. If console output is enabled, the message
+	 * will be displayed in the specified style.
+	 */
+	public function writeTaskLog(
+		string $message,
+		bool $consoleOutput = true,
+		string $consoleOutputStyle = 'line',
+		string $consoleOutputDateFormat = '[m/d/Y H:i:s]'
+	): int|bool {
+		if ($consoleOutput) {
+			$this->{$consoleOutputStyle}(sprintf('%s %s', date($consoleOutputDateFormat), $message));
+		}
+
+		return $this->taskLogger->write($message);
 	}
 }
