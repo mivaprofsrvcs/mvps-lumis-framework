@@ -11,6 +11,11 @@ class LogServiceProvider extends ServiceProvider
 	 */
 	public function register(): void
 	{
-		$this->app->singleton('log', fn ($app) => new LogService($app, $app['files'], $app['events']));
+		$this->app->singleton('log', fn ($app) => new LogService(
+			app: $app,
+			logger: $app['files'],
+			dispatcher: $app['events'],
+			replacePlaceholders: $app['config']->get('logging.replace_placeholders') ?? true
+		));
 	}
 }
