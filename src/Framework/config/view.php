@@ -12,7 +12,6 @@ return [
 	| default Lumis view path is already registered for you.
 	|
 	*/
-
 	'paths' => [
 		resource_path('views'),
 	],
@@ -27,7 +26,6 @@ return [
 	| directory. However, you are free to change this value if needed.
 	|
 	*/
-
 	'compiled' => env(
 		'VIEW_COMPILED_PATH',
 		realpath(storage_path('framework/views'))
