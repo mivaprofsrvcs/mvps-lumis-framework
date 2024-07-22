@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
@@ -117,6 +118,44 @@ if (! function_exists('public_path')) {
 	function public_path(string $path = ''): string
 	{
 		return app()->publicPath($path);
+	}
+}
+
+if (! function_exists('report')) {
+	/**
+	 * Report an exception.
+	 */
+	function report(Throwable|string $exception): void
+	{
+		if (is_string($exception)) {
+			$exception = new Exception($exception);
+		}
+
+		app(ExceptionHandler::class)->report($exception);
+	}
+}
+
+if (! function_exists('report_if')) {
+	/**
+	 * Report an exception if the given condition is true.
+	 */
+	function report_if(bool $boolean, Throwable|string $exception): void
+	{
+		if ($boolean) {
+			report($exception);
+		}
+	}
+}
+
+if (! function_exists('report_unless')) {
+	/**
+	 * Report an exception unless the given condition is true.
+	 */
+	function report_unless(bool $boolean, Throwable|string $exception): void
+	{
+		if (! $boolean) {
+			report($exception);
+		}
 	}
 }
 
