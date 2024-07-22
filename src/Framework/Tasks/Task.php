@@ -385,7 +385,7 @@ abstract class Task extends Command
 		string $message,
 		bool $consoleOutput = true,
 		string $consoleOutputStyle = 'line',
-		string $consoleOutputDateFormat = '[m/d/Y H:i:s]'
+		string $consoleOutputDateFormat = '[Y-m-d H:i:s]'
 	): int|bool {
 		if ($consoleOutput) {
 			$this->{$consoleOutputStyle}(sprintf('%s %s', date($consoleOutputDateFormat), $message));
