@@ -11,6 +11,7 @@ use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
 use MVPS\Lumis\Framework\Events\EventServiceProvider;
 use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Log\LogServiceProvider;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\RoutingServiceProvider;
 use MVPS\Lumis\Framework\Support\Arr;
@@ -689,6 +690,7 @@ class Application extends Container implements CachesConfiguration
 	protected function registerBaseServiceProviders(): void
 	{
 		$this->register(new EventServiceProvider($this));
+		$this->register(new LogServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
 	}
 
