@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Http;
 
 use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
+use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
@@ -28,10 +29,9 @@ class Kernel implements KernelContract
 	protected array $bootstrappers = [
 		LoadEnvironmentVariables::class,
 		LoadConfiguration::class,
+		HandleExceptions::class,
 		RegisterProviders::class,
 		BootProviders::class,
-		// TODO: Implement these
-		// \MVPS\Lumis\Framework\Bootstrap\HandleExceptions::class,
 	];
 
 	/**

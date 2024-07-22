@@ -6,6 +6,7 @@ use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use MVPS\Lumis\Framework\Application as LumisApp;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
+use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
@@ -43,11 +44,10 @@ class Kernel implements KernelContract
 	protected array $bootstrappers = [
 		LoadEnvironmentVariables::class,
 		LoadConfiguration::class,
+		HandleExceptions::class,
 		SetRequestForConsole::class,
 		RegisterProviders::class,
 		BootProviders::class,
-		// TODO: Implement these
-		// \MVPS\Lumis\Framework\Bootstrap\HandleExceptions::class,
 	];
 
 	/**
