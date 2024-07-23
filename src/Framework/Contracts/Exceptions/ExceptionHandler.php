@@ -2,8 +2,36 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Exceptions;
 
-use Illuminate\Contracts\Debug\ExceptionHandler as IlluminateExceptionHandler;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
-interface ExceptionHandler extends IlluminateExceptionHandler
+interface ExceptionHandler
 {
+	/**
+	 * Render an exception into an HTTP response.
+	 *
+	 * @throws \Throwable
+	 */
+	public function render(RequestInterface $request, Throwable $e): ResponseInterface;
+
+	/**
+	 * Render an exception to the console.
+	 *
+	 * @internal This method is not meant to be used or overwritten outside the framework.
+	 */
+	public function renderForConsole(OutputInterface $output, Throwable $e): void;
+
+	/**
+	 * Report or log an exception.
+	 *
+	 * @throws \Throwable
+	 */
+	public function report(Throwable $e): void;
+
+	/**
+	 * Determine if the exception should be reported.
+	 */
+	public function shouldReport(Throwable $e): bool;
 }
