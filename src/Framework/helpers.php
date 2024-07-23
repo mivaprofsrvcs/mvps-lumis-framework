@@ -181,6 +181,24 @@ if (! function_exists('request')) {
 	}
 }
 
+if (! function_exists('rescue')) {
+	/**
+	 * Catch a potential exception and return a default value.
+	 */
+	function rescue(callable $callback, mixed $rescue = null, bool|callable $report = true): mixed
+	{
+		try {
+			return $callback();
+		} catch (Throwable $e) {
+			if (value($report, $e)) {
+				report($e);
+			}
+
+			return value($rescue, $e);
+		}
+	}
+}
+
 if (! function_exists('resolve')) {
 	/**
 	 * Resolve a service from the container.
@@ -207,7 +225,7 @@ if (! function_exists('response')) {
 	 */
 	function response(mixed $content = '', $status = 200, array $headers = []): Response
 	{
-		return (new ResponseFactory)->make($content, $status, $headers);
+		return app(ResponseFactory::class)->make($content, $status, $headers);
 	}
 }
 
