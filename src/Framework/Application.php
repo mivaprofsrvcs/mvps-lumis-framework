@@ -726,6 +726,10 @@ class Application extends Container implements CachesConfiguration
 				\MVPS\Lumis\Framework\Events\Dispatcher::class,
 			],
 			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
+			'log' => [
+				\MVPS\Lumis\Framework\Log\LogService::class,
+				\Psr\Log\LoggerInterface::class,
+			],
 			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
 			'url' => [
