@@ -448,7 +448,7 @@ class Router
 				}
 			}
 
-			$response = (new ResponseFactory)->make($content, $status, ['Content-Type' => $contentType]);
+			$response = response($content, $status, ['Content-Type' => $contentType]);
 		}
 
 		// TODO: Implement not modified response
