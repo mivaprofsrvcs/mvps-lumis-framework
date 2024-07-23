@@ -2,13 +2,20 @@
 
 namespace MVPS\Lumis\Framework\Routing;
 
+use ArrayObject;
 use Closure;
 use Illuminate\Support\Traits\Macroable;
+use JsonSerializable;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Http\Responsable;
+use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Support\Str;
+use MVPS\Lumis\Framework\Support\Stringable;
+use stdClass;
 
 class Router
 {
@@ -319,11 +326,7 @@ class Router
 	 */
 	public function prepareResponse(Request $request, mixed $response): Response
 	{
-		if (! $response instanceof Response) {
-			$response = (new ResponseFactory)->make($response);
-		}
-
-		return $response->prepare();
+		return static::toResponse($request, $response);
 	}
 
 	/**
@@ -404,6 +407,49 @@ class Router
 		foreach ($singletons as $name => $controller) {
 			$this->singleton($name, $controller, $options);
 		}
+	}
+
+	/**
+	 * Converts a variety of response data into a standardized Response object.
+	 *
+	 * This method takes a PSR-7 compliant Request object and a mixed value
+	 * representing the response data. It attempts to convert the data into a
+	 * Response object suitable for returning from a controller method.
+	 *
+	 * Static version of "prepareResponse" method.
+	 */
+	public static function toResponse(Request $request, mixed $response): Response
+	{
+		if ($response instanceof Responsable) {
+			$response = $response->toResponse($request);
+		} elseif (! $response instanceof Response) {
+			$content = $response;
+			$status = 200;
+			$contentType = 'text/html';
+
+			if ($response instanceof Stringable) {
+				$content = $response->__toString();
+			} elseif (
+				$response instanceof Arrayable ||
+				$response instanceof Jsonable ||
+				$response instanceof ArrayObject ||
+				$response instanceof JsonSerializable ||
+				$response instanceof stdClass ||
+				is_array($response)
+			) {
+				$contentType = 'application/json';
+			}
+
+
+			$response = (new ResponseFactory)->make($content, $status, ['Content-Type' => $contentType]);
+		}
+
+		// TODO: Implement not modified response
+		// if ($response->getStatusCode() === Response::HTTP_NOT_MODIFIED) {
+		// 	$response->setNotModified();
+		// }
+
+		return $response->prepare();
 	}
 
 	/**
