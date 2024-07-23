@@ -82,8 +82,6 @@ class CliDumper extends BaseCliDumper
 
 	/**
 	 * Get the dump's source console content.
-	 *
-	 * @return string
 	 */
 	protected function getDumpSourceContent(): string
 	{
