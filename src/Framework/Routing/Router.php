@@ -15,6 +15,7 @@ use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Stringable;
+use Psr\Http\Message\ResponseInterface;
 use stdClass;
 
 class Router
@@ -438,8 +439,14 @@ class Router
 				is_array($response)
 			) {
 				$contentType = 'application/json';
-			}
+			} elseif ($response instanceof ResponseInterface) {
+				$content = (string) $response->getBody();
+				$status = $response->getStatusCode();
 
+				if ($response->hasHeader('Content-Type')) {
+					$contentType = $response->getHeaderLine('Content-Type');
+				}
+			}
 
 			$response = (new ResponseFactory)->make($content, $status, ['Content-Type' => $contentType]);
 		}
