@@ -126,7 +126,7 @@ trait InteractsWithRequestInput
 		}
 
 		if (! $this->hasHeader($key)) {
-			return $default ?? '';
+			return $default;
 		}
 
 		return $this->getHeaderLine($key);
