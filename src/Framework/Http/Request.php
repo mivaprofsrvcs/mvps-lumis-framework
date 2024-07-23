@@ -52,7 +52,7 @@ class Request extends ServerRequest
 		'rss' => ['application/rss+xml'],
 		'txt' => ['text/plain'],
 		'xml' => ['text/xml', 'application/xml', 'application/x-xml'],
-];
+	];
 
 	/**
 	 * The route resolver callback.
