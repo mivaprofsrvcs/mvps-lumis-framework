@@ -10,11 +10,11 @@ use DateTimeInterface;
 use Illuminate\Support\InteractsWithTime;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlRoutable;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\Exceptions\RouteNotFoundException;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 
 class UrlGenerator implements UrlGeneratorContract

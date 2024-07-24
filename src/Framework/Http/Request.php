@@ -4,16 +4,28 @@ namespace MVPS\Lumis\Framework\Http;
 
 use Closure;
 use Laminas\Diactoros\ServerRequest;
-use MVPS\Lumis\Framework\Collections\Arr;
+use MVPS\Lumis\Framework\Http\Traits\InteractsWithContent;
+use MVPS\Lumis\Framework\Http\Traits\InteractsWithContentTypes;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
 use MVPS\Lumis\Framework\Routing\Route;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use pdeans\Http\Factories\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
+use Symfony\Component\HttpFoundation\AcceptHeader;
 
 class Request extends ServerRequest
 {
+	use InteractsWithContent;
+	use InteractsWithContentTypes;
 	use InteractsWithRequestInput;
+
+	/**
+	 * The list of acceptable content types.
+	 *
+	 * @var array|null
+	 */
+	protected array|null $acceptableContentTypes = null;
 
 	/**
 	 * The request's root path.
@@ -26,11 +38,38 @@ class Request extends ServerRequest
 	protected string|null $baseUrl = null;
 
 	/**
+	 * The request format MIME types.
+	 *
+	 * @var array
+	 */
+	protected static array $formats = [
+		'atom' => ['application/atom+xml'],
+		'css' => ['text/css'],
+		'form' => ['application/x-www-form-urlencoded', 'multipart/form-data'],
+		'html' => ['text/html', 'application/xhtml+xml'],
+		'js' => ['application/javascript', 'application/x-javascript', 'text/javascript'],
+		'json' => ['application/json', 'application/x-json'],
+		'jsonld' => ['application/ld+json'],
+		'rdf' => ['application/rdf+xml'],
+		'rss' => ['application/rss+xml'],
+		'txt' => ['text/plain'],
+		'xml' => ['text/xml', 'application/xml', 'application/x-xml'],
+	];
+
+	/**
 	 * The route resolver callback.
 	 *
 	 * @var \Closure|null
 	 */
 	protected Closure|null $routeResolver = null;
+
+	/**
+	 * Determine if the request is the result of an AJAX call.
+	 */
+	public function ajax(): bool
+	{
+		return 'XMLHttpRequest' === $this->header('X-Requested-With');
+	}
 
 	/**
 	 * Create a modified server request from a PSR-7 server request instance.
@@ -60,6 +99,17 @@ class Request extends ServerRequest
 		return rawurldecode($this->getPath());
 	}
 
+	 /**
+	 * Gets a list of content types acceptable by the client browser in preferable order.
+	 */
+	public function getAcceptableContentTypes(): array
+	{
+		return $this->acceptableContentTypes ??= array_map(
+			'strval',
+			array_keys(AcceptHeader::fromString($this->header('Accept', null))->all())
+		);
+	}
+
 	/**
 	 * Returns the root path (not urldecoded) from which this request is executed.
 	 *
@@ -86,6 +136,32 @@ class Request extends ServerRequest
 	public function getBaseUrl(): string
 	{
 		return $this->baseUrl ??= $this->prepareBaseUrl();
+	}
+
+	/**
+	 * Gets the format associated with the mime type.
+	 */
+	public function getFormat(string|null $mimeType = null): string|null
+	{
+		$canonicalMimeType = null;
+
+		$pos = strpos($mimeType, ';');
+
+		if ($mimeType && $pos !== false) {
+			$canonicalMimeType = trim(substr($mimeType, 0, $pos));
+		}
+
+		foreach (static::$formats as $format => $mimeTypes) {
+			if (in_array($mimeType, (array) $mimeTypes, true)) {
+				return $format;
+			}
+
+			if (is_null($canonicalMimeType) && in_array($canonicalMimeType, (array) $mimeTypes, true)) {
+				return $format;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -173,6 +249,22 @@ class Request extends ServerRequest
 		}
 
 		return $method;
+	}
+
+	/**
+	 * Gets the mime type associated with the format.
+	 */
+	public function getMimeType(string $format): string|null
+	{
+		return isset(static::$formats[$format]) ? static::$formats[$format][0] : null;
+	}
+
+	/**
+	 * Gets the mime types associated with the format.
+	 */
+	public static function getMimeTypes(string $format): array
+	{
+		return static::$formats[$format] ?? [];
 	}
 
 	/**
@@ -303,6 +395,14 @@ class Request extends ServerRequest
 	public function isSecure(): bool
 	{
 		return $this->getUri()->getScheme() === 'https';
+	}
+
+	/**
+	 * Determine if the request is the result of a PJAX call.
+	 */
+	public function pjax(): bool
+	{
+		return $this->hasHeader('X-PJAX');
 	}
 
 	/**

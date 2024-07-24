@@ -7,7 +7,7 @@ use Illuminate\Console\ContainerCommandLoader;
 use Illuminate\Support\ProcessUtils;
 use MVPS\Lumis\Framework\Application as LumisApplication;
 use MVPS\Lumis\Framework\Contracts\Console\Application as ApplicationContract;
-use MVPS\Lumis\Framework\Events\Dispatcher;
+use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
@@ -38,7 +38,7 @@ class Application extends SymfonyApplication implements ApplicationContract
 	/**
 	 * The event dispatcher instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Events\Dispatcher
+	 * @var \MVPS\Lumis\Framework\Contracts\Events\Dispatcher
 	 */
 	protected Dispatcher $events;
 

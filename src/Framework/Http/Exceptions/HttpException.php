@@ -2,10 +2,11 @@
 
 namespace MVPS\Lumis\Framework\Http\Exceptions;
 
+use MVPS\Lumis\Framework\Contracts\Http\HttpException as HttpExceptionContract;
 use RuntimeException;
 use Throwable;
 
-class HttpException extends RuntimeException
+class HttpException extends RuntimeException implements HttpExceptionContract
 {
 	/**
 	 * The HTTP headers.

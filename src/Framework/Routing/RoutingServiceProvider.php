@@ -6,6 +6,8 @@ use Closure;
 use MVPS\Lumis\Framework\Contracts\Routing\CallableDispatcher as CallableDispatcherContract;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
+use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactoryContract;
+use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\CallableDispatcher;
 use MVPS\Lumis\Framework\Routing\ControllerDispatcher;
@@ -13,12 +15,13 @@ use MVPS\Lumis\Framework\Routing\ControllerDispatcher;
 class RoutingServiceProvider extends ServiceProvider
 {
 	/**
-	 * Register the service provider.
+	 * Register the routing service provider.
 	 */
 	public function register(): void
 	{
 		$this->registerRouter();
 		$this->registerUrlGenerator();
+		$this->registerResponseFactory();
 		$this->registerCallableDispatcher();
 		$this->registerControllerDispatcher();
 	}
@@ -40,6 +43,16 @@ class RoutingServiceProvider extends ServiceProvider
 	{
 		$this->app->singleton(ControllerDispatcherContract::class, function ($app) {
 			return new ControllerDispatcher($app);
+		});
+	}
+
+	/**
+	 * Register the response factory implementation.
+	 */
+	protected function registerResponseFactory(): void
+	{
+		$this->app->singleton(ResponseFactory::class, function ($app) {
+			return new ResponseFactory($app[ViewFactoryContract::class]);
 		});
 	}
 

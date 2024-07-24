@@ -2,10 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Support;
 
-interface Jsonable
+use Illuminate\Contracts\Support\Jsonable as IlluminateJsonable;
+
+interface Jsonable extends IlluminateJsonable
 {
-	/**
-	 * Convert the object to its JSON representation.
-	 */
-	public function toJson(int $options = 0): string;
 }

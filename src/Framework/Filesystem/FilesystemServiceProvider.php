@@ -7,7 +7,7 @@ use MVPS\Lumis\Framework\Providers\ServiceProvider;
 class FilesystemServiceProvider extends ServiceProvider
 {
 	/**
-	 * Register the service provider.
+	 * Register the filesystem service provider.
 	 */
 	public function register(): void
 	{

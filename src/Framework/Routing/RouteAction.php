@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Routing;
 
 use LogicException;
-use MVPS\Lumis\Framework\Collections\Arr;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Reflector;
 use UnexpectedValueException;
 

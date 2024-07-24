@@ -6,6 +6,8 @@ use ArrayObject;
 use InvalidArgumentException;
 use JsonException;
 use JsonSerializable;
+use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use stdClass;
 
 trait InteractsWithContent
@@ -15,7 +17,9 @@ trait InteractsWithContent
 	 */
 	public function shouldBeJson(mixed $content): bool
 	{
-		return $content instanceof ArrayObject ||
+		return $content instanceof Arrayable ||
+			$content instanceof Jsonable ||
+			$content instanceof ArrayObject ||
 			$content instanceof JsonSerializable ||
 			$content instanceof stdClass ||
 			is_array($content);

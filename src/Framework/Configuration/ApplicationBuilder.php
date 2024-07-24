@@ -7,7 +7,9 @@ use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
 use MVPS\Lumis\Framework\Console\Kernel as ConsoleKernel;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
+use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
+use MVPS\Lumis\Framework\Exceptions\Handler;
 use MVPS\Lumis\Framework\Http\Kernel as HttpKernel;
 use MVPS\Lumis\Framework\Routing\RouteServiceProvider as AppRouteServiceProvider;
 
@@ -125,6 +127,23 @@ class ApplicationBuilder
 				$kernel->addCommandRoutePaths($routes->all());
 			});
 		});
+
+		return $this;
+	}
+
+	/**
+	 * Register and configure the application's exception handler.
+	 */
+	public function withExceptions(callable|null $using = null): static
+	{
+		$this->app->singleton(ExceptionHandler::class, Handler::class);
+
+		$using ??= fn () => true;
+
+		$this->app->afterResolving(
+			Handler::class,
+			fn ($handler) => $using(new Exceptions($handler))
+		);
 
 		return $this;
 	}

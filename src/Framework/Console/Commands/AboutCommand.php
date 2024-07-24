@@ -170,7 +170,7 @@ class AboutCommand extends Command
 
 		static::addToSection('Environment', fn () => [
 			'Application Name' => config('app.name'),
-			'Laravel Version' => $this->lumis->version(),
+			'Lumis Version' => $this->lumis->version(),
 			'PHP Version' => phpversion(),
 			'Composer Version' => $this->composer->getVersion() ?? '<fg=yellow;options=bold>-</>',
 			'Environment' => $this->lumis->environment(),

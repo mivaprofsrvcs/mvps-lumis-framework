@@ -4,12 +4,15 @@ namespace MVPS\Lumis\Framework\Http;
 
 use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
+use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
+use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Router;
+use Throwable;
 
 class Kernel implements KernelContract
 {
@@ -28,10 +31,9 @@ class Kernel implements KernelContract
 	protected array $bootstrappers = [
 		LoadEnvironmentVariables::class,
 		LoadConfiguration::class,
+		HandleExceptions::class,
 		RegisterProviders::class,
 		BootProviders::class,
-		// TODO: Implement these
-		// \MVPS\Lumis\Framework\Bootstrap\HandleExceptions::class,
 	];
 
 	/**
@@ -72,12 +74,38 @@ class Kernel implements KernelContract
 
 	/**
 	 * Handle an incoming HTTP request.
-	 *
-	 * TODO: Add try/catch handling for sendRequestThroughRouter() method.
 	 */
 	public function handle(Request $request): Response
 	{
-		return $this->sendRequestThroughRouter($request);
+		try {
+			// TODO: Enable HTTP method parameter override (_method)
+
+			$response = $this->sendRequestThroughRouter($request);
+		} catch (Throwable $e) {
+			$this->reportException($e);
+
+			$response = $this->renderException($request, $e);
+		}
+
+		// TODO: Add request handled event dispatch
+
+		return $response;
+	}
+
+	/**
+	 * Render the exception to a response.
+	 */
+	protected function renderException(Request $request, Throwable $e): Response
+	{
+		return $this->app[ExceptionHandler::class]->render($request, $e);
+	}
+
+	/**
+	 * Report the exception to the exception handler.
+	 */
+	protected function reportException(Throwable $e): void
+	{
+		$this->app[ExceptionHandler::class]->report($e);
 	}
 
 	/**

@@ -2,10 +2,15 @@
 
 use Carbon\Carbon;
 use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
+use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
+use MVPS\Lumis\Framework\Contracts\View\View;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
+use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
 
 if (! function_exists('action')) {
@@ -83,6 +88,19 @@ if (! function_exists('config_path')) {
 	}
 }
 
+if (! function_exists('method_field')) {
+	/**
+	 * Generate a hidden form field to spoof the HTTP verb used by the form.
+	 *
+	 * This is typically used when the form method is set to 'POST' but needs
+	 * to simulate a different HTTP verb such as 'PUT', 'PATCH', or 'DELETE'.
+	 */
+	function method_field(string $method): HtmlString
+	{
+		return new HtmlString('<input type="hidden" name="_method" value="' . $method . '">');
+	}
+}
+
 if (! function_exists('now')) {
 	/**
 	 * Create a new carbon instance for the current time.
@@ -100,6 +118,44 @@ if (! function_exists('public_path')) {
 	function public_path(string $path = ''): string
 	{
 		return app()->publicPath($path);
+	}
+}
+
+if (! function_exists('report')) {
+	/**
+	 * Report an exception.
+	 */
+	function report(Throwable|string $exception): void
+	{
+		if (is_string($exception)) {
+			$exception = new Exception($exception);
+		}
+
+		app(ExceptionHandler::class)->report($exception);
+	}
+}
+
+if (! function_exists('report_if')) {
+	/**
+	 * Report an exception if the given condition is true.
+	 */
+	function report_if(bool $boolean, Throwable|string $exception): void
+	{
+		if ($boolean) {
+			report($exception);
+		}
+	}
+}
+
+if (! function_exists('report_unless')) {
+	/**
+	 * Report an exception unless the given condition is true.
+	 */
+	function report_unless(bool $boolean, Throwable|string $exception): void
+	{
+		if (! $boolean) {
+			report($exception);
+		}
 	}
 }
 
@@ -122,6 +178,24 @@ if (! function_exists('request')) {
 		$value = $request->input($key);
 
 		return is_null($value) ? value($default) : $value;
+	}
+}
+
+if (! function_exists('rescue')) {
+	/**
+	 * Catch a potential exception and return a default value.
+	 */
+	function rescue(callable $callback, mixed $rescue = null, bool|callable $report = true): mixed
+	{
+		try {
+			return $callback();
+		} catch (Throwable $e) {
+			if (value($report, $e)) {
+				report($e);
+			}
+
+			return value($rescue, $e);
+		}
 	}
 }
 
@@ -151,7 +225,7 @@ if (! function_exists('response')) {
 	 */
 	function response(mixed $content = '', $status = 200, array $headers = []): Response
 	{
-		return (new ResponseFactory)->make($content, $status, $headers);
+		return app(ResponseFactory::class)->make($content, $status, $headers);
 	}
 }
 
@@ -221,5 +295,21 @@ if (! function_exists('url')) {
 		}
 
 		return app(UrlGenerator::class)->to($path, $parameters, $secure);
+	}
+}
+
+if (! function_exists('view')) {
+	/**
+	 * Get the evaluated view contents for the given view.
+	 */
+	function view(string|null $view = null, Arrayable|array $data = [], array $mergeData = []): View|ViewFactory
+	{
+		$factory = app(ViewFactory::class);
+
+		if (func_num_args() === 0) {
+			return $factory;
+		}
+
+		return $factory->make($view, $data, $mergeData);
 	}
 }

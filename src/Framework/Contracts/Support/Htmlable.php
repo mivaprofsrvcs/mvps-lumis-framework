@@ -2,10 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Support;
 
-interface Htmlable
+use Illuminate\Contracts\Support\Htmlable as IlluminateHtmlable;
+
+interface Htmlable extends IlluminateHtmlable
 {
-	/**
-	 * Get content as a string of HTML.
-	 */
-	public function toHtml(): string;
 }

@@ -2,9 +2,9 @@
 
 namespace MVPS\Lumis\Framework\Routing;
 
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\Exceptions\UrlGenerationException;
+use MVPS\Lumis\Framework\Support\Arr;
 
 class RouteUrlGenerator
 {

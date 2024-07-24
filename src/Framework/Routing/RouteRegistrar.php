@@ -5,8 +5,8 @@ namespace MVPS\Lumis\Framework\Routing;
 use BadMethodCallException;
 use Closure;
 use InvalidArgumentException;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Routing\Traits\CreatesRegularExpressionRouteConstraints;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Reflector;
 
 class RouteRegistrar

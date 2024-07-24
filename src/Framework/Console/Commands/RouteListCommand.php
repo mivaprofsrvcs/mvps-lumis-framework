@@ -3,12 +3,12 @@
 namespace MVPS\Lumis\Framework\Console\Commands;
 
 use Closure;
-use MVPS\Lumis\Framework\Collections\Arr;
 use MVPS\Lumis\Framework\Collections\Collection;
 use MVPS\Lumis\Framework\Console\Command;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Routing\Route;
 use MVPS\Lumis\Framework\Routing\Router;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
 use ReflectionFunction;

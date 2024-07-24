@@ -2,10 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Support;
 
-interface Arrayable
+use Illuminate\Contracts\Support\Arrayable as IlluminateArrayable;
+
+interface Arrayable extends IlluminateArrayable
 {
-	/**
-	 * Get the instance as an array.
-	 */
-	public function toArray(): array;
 }

@@ -2,10 +2,13 @@
 
 namespace MVPS\Lumis\Framework\Http;
 
+use MVPS\Lumis\Framework\Http\Traits\ResponseTrait;
 use pdeans\Http\Response as BaseResponse;
 
 class Response extends BaseResponse
 {
+	use ResponseTrait;
+
 	/**
 	 * The HTTP response charset.
 	 *
