@@ -6,8 +6,6 @@ class Unlimited extends GlobalLimit
 {
 	/**
 	 * Create a new unlimited limit instance.
-	 *
-	 * @return void
 	 */
 	public function __construct()
 	{
