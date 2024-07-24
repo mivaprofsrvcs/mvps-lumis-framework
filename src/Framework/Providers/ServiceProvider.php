@@ -80,6 +80,18 @@ abstract class ServiceProvider
 	}
 
 	/**
+	 * Attaches a callback to be executed after a service is resolved by the container.
+	 */
+	protected function callAfterResolving(string $name, callable $callback): void
+	{
+		$this->app->afterResolving($name, $callback);
+
+		if ($this->app->resolved($name)) {
+			$callback($this->app->make($name), $this->app);
+		}
+	}
+
+	/**
 	 * Call the registered booted callbacks.
 	 */
 	public function callBootedCallbacks(): void
@@ -125,6 +137,26 @@ abstract class ServiceProvider
 	public static function defaultProviders(): DefaultProviders
 	{
 		return new DefaultProviders;
+	}
+
+	/**
+	 * Register a view file namespace.
+	 */
+	protected function loadViewsFrom(string|array $path, string $namespace): void
+	{
+		$this->callAfterResolving('view', function ($view) use ($path, $namespace) {
+			if (isset($this->app->config['view']['paths']) && is_array($this->app->config['view']['paths'])) {
+				foreach ($this->app->config['view']['paths'] as $viewPath) {
+					$appPath = $viewPath . '/vendor/' . $namespace;
+
+					if (is_dir($appPath)) {
+						$view->addNamespace($namespace, $appPath);
+					}
+				}
+			}
+
+			$view->addNamespace($namespace, $path);
+		});
 	}
 
 	/**
