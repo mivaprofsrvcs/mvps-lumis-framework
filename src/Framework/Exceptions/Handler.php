@@ -31,7 +31,6 @@ use MVPS\Lumis\Framework\Support\Reflector;
 use MVPS\Lumis\Framework\Support\Traits\ReflectsClosures;
 use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 use pdeans\Http\Contracts\ExceptionInterface as RequestExceptionInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Application as ConsoleApplication;
@@ -509,7 +508,7 @@ class Handler implements ExceptionHandler
 	 *
 	 * @throws \Throwable
 	 */
-	public function render(RequestInterface $request, Throwable $e): Response
+	public function render(Request $request, Throwable $e): Response
 	{
 		$e = $this->mapException($e);
 

@@ -2,8 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Exceptions;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Http\Response;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
@@ -14,7 +14,7 @@ interface ExceptionHandler
 	 *
 	 * @throws \Throwable
 	 */
-	public function render(RequestInterface $request, Throwable $e): ResponseInterface;
+	public function render(Request $request, Throwable $e): Response;
 
 	/**
 	 * Render an exception to the console.
