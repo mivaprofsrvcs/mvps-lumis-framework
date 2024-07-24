@@ -14,6 +14,7 @@ use MVPS\Lumis\Framework\Bootstrap\SetRequestForConsole;
 use MVPS\Lumis\Framework\Console\Application as LumisConsoleApp;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
+use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
@@ -26,6 +27,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Finder\Finder;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Throwable;
 
 class Kernel implements KernelContract
 {
@@ -281,10 +283,18 @@ class Kernel implements KernelContract
 	 */
 	public function handle(InputInterface $input, OutputInterface|null $output = null): int
 	{
-		$this->bootstrap();
+		try {
+			$this->bootstrap();
 
-		return $this->getLumis()
-			->run($input, $output);
+			return $this->getLumis()
+				->run($input, $output);
+		} catch (Throwable $e) {
+			$this->reportException($e);
+
+			$this->renderException($output, $e);
+
+			return 1;
+		}
 	}
 
 	/**
@@ -333,6 +343,22 @@ class Kernel implements KernelContract
 		$this->bootstrap();
 
 		return $this->getLumis()->output();
+	}
+
+	/**
+	 * Render the given exception.
+	 */
+	protected function renderException(OutputInterface $output, Throwable $e): void
+	{
+		$this->app[ExceptionHandler::class]->renderForConsole($output, $e);
+	}
+
+	/**
+	 * Report the exception to the exception handler.
+	 */
+	protected function reportException(Throwable $e): void
+	{
+		$this->app[ExceptionHandler::class]->report($e);
 	}
 
 	/**
