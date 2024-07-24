@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Http;
 use Closure;
 use Laminas\Diactoros\ServerRequest;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithContent;
+use MVPS\Lumis\Framework\Http\Traits\InteractsWithContentTypes;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
 use MVPS\Lumis\Framework\Routing\Route;
 use MVPS\Lumis\Framework\Support\Arr;
@@ -16,6 +17,7 @@ use Symfony\Component\HttpFoundation\AcceptHeader;
 class Request extends ServerRequest
 {
 	use InteractsWithContent;
+	use InteractsWithContentTypes;
 	use InteractsWithRequestInput;
 
 	/**
