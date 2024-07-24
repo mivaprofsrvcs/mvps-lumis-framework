@@ -2,10 +2,10 @@
     <div
         class="h-[35.5rem] scrollbar-hidden trace text-sm text-gray-400 dark:text-gray-300"
     >
-        <div class="mb-2 inline-block rounded-full bg-red-500/20 px-3 py-2 dark:bg-red-500/20 sm:col-span-1">
+        <div class="mb-2 inline-block rounded-full bg-primary/20 px-3 py-2 dark:bg-primary/20 sm:col-span-1">
             <button
                 @click="includeVendorFrames = !includeVendorFrames"
-                class="inline-flex items-center font-bold leading-5 text-red-500"
+                class="inline-flex items-center font-bold leading-5 text-primary"
             >
                 <span x-show="includeVendorFrames">Collapse</span>
                 <span
@@ -51,7 +51,7 @@
                     <div
                         x-bind:class="
                             index === {{ $loop->index }}
-                                ? 'rounded-r-md bg-gray-100 dark:bg-gray-800 border-l dark:border dark:border-gray-700 border-l-red-500 dark:border-l-red-500'
+                                ? 'rounded-r-md bg-gray-100 dark:bg-gray-800 border-l dark:border dark:border-gray-700 border-l-primary dark:border-l-primary'
                                 : 'hover:bg-gray-100/75 dark:hover:bg-gray-800/75'
                         "
                     >
