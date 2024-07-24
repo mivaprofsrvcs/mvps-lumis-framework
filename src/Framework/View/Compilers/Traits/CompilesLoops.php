@@ -48,7 +48,7 @@ trait CompilesLoops
 	/**
 	 * Compile the for-else-empty and empty statements into valid PHP.
 	 */
-	protected function compileEmpty(string $expression): string
+	protected function compileEmpty(string $expression = ''): string
 	{
 		if ($expression) {
 			return "<?php if(empty{$expression}): ?>";
