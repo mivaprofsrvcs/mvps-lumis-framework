@@ -474,7 +474,7 @@ class Handler implements ExceptionHandler
 	 */
 	protected function prepareResponse(Request $request, Throwable $e): Response
 	{
-		if (! $this->isHttpException($e) && config('app.debug')) {
+		if (! $this->isHttpException($e)) {
 			if (config('app.debug')) {
 				return $this->toResponse($this->convertExceptionToResponse($e), $e)
 					->prepare($request);
@@ -632,7 +632,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * Render the given HTTP exception.
 	 */
-	protected function renderHttpException(HttpException $e): Response
+	protected function renderHttpException(HttpExceptionContract $e): Response
 	{
 		$this->registerErrorViewPaths();
 
