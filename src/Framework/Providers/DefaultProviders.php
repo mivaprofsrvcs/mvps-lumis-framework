@@ -3,6 +3,7 @@
 namespace MVPS\Lumis\Framework\Providers;
 
 use MVPS\Lumis\Framework\Console\ConsoleSupportServiceProvider;
+use MVPS\Lumis\Framework\Database\DatabaseServiceProvider;
 use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
 use MVPS\Lumis\Framework\View\ViewServiceProvider;
 
@@ -23,6 +24,7 @@ class DefaultProviders
 		$this->providers = $providers ?: [
 			// CacheServiceProvider::class,
 			ConsoleSupportServiceProvider::class,
+			DatabaseServiceProvider::class,
 			// EncryptionServiceProvider::class,
 			FilesystemServiceProvider::class,
 			FrameworkServiceProvider::class,
