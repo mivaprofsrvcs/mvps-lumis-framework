@@ -19,7 +19,7 @@ trait CompilesComponents
 	/**
 	 * Compile the aware statement into valid PHP.
 	 */
-	protected function compileAware(string $expression): string
+	protected function compileAware(string|null $expression = null): string
 	{
 		return "<?php foreach ({$expression} as \$__key => \$__value) {
 	\$__consumeVariable = is_string(\$__key) ? \$__key : \$__value;
@@ -49,8 +49,12 @@ trait CompilesComponents
 	/**
 	 * Compile the component statements into valid PHP.
 	 */
-	protected function compileComponent(string $expression): string
+	protected function compileComponent(string|null $expression = null): string
 	{
+		if (is_null($expression)) {
+			$expression = (string) $expression;
+		}
+
 		[$component, $alias, $data] = str_contains($expression, ',')
 			? array_map('trim', explode(',', trim($expression, '()'), 3)) + ['', '', '']
 			: [trim($expression, '()'), '', ''];
@@ -71,7 +75,7 @@ trait CompilesComponents
 	/**
 	 * Compile the component-first statements into valid PHP.
 	 */
-	protected function compileComponentFirst(string $expression): string
+	protected function compileComponentFirst(string|null $expression = null): string
 	{
 		return "<?php \$__env->startComponentFirst{$expression}; ?>";
 	}
@@ -123,7 +127,7 @@ trait CompilesComponents
 	/**
 	 * Compile the prop statement into valid PHP.
 	 */
-	protected function compileProps(string $expression): string
+	protected function compileProps(string|null $expression = null): string
 	{
 		return "<?php \$attributes ??= new \\MVPS\\Lumis\\Framework\\View\\ComponentAttributeBag;
 
@@ -159,7 +163,7 @@ unset(\$__defined_vars); ?>";
 	/**
 	 * Compile the slot statements into valid PHP.
 	 */
-	protected function compileSlot(string $expression): string
+	protected function compileSlot(string|null $expression = null): string
 	{
 		return "<?php \$__env->slot{$expression}; ?>";
 	}

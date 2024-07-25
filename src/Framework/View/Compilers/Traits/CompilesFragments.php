@@ -22,9 +22,9 @@ trait CompilesFragments
 	/**
 	 * Compile the fragment statements into valid PHP.
 	 */
-	protected function compileFragment(string $expression): string
+	protected function compileFragment(string|null $expression = null): string
 	{
-		$this->lastFragment = trim($expression, "()'\" ");
+		$this->lastFragment = trim($expression ?? '', "()'\" ");
 
 		return "<?php \$__env->startFragment{$expression}; ?>";
 	}

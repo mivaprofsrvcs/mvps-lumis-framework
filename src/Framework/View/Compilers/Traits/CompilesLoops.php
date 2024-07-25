@@ -16,7 +16,7 @@ trait CompilesLoops
 	/**
 	 * Compile the break statements into valid PHP.
 	 */
-	protected function compileBreak(string $expression): string
+	protected function compileBreak(string|null $expression = null): string
 	{
 		if ($expression) {
 			preg_match('/\(\s*(-?\d+)\s*\)$/', $expression, $matches);
@@ -32,7 +32,7 @@ trait CompilesLoops
 	/**
 	 * Compile the continue statements into valid PHP.
 	 */
-	protected function compileContinue(string $expression): string
+	protected function compileContinue(string|null $expression = null): string
 	{
 		if ($expression) {
 			preg_match('/\(\s*(-?\d+)\s*\)$/', $expression, $matches);
@@ -48,7 +48,7 @@ trait CompilesLoops
 	/**
 	 * Compile the for-else-empty and empty statements into valid PHP.
 	 */
-	protected function compileEmpty(string $expression = ''): string
+	protected function compileEmpty(string|null $expression = null): string
 	{
 		if ($expression) {
 			return "<?php if(empty{$expression}): ?>";
@@ -102,7 +102,7 @@ trait CompilesLoops
 	/**
 	 * Compile the for statements into valid PHP.
 	 */
-	protected function compileFor(string $expression): string
+	protected function compileFor(string|null $expression = null): string
 	{
 		return "<?php for{$expression}: ?>";
 	}
@@ -112,7 +112,7 @@ trait CompilesLoops
 	 *
 	 * @throws \MVPS\Lumis\Framework\Contracts\View\ViewCompilationException
 	 */
-	protected function compileForeach(string $expression): string
+	protected function compileForeach(string|null $expression = null): string
 	{
 		preg_match('/\( *(.+) +as +(.*)\)$/is', $expression ?? '', $matches);
 
@@ -136,7 +136,7 @@ trait CompilesLoops
 	 *
 	 * @throws \MVPS\Lumis\Framework\Contracts\View\ViewCompilationException
 	 */
-	protected function compileForelse(string $expression): string
+	protected function compileForelse(string|null $expression = null): string
 	{
 		$empty = '$__empty_' . ++$this->forElseCounter;
 
@@ -160,7 +160,7 @@ trait CompilesLoops
 	/**
 	 * Compile the while statements into valid PHP.
 	 */
-	protected function compileWhile(string $expression): string
+	protected function compileWhile(string|null $expression = null): string
 	{
 		return "<?php while{$expression}: ?>";
 	}

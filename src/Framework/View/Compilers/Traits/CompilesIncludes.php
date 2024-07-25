@@ -7,7 +7,7 @@ trait CompilesIncludes
 	/**
 	 * Compile the each statements into valid PHP.
 	 */
-	protected function compileEach(string $expression): string
+	protected function compileEach(string|null $expression = null): string
 	{
 		return "<?php echo \$__env->renderEach{$expression}; ?>";
 	}
@@ -15,9 +15,9 @@ trait CompilesIncludes
 	/**
 	 * Compile the include statements into valid PHP.
 	 */
-	protected function compileInclude(string $expression): string
+	protected function compileInclude(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		return "<?php echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 	}
@@ -25,9 +25,9 @@ trait CompilesIncludes
 	/**
 	 * Compile the include-first statements into valid PHP.
 	 */
-	protected function compileIncludeFirst(string $expression): string
+	protected function compileIncludeFirst(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		return "<?php echo \$__env->first({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 	}
@@ -35,9 +35,9 @@ trait CompilesIncludes
 	/**
 	 * Compile the include-if statements into valid PHP.
 	 */
-	protected function compileIncludeIf(string $expression): string
+	protected function compileIncludeIf(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		return "<?php if (\$__env->exists({$expression})) echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 	}
@@ -45,9 +45,9 @@ trait CompilesIncludes
 	/**
 	 * Compile the include-unless statements into valid PHP.
 	 */
-	protected function compileIncludeUnless(string $expression): string
+	protected function compileIncludeUnless(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		return "<?php echo \$__env->renderUnless($expression, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path'])); ?>";
 	}
@@ -55,9 +55,9 @@ trait CompilesIncludes
 	/**
 	 * Compile the include-when statements into valid PHP.
 	 */
-	protected function compileIncludeWhen(string $expression): string
+	protected function compileIncludeWhen(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		return "<?php echo \$__env->renderWhen($expression, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path'])); ?>";
 	}

@@ -7,10 +7,10 @@ trait CompilesComments
 	/**
 	 * Compile Blade comments into an empty string.
 	 */
-	protected function compileComments(string $value): string
+	protected function compileComments(string|null $value = null): string
 	{
 		$pattern = sprintf('/%s--(.*?)--%s/s', $this->contentTags[0], $this->contentTags[1]);
 
-		return preg_replace($pattern, '', $value);
+		return preg_replace($pattern, '', (string) $value);
 	}
 }

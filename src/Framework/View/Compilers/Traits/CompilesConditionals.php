@@ -16,7 +16,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the case statements into valid PHP.
 	 */
-	protected function compileCase(string $expression): string
+	protected function compileCase(string|null $expression = null): string
 	{
 		if ($this->firstCaseInSwitch) {
 			$this->firstCaseInSwitch = false;
@@ -30,7 +30,7 @@ trait CompilesConditionals
 	/**
 	 * Compile a checked block into valid PHP.
 	 */
-	protected function compileChecked(string $condition): string
+	protected function compileChecked(string|null $condition = null): string
 	{
 		return "<?php if{$condition}: echo 'checked'; endif; ?>";
 	}
@@ -46,7 +46,7 @@ trait CompilesConditionals
 	/**
 	 * Compile a disabled block into valid PHP.
 	 */
-	protected function compileDisabled(string $condition): string
+	protected function compileDisabled(string|null $condition = null): string
 	{
 		return "<?php if{$condition}: echo 'disabled'; endif; ?>";
 	}
@@ -62,7 +62,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the else-if statements into valid PHP.
 	 */
-	protected function compileElseif(string $expression): string
+	protected function compileElseif(string|null $expression = null): string
 	{
 		return "<?php elseif{$expression}: ?>";
 	}
@@ -70,7 +70,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the else push statements into valid PHP.
 	 */
-	protected function compileElsePush(string $expression): string
+	protected function compileElsePush(string|null $expression = null): string
 	{
 		return "<?php \$__env->stopPush(); else: \$__env->startPush{$expression}; ?>";
 	}
@@ -78,9 +78,9 @@ trait CompilesConditionals
 	/**
 	 * Compile the else-if push statements into valid PHP.
 	 */
-	protected function compileElsePushIf(string $expression): string
+	protected function compileElsePushIf(string|null $expression = null): string
 	{
-		$parts = explode(',', $this->stripParentheses($expression), 2);
+		$parts = explode(',', $this->stripParentheses($expression ?? ''), 2);
 
 		return "<?php \$__env->stopPush(); elseif({$parts[0]}): \$__env->startPush({$parts[1]}); ?>";
 	}
@@ -88,7 +88,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the env statements into valid PHP.
 	 */
-	protected function compileEnv(string $environments): string
+	protected function compileEnv(string|null $environments = null): string
 	{
 		return "<?php if(app()->environment{$environments}): ?>";
 	}
@@ -160,7 +160,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the has-section statements into valid PHP.
 	 */
-	protected function compileHasSection(string $expression): string
+	protected function compileHasSection(string|null $expression = null): string
 	{
 		return "<?php if (! empty(trim(\$__env->yieldContent{$expression}))): ?>";
 	}
@@ -168,7 +168,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the if statements into valid PHP.
 	 */
-	protected function compileIf(string $expression): string
+	protected function compileIf(string|null $expression = null): string
 	{
 		return "<?php if{$expression}: ?>";
 	}
@@ -176,7 +176,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the if-isset statements into valid PHP.
 	 */
-	protected function compileIsset(string $expression): string
+	protected function compileIsset(string|null $expression = null): string
 	{
 		return "<?php if(isset{$expression}): ?>";
 	}
@@ -202,9 +202,9 @@ trait CompilesConditionals
 	/**
 	 * Compile the push statements into valid PHP.
 	 */
-	protected function compilePushIf(string $expression): string
+	protected function compilePushIf(string|null $expression = null): string
 	{
-		$parts = explode(',', $this->stripParentheses($expression), 2);
+		$parts = explode(',', $this->stripParentheses($expression ?? ''), 2);
 
 		return "<?php if({$parts[0]}): \$__env->startPush({$parts[1]}); ?>";
 	}
@@ -212,7 +212,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the section-missing statements into valid PHP.
 	 */
-	protected function compileSectionMissing(string $expression): string
+	protected function compileSectionMissing(string|null $expression = null): string
 	{
 		return "<?php if (empty(trim(\$__env->yieldContent{$expression}))): ?>";
 	}
@@ -220,7 +220,7 @@ trait CompilesConditionals
 	/**
 	 * Compile a readonly block into valid PHP.
 	 */
-	protected function compileReadonly(string $condition): string
+	protected function compileReadonly(string|null $condition = null): string
 	{
 		return "<?php if{$condition}: echo 'readonly'; endif; ?>";
 	}
@@ -228,7 +228,7 @@ trait CompilesConditionals
 	/**
 	 * Compile a required block into valid PHP.
 	 */
-	protected function compileRequired(string $condition): string
+	protected function compileRequired(string|null $condition = null): string
 	{
 		return "<?php if{$condition}: echo 'required'; endif; ?>";
 	}
@@ -236,7 +236,7 @@ trait CompilesConditionals
 	/**
 	 * Compile a selected block into valid PHP.
 	 */
-	protected function compileSelected(string $condition): string
+	protected function compileSelected(string|null $condition = null): string
 	{
 		return "<?php if{$condition}: echo 'selected'; endif; ?>";
 	}
@@ -244,7 +244,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the switch statements into valid PHP.
 	 */
-	protected function compileSwitch(string $expression): string
+	protected function compileSwitch(string|null $expression = null): string
 	{
 		$this->firstCaseInSwitch = true;
 
@@ -254,7 +254,7 @@ trait CompilesConditionals
 	/**
 	 * Compile the unless statements into valid PHP.
 	 */
-	protected function compileUnless(string $expression): string
+	protected function compileUnless(string|null $expression = null): string
 	{
 		return "<?php if (! {$expression}): ?>";
 	}

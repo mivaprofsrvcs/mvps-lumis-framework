@@ -7,7 +7,7 @@ trait CompilesRawPhp
 	/**
 	 * Compile the raw PHP statements into valid PHP.
 	 */
-	protected function compilePhp(string $expression): string
+	protected function compilePhp(string|null $expression = null): string
 	{
 		if ($expression) {
 			return "<?php {$expression}; ?>";
@@ -19,7 +19,7 @@ trait CompilesRawPhp
 	/**
 	 * Compile the unset statements into valid PHP.
 	 */
-	protected function compileUnset(string $expression): string
+	protected function compileUnset(string|null $expression = null): string
 	{
 		return "<?php unset{$expression}; ?>";
 	}

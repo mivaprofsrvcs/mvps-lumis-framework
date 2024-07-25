@@ -7,7 +7,7 @@ trait CompilesClasses
 	/**
 	 * Compile the conditional class statement into valid PHP.
 	 */
-	protected function compileClass(string $expression): string
+	protected function compileClass(string|null $expression = null): string
 	{
 		$expression = is_null($expression) ? '([])' : $expression;
 
