@@ -4,9 +4,10 @@ namespace MVPS\Lumis\Framework\Database;
 
 use Illuminate\Database\DatabaseManager as IlluminateDatabaseManager;
 use MVPS\Lumis\Framework\Application;
+use MVPS\Lumis\Framework\Contracts\Database\ConnectionResolver as ConnectionResolverContract;
 use MVPS\Lumis\Framework\Database\Connectors\ConnectionFactory;
 
-class DatabaseManager extends IlluminateDatabaseManager
+class DatabaseManager extends IlluminateDatabaseManager implements ConnectionResolverContract
 {
 	/**
 	 * The application instance.
