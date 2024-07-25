@@ -7,7 +7,7 @@ trait CompilesHelpers
 	/**
 	 * Compile the "dd" statements into valid PHP.
 	 */
-	protected function compileDd(string $arguments): string
+	protected function compileDd(string|null $arguments = null): string
 	{
 		return "<?php dd{$arguments}; ?>";
 	}
@@ -15,7 +15,7 @@ trait CompilesHelpers
 	/**
 	 * Compile the "dump" statements into valid PHP.
 	 */
-	protected function compileDump(string $arguments): string
+	protected function compileDump(string|null $arguments = null): string
 	{
 		return "<?php dump{$arguments}; ?>";
 	}
@@ -23,7 +23,7 @@ trait CompilesHelpers
 	/**
 	 * Compile the method statements into valid PHP.
 	 */
-	protected function compileMethod(string $method): string
+	protected function compileMethod(string|null $method = null): string
 	{
 		return "<?php echo method_field{$method}; ?>";
 	}

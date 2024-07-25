@@ -7,7 +7,7 @@ trait CompilesErrors
 	/**
 	 * Compile the enderror statements into valid PHP.
 	 */
-	protected function compileEnderror(string $expression): string
+	protected function compileEnderror(): string
 	{
 		return '<?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
@@ -18,9 +18,9 @@ unset($__errorArgs, $__bag); ?>';
 	/**
 	 * Compile the error statements into valid PHP.
 	 */
-	protected function compileError(string $expression): string
+	protected function compileError(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		return '<?php $__errorArgs = [' . $expression . '];
 $__bag = $errors->getBag($__errorArgs[1] ?? \'default\');

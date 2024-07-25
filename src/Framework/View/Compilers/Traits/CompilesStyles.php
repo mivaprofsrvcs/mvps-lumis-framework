@@ -7,7 +7,7 @@ trait CompilesStyles
 	/**
 	 * Compile the conditional style statement into valid PHP.
 	 */
-	protected function compileStyle(string $expression): string
+	protected function compileStyle(string|null $expression = null): string
 	{
 		$expression = is_null($expression) ? '([])' : $expression;
 

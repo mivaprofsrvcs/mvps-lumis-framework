@@ -14,9 +14,9 @@ trait CompilesJson
 	/**
 	 * Compile the JSON statement into valid PHP.
 	 */
-	protected function compileJson(string $expression): string
+	protected function compileJson(string|null $expression = null): string
 	{
-		$parts = explode(',', $this->stripParentheses($expression));
+		$parts = explode(',', $this->stripParentheses($expression ?? ''));
 
 		$options = isset($parts[1]) ? trim($parts[1]) : $this->encodingOptions;
 

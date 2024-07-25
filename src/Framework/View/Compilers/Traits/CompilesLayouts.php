@@ -30,9 +30,9 @@ trait CompilesLayouts
 	/**
 	 * Compile the extends statements into valid PHP.
 	 */
-	protected function compileExtends(string $expression): string
+	protected function compileExtends(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		$echo = "<?php echo \$__env->make({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 
@@ -44,9 +44,9 @@ trait CompilesLayouts
 	/**
 	 * Compile the extends-first statements into valid PHP.
 	 */
-	protected function compileExtendsFirst(string $expression): string
+	protected function compileExtendsFirst(string|null $expression = null): string
 	{
-		$expression = $this->stripParentheses($expression);
+		$expression = $this->stripParentheses($expression ?? '');
 
 		$echo = "<?php echo \$__env->first({$expression}, \MVPS\Lumis\Framework\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>";
 
@@ -76,9 +76,9 @@ trait CompilesLayouts
 	/**
 	 * Compile the section statements into valid PHP.
 	 */
-	protected function compileSection(string $expression): string
+	protected function compileSection(string|null $expression = null): string
 	{
-		$this->lastSection = trim($expression, "()'\" ");
+		$this->lastSection = trim($expression ?? '', "()'\" ");
 
 		return "<?php \$__env->startSection{$expression}; ?>";
 	}
@@ -102,7 +102,7 @@ trait CompilesLayouts
 	/**
 	 * Compile the yield statements into valid PHP.
 	 */
-	protected function compileYield(string $expression): string
+	protected function compileYield(string|null $expression = null): string
 	{
 		return "<?php echo \$__env->yieldContent{$expression}; ?>";
 	}

@@ -17,7 +17,7 @@ trait CompilesEchos
 	/**
 	 * Add an instance of the blade echo handler to the start of the compiled string.
 	 */
-	protected function addBladeCompilerVariable(string $result): string
+	protected function addBladeCompilerVariable(string|null $result = null): string
 	{
 		return "<?php \$__bladeCompiler = app('blade.compiler'); ?>" . $result;
 	}
@@ -25,7 +25,7 @@ trait CompilesEchos
 	/**
 	 * Apply the echo handler for the value if it exists.
 	 */
-	public function applyEchoHandler(string $value): string
+	public function applyEchoHandler(mixed $value): string
 	{
 		if (is_object($value) && isset($this->echoHandlers[get_class($value)])) {
 			return call_user_func($this->echoHandlers[get_class($value)], $value);
@@ -41,10 +41,10 @@ trait CompilesEchos
 	/**
 	 * Compile Blade echos into valid PHP.
 	 */
-	public function compileEchos(string $value): string
+	public function compileEchos(string|null $value = null): string
 	{
 		foreach ($this->getEchoMethods() as $method) {
-			$value = $this->$method($value);
+			$value = $this->$method($value ?? '');
 		}
 
 		return $value;
@@ -53,7 +53,7 @@ trait CompilesEchos
 	/**
 	 * Compile the escaped echo statements.
 	 */
-	protected function compileEscapedEchos(string $value): string
+	protected function compileEscapedEchos(string|null $value = null): string
 	{
 		$pattern = sprintf('/(@)?%s\s*(.+?)\s*%s(\r?\n)?/s', $this->escapedTags[0], $this->escapedTags[1]);
 
@@ -65,13 +65,13 @@ trait CompilesEchos
 				: "<?php echo e({$this->wrapInEchoHandler($matches[2])}); ?>{$whitespace}";
 		};
 
-		return preg_replace_callback($pattern, $callback, $value);
+		return preg_replace_callback($pattern, $callback, $value ?? '');
 	}
 
 	/**
 	 * Compile the "raw" echo statements.
 	 */
-	protected function compileRawEchos(string $value): string
+	protected function compileRawEchos(string|null $value = null): string
 	{
 		$pattern = sprintf('/(@)?%s\s*(.+?)\s*%s(\r?\n)?/s', $this->rawTags[0], $this->rawTags[1]);
 
@@ -83,13 +83,13 @@ trait CompilesEchos
 				: "<?php echo {$this->wrapInEchoHandler($matches[2])}; ?>{$whitespace}";
 		};
 
-		return preg_replace_callback($pattern, $callback, $value);
+		return preg_replace_callback($pattern, $callback, $value ?? '');
 	}
 
 	/**
 	 * Compile the "regular" echo statements.
 	 */
-	protected function compileRegularEchos(string $value): string
+	protected function compileRegularEchos(string|null $value = null): string
 	{
 		$pattern = sprintf('/(@)?%s\s*(.+?)\s*%s(\r?\n)?/s', $this->contentTags[0], $this->contentTags[1]);
 
@@ -101,7 +101,7 @@ trait CompilesEchos
 			return $matches[1] ? substr($matches[0], 1) : "<?php echo {$wrapped}; ?>{$whitespace}";
 		};
 
-		return preg_replace_callback($pattern, $callback, $value);
+		return preg_replace_callback($pattern, $callback, $value ?? '');
 	}
 
 	/**
@@ -131,9 +131,9 @@ trait CompilesEchos
 	/**
 	 * Wrap the echoable value in an echo handler if applicable.
 	 */
-	protected function wrapInEchoHandler(string $value): string
+	protected function wrapInEchoHandler(string|null $value = null): string
 	{
-		$value = Str::of($value)
+		$value = Str::of($value ?? '')
 			->trim()
 			->when(str_ends_with($value, ';'), function ($str) {
 				return $str->beforeLast(';');

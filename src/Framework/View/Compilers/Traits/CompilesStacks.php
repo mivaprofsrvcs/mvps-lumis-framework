@@ -41,7 +41,7 @@ trait CompilesStacks
 	/**
 	 * Compile the prepend statements into valid PHP.
 	 */
-	protected function compilePrepend(string $expression): string
+	protected function compilePrepend(string|null $expression = null): string
 	{
 		return "<?php \$__env->startPrepend{$expression}; ?>";
 	}
@@ -49,9 +49,9 @@ trait CompilesStacks
 	/**
 	 * Compile the prepend-once statements into valid PHP.
 	 */
-	protected function compilePrependOnce(string $expression): string
+	protected function compilePrependOnce(string|null $expression = null): string
 	{
-		$parts = explode(',', $this->stripParentheses($expression), 2);
+		$parts = explode(',', $this->stripParentheses($expression ?? ''), 2);
 
 		[$stack, $id] = [$parts[0], $parts[1] ?? ''];
 
@@ -64,7 +64,7 @@ $__env->startPrepend(' . $stack . '); ?>';
 	/**
 	 * Compile the push statements into valid PHP.
 	 */
-	protected function compilePush(string $expression): string
+	protected function compilePush(string|null $expression = null): string
 	{
 		return "<?php \$__env->startPush{$expression}; ?>";
 	}
@@ -72,9 +72,9 @@ $__env->startPrepend(' . $stack . '); ?>';
 	/**
 	 * Compile the push-once statements into valid PHP.
 	 */
-	protected function compilePushOnce(string $expression): string
+	protected function compilePushOnce(string|null $expression = null): string
 	{
-		$parts = explode(',', $this->stripParentheses($expression), 2);
+		$parts = explode(',', $this->stripParentheses($expression ?? ''), 2);
 
 		[$stack, $id] = [$parts[0], $parts[1] ?? ''];
 
@@ -87,7 +87,7 @@ $__env->startPush(' . $stack . '); ?>';
 	/**
 	 * Compile the stack statements into the content.
 	 */
-	protected function compileStack(string $expression): string
+	protected function compileStack(string|null $expression = null): string
 	{
 		return "<?php echo \$__env->yieldPushContent{$expression}; ?>";
 	}

@@ -7,9 +7,9 @@ trait CompilesInjections
 	/**
 	 * Compile the inject statements into valid PHP.
 	 */
-	protected function compileInject(string $expression): string
+	protected function compileInject(string|null $expression = null): string
 	{
-		$segments = explode(',', preg_replace("/[\(\)]/", '', $expression));
+		$segments = explode(',', preg_replace("/[\(\)]/", '', $expression ?? ''));
 
 		$variable = trim($segments[0], " '\"");
 
