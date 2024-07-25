@@ -101,6 +101,13 @@ class Application extends Container implements CachesConfiguration
 	protected string $configPath = '';
 
 	/**
+	 * The custom database path defined by the developer.
+	 *
+	 * @var string
+	 */
+	protected $databasePath = '';
+
+	/**
 	 * The environment file to load during bootstrapping.
 	 *
 	 * @var string
@@ -224,6 +231,7 @@ class Application extends Container implements CachesConfiguration
 		$this->instance('path', $this->path());
 		$this->instance('path.base', $this->basePath());
 		$this->instance('path.config', $this->configPath());
+		$this->instance('path.database', $this->databasePath());
 		$this->instance('path.public', $this->publicPath());
 		$this->instance('path.resources', $this->resourcePath());
 		$this->instance('path.storage', $this->storagePath());
@@ -350,6 +358,14 @@ class Application extends Container implements CachesConfiguration
 			->withKernels()
 			->withCommands()
 			->withProviders();
+	}
+
+	/**
+	 * Get the path to the database directory.
+	 */
+	public function databasePath(string $path = ''): string
+	{
+		return $this->joinPaths($this->databasePath ?: $this->basePath('database'), $path);
 	}
 
 	/**
@@ -721,6 +737,15 @@ class Application extends Container implements CachesConfiguration
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
 			],
+			'db' => [
+				\MVPS\Lumis\Framework\Database\DatabaseManager::class,
+				\MVPS\Lumis\Framework\Database\ConnectionResolver::class,
+			],
+			'db.connection' => [
+				\MVPS\Lumis\Framework\Database\Connection::class,
+				\MVPS\Lumis\Framework\Contracts\Database\Connection::class,
+			],
+			'db.schema' => [\MVPS\Lumis\Framework\Database\Schema\Builder::class],
 			'events' => [
 				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
 				\MVPS\Lumis\Framework\Events\Dispatcher::class,
@@ -840,6 +865,18 @@ class Application extends Container implements CachesConfiguration
 		$this->bootstrapPath = $path;
 
 		$this->instance('path.bootstrap', $path);
+
+		return $this;
+	}
+
+	/**
+	 * Set the database directory.
+	 */
+	public function useDatabasePath(string $path): static
+	{
+		$this->databasePath = $path;
+
+		$this->instance('path.database', $path);
 
 		return $this;
 	}
