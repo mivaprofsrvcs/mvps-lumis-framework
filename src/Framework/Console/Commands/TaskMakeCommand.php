@@ -3,7 +3,6 @@
 namespace MVPS\Lumis\Framework\Console\Commands;
 
 use MVPS\Lumis\Framework\Console\GeneratorCommand;
-use MVPS\Lumis\Framework\Contracts\Console\PromptsForMissingInput as PromptsForMissingInputContract;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Tasks\Task;
 use Symfony\Component\Console\Attribute\AsCommand;
