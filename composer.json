@@ -11,6 +11,7 @@
     ],
 	"require": {
 		"php": "^8.2",
+		"fakerphp/faker": "^1.23",
 		"illuminate/console": "^11.12",
 		"illuminate/database": "^11.17",
 		"illuminate/pagination": "^11.17",
