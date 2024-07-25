@@ -42,7 +42,7 @@ class Application extends Container implements CachesConfiguration
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.4.0';
+	public const VERSION = '2.5.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
