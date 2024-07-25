@@ -11,6 +11,7 @@ use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\ViewMakeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
