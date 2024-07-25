@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Console;
 
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
+use MVPS\Lumis\Framework\Console\Commands\ComponentMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConsoleMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ControllerMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
@@ -49,7 +50,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	 * @var array
 	 */
 	protected array $devCommands = [
-		// 'ComponentMake' => ComponentMakeCommand::class,
+		'ComponentMake' => ComponentMakeCommand::class,
 		// 'ConfigPublish' => ConfigPublishCommand::class,
 		'ConsoleMake' => ConsoleMakeCommand::class,
 		'ControllerMake' => ControllerMakeCommand::class,
@@ -98,6 +99,16 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		}
 
 		$this->commands(array_values($commands));
+	}
+
+	/**
+	 * Register the component make command.
+	 */
+	protected function registerComponentMakeCommand(): void
+	{
+		$this->app->singleton(ComponentMakeCommand::class, function ($app) {
+			return new ComponentMakeCommand($app['files']);
+		});
 	}
 
 	/**
