@@ -10,15 +10,11 @@ class EnvironmentCommand extends Command
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Display the current framework environment';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'env';
 

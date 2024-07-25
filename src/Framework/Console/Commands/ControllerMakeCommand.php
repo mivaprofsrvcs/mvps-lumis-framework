@@ -18,22 +18,16 @@ class ControllerMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new controller class';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:controller';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected string $type = 'Controller';
 

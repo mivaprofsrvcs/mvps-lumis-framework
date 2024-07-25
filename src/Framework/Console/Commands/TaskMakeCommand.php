@@ -18,15 +18,11 @@ class TaskMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new Task class';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:task';
 
@@ -45,8 +41,6 @@ class TaskMakeCommand extends GeneratorCommand
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected string $type = 'Task';
 

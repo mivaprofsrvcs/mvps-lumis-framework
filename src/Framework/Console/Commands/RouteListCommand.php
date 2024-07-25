@@ -21,8 +21,6 @@ class RouteListCommand extends Command
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'List all registered routes';
 

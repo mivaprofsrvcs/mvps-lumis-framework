@@ -12,15 +12,11 @@ class ProviderMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new service provider class';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:provider';
 

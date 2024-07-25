@@ -55,7 +55,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'ProviderMake' => ProviderMakeCommand::class,
 		'TaskMake' => TaskMakeCommand::class,
 		'Serve' => ServeCommand::class,
-		// 'ViewMake' => ViewMakeCommand::class,
+		'ViewMake' => ViewMakeCommand::class,
 	];
 
 	/**

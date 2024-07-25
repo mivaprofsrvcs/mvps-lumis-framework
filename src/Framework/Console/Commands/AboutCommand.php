@@ -35,15 +35,11 @@ class AboutCommand extends Command
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Display basic information about your application';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $signature = 'about {--only= : The section to display} {--json : Output the information as JSON}';
 

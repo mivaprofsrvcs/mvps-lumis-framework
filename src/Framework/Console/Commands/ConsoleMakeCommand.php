@@ -13,22 +13,16 @@ class ConsoleMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new Artisan command';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:command';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected string $type = 'Console command';
 

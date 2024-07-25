@@ -18,15 +18,11 @@ class ServeCommand extends Command
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Serve the application on the PHP development server';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'serve';
 
@@ -47,7 +43,7 @@ class ServeCommand extends Command
 	/**
 	 * The list of requests being handled and their start time.
 	 *
-	 * @var array<int, \Illuminate\Support\Carbon>
+	 * @var array
 	 */
 	protected array $requestsPool;
 
