@@ -1,0 +1,26 @@
+<?php
+
+namespace {{ namespace }};
+
+use Closure;
+use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\View\Component;
+
+class {{ class }} extends Component
+{
+	/**
+	 * Create a new view component instance.
+	 */
+	public function __construct()
+	{
+		//
+	}
+
+	/**
+	 * Renders the component's output.
+	 */
+	public function render(): View|Closure|string
+	{
+		return {{ view }};
+	}
+}
