@@ -88,6 +88,16 @@ if (! function_exists('config_path')) {
 	}
 }
 
+if (! function_exists('database_path')) {
+	/**
+	 * Get the database path.
+	 */
+	function database_path(string $path = ''): string
+	{
+		return app()->databasePath($path);
+	}
+}
+
 if (! function_exists('method_field')) {
 	/**
 	 * Generate a hidden form field to spoof the HTTP verb used by the form.
