@@ -2,7 +2,7 @@
 
 namespace MVPS\Lumis\Framework\View\Compilers\Traits;
 
-use MVPS\Lumis\Framework\Contracts\View\ViewCompilationException;
+use MVPS\Lumis\Framework\View\Exceptions\ViewCompilationException;
 
 trait CompilesLoops
 {
@@ -110,7 +110,7 @@ trait CompilesLoops
 	/**
 	 * Compile the for-each statements into valid PHP.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\View\ViewCompilationException
+	 * @throws \MVPS\Lumis\Framework\View\Exceptions\ViewCompilationException
 	 */
 	protected function compileForeach(string|null $expression = null): string
 	{
@@ -134,7 +134,7 @@ trait CompilesLoops
 	/**
 	 * Compile the for-else statements into valid PHP.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\View\ViewCompilationException
+	 * @throws \MVPS\Lumis\Framework\View\Exceptions\ViewCompilationException
 	 */
 	protected function compileForelse(string|null $expression = null): string
 	{

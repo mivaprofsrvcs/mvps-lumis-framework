@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Contracts\View;
+namespace MVPS\Lumis\Framework\View\Exceptions;
 
 use Illuminate\Contracts\View\ViewCompilationException as IlluminateViewCompilationException;
 
