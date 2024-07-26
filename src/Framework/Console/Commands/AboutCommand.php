@@ -184,11 +184,11 @@ class AboutCommand extends Command
 		// 	),
 		// ]);
 
-		// TODO: Implement this when adding caching & driver support
-		// static::addToSection('Drivers', fn () => array_filter([
-		// 	'Cache' => config('cache.default'),
-		// 	'Database' => config('database.default'),
-		// ]));
+		// TODO: Implement this when adding caching support
+		static::addToSection('Drivers', fn () => array_filter([
+			// 'Cache' => config('cache.default'),
+			'Database' => config('database.default'),
+		]));
 
 		collection(static::$customDataResolvers)
 			->each
