@@ -28,7 +28,7 @@ class ViewMakeCommand extends GeneratorCommand
 	/**
 	 * Build the class with the given name.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	protected function buildClass(string $name): string
 	{

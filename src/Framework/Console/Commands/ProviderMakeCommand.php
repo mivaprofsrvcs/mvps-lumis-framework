@@ -61,7 +61,7 @@ class ProviderMakeCommand extends GeneratorCommand
 	/**
 	 * Execute the console command.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	public function handle(): bool|null
 	{
