@@ -878,7 +878,12 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	public function registerCoreContainerAliases(): void
 	{
 		$coreAliases = [
-			'app' => [static::class],
+			'app' => [
+				static::class,
+				\MVPS\Lumis\Framework\Contracts\Container\Container::class,
+				\MVPS\Lumis\Framework\Contracts\Framework\Application::class,
+				\Psr\Container\ContainerInterface::class,
+			],
 			'blade.compiler' => [\MVPS\Lumis\Framework\View\Compilers\BladeCompiler::class],
 			'config' => [
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
