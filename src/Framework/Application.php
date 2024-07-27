@@ -8,6 +8,7 @@ use MVPS\Lumis\Framework\Configuration\ApplicationBuilder;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
+use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
 use MVPS\Lumis\Framework\Events\EventServiceProvider;
 use MVPS\Lumis\Framework\Http\Request;
@@ -21,7 +22,7 @@ use RuntimeException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-class Application extends Container implements CachesConfiguration
+class Application extends Container implements ApplicationContract, CachesConfiguration
 {
 	/**
 	 * The base configuration directory path.
@@ -105,7 +106,14 @@ class Application extends Container implements CachesConfiguration
 	 *
 	 * @var string
 	 */
-	protected $databasePath = '';
+	protected string $databasePath = '';
+
+	/**
+	 * The deferred services and their providers.
+	 *
+	 * @var array
+	 */
+	protected array $deferredServices = [];
 
 	/**
 	 * The environment file to load during bootstrapping.
@@ -134,6 +142,13 @@ class Application extends Container implements CachesConfiguration
 	 * @var bool|null
 	 */
 	protected bool|null $isRunningInConsole = null;
+
+	/**
+	 * The custom language file path defined by the developer.
+	 *
+	 * @var string
+	 */
+	protected string $langPath = '';
 
 	/**
 	 * The loaded service providers.
@@ -192,6 +207,13 @@ class Application extends Container implements CachesConfiguration
 	protected string $taskPath = '';
 
 	/**
+	 * The array of terminating callbacks.
+	 *
+	 * @var callable[]
+	 */
+	protected $terminatingCallbacks = [];
+
+	/**
 	 * Create a new Lumis application instance.
 	 */
 	public function __construct(string|null $basePath = null)
@@ -218,7 +240,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the base path of the application.
 	 */
-	public function basePath(string $path = ''): string
+	public function basePath($path = ''): string
 	{
 		return $this->joinPaths($this->basePath, $path);
 	}
@@ -238,6 +260,12 @@ class Application extends Container implements CachesConfiguration
 		$this->instance('path.tasks', $this->taskPath());
 
 		$this->useBootstrapPath($this->basePath('bootstrap'));
+
+		$this->useLangPath(value(function () {
+			return is_dir($directory = $this->resourcePath('lang'))
+				? $directory
+				: $this->basePath('lang');
+		}));
 	}
 
 	/**
@@ -249,7 +277,7 @@ class Application extends Container implements CachesConfiguration
 			return;
 		}
 
-		$this->callAppCallbacks($this->bootingCallbacks);
+		$this->fireAppCallbacks($this->bootingCallbacks);
 
 		array_walk($this->serviceProviders, function ($provider) {
 			$this->bootProvider($provider);
@@ -257,7 +285,7 @@ class Application extends Container implements CachesConfiguration
 
 		$this->booted = true;
 
-		$this->callAppCallbacks($this->bootedCallbacks);
+		$this->fireAppCallbacks($this->bootedCallbacks);
 	}
 
 	/**
@@ -277,7 +305,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Register a new "booted" listener.
 	 */
-	public function booted(callable $callback): void
+	public function booted($callback): void
 	{
 		$this->bootedCallbacks[] = $callback;
 
@@ -289,7 +317,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Register a new boot listener.
 	 */
-	public function booting(callable $callback): void
+	public function booting($callback): void
 	{
 		$this->bootingCallbacks[] = $callback;
 	}
@@ -297,7 +325,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the path to the bootstrap directory.
 	 */
-	public function bootstrapPath(string $path = ''): string
+	public function bootstrapPath($path = ''): string
 	{
 		return $this->joinPaths($this->bootstrapPath, $path);
 	}
@@ -315,23 +343,17 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
-	 * Call the booting callbacks for the application.
+	 * Determine if the given abstract type has been bound.
 	 */
-	protected function callAppCallbacks(array &$callbacks): void
+	public function bound($abstract): bool
 	{
-		$index = 0;
-
-		while ($index < count($callbacks)) {
-			$callbacks[$index]($this);
-
-			$index++;
-		}
+		return $this->isDeferredService($abstract) || parent::bound($abstract);
 	}
 
 	/**
 	 * Get the path to the application configuration files.
 	 */
-	public function configPath(string $path = ''): string
+	public function configPath($path = ''): string
 	{
 		return $this->joinPaths($this->configPath ?: $this->basePath('config'), $path);
 	}
@@ -363,7 +385,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the path to the database directory.
 	 */
-	public function databasePath(string $path = ''): string
+	public function databasePath($path = ''): string
 	{
 		return $this->joinPaths($this->databasePath ?: $this->basePath('database'), $path);
 	}
@@ -381,7 +403,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the current application environment.
 	 */
-	public function environment(string|array ...$environments): string|bool
+	public function environment(...$environments): string|bool
 	{
 		if (count($environments) > 0) {
 			$patterns = is_array($environments[0]) ? $environments[0] : $environments;
@@ -417,18 +439,40 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Call the booting callbacks for the application.
+	 */
+	protected function fireAppCallbacks(array &$callbacks): void
+	{
+		$index = 0;
+
+		while ($index < count($callbacks)) {
+			$callbacks[$index]($this);
+
+			$index++;
+		}
+	}
+
+	/**
 	 * Flush the container of all bindings and resolved instances.
 	 */
 	public function flush(): void
 	{
 		parent::flush();
 
+		$this->afterResolvingCallbacks = [];
+		$this->beforeResolvingCallbacks = [];
 		$this->bootedCallbacks = [];
 		$this->bootingCallbacks = [];
 		$this->buildStack = [];
+		$this->deferredServices = [];
+		$this->globalAfterResolvingCallbacks = [];
+		$this->globalBeforeResolvingCallbacks = [];
+		$this->globalResolvingCallbacks = [];
 		$this->loadedProviders = [];
 		$this->reboundCallbacks = [];
+		$this->resolvingCallbacks = [];
 		$this->serviceProviders = [];
+		$this->terminatingCallbacks = [];
 	}
 
 	public function frameworkConigPath(): string
@@ -463,6 +507,14 @@ class Application extends Container implements CachesConfiguration
 	public function getCachedServicesPath(): string
 	{
 		return $this->normalizeCachePath('APP_SERVICES_CACHE', 'cache/services.php');
+	}
+
+	/**
+	 * Get the current application locale.
+	 */
+	public function getLocale(): string
+	{
+		return $this['config']->get('app.locale') ?? '';
 	}
 
 	/**
@@ -501,8 +553,10 @@ class Application extends Container implements CachesConfiguration
 
 	/**
 	 * Get the registered service provider instances if any exist.
+	 *
+	 * @param  \MVPS\Lumis\Framework\Providers\ServiceProvider|string  $provider
 	 */
-	public function getProviders(ServiceProvider|string $provider): array
+	public function getProviders($provider): array
 	{
 		$name = is_string($provider) ? $provider : get_class($provider);
 
@@ -578,6 +632,22 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Determine if the given service is a deferred service.
+	 */
+	public function isDeferredService(string $service): bool
+	{
+		return isset($this->deferredServices[$service]);
+	}
+
+	/**
+	 * Determine if the application is currently down for maintenance.
+	 */
+	public function isDownForMaintenance(): bool
+	{
+		return false;
+	}
+
+	/**
 	 * Determine if the application is in the local environment.
 	 */
 	public function isLocal(): bool
@@ -599,6 +669,79 @@ class Application extends Container implements CachesConfiguration
 	public function joinPaths(string $basePath, string $path = ''): string
 	{
 		return $basePath . ($path !== '' ? DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR) : '');
+	}
+
+	/**
+	 * Get the path to the language files.
+	 */
+	public function langPath($path = ''): string
+	{
+		return $this->joinPaths($this->langPath, $path);
+	}
+
+	/**
+	 * Load the provider for a deferred service.
+	 */
+	public function loadDeferredProvider($service): void
+	{
+		if (! $this->isDeferredService($service)) {
+			return;
+		}
+
+		$provider = $this->deferredServices[$service];
+
+		// Register the service provider if it hasn't been loaded yet. This prevents
+		// redundant registrations and removes the service from the deferred list.
+		if (! isset($this->loadedProviders[$provider])) {
+			$this->registerDeferredProvider($provider, $service);
+		}
+	}
+
+	/**
+	 * Load the deferred provider if the given type is a deferred service and the instance has not been loaded.
+	 */
+	protected function loadDeferredProviderIfNeeded(string $abstract): void
+	{
+		if ($this->isDeferredService($abstract) && ! isset($this->instances[$abstract])) {
+			$this->loadDeferredProvider($abstract);
+		}
+	}
+
+	/**
+	 * Load and boot all of the remaining deferred providers.
+	 */
+	public function loadDeferredProviders(): void
+	{
+		// Iterates over deferred service providers, registering each one and
+		// booting them if the application has already started. This ensures
+		// all deferred services are available for immediate use.
+		foreach ($this->deferredServices as $service => $provider) {
+			$this->loadDeferredProvider($service);
+		}
+
+		$this->deferredServices = [];
+	}
+
+	/**
+	 * Get an instance of the maintenance mode manager implementation.
+	 */
+	public function maintenanceMode(): null
+	{
+		return null;
+	}
+
+	/**
+	 * Resolve the given type from the container.
+	 *
+	 * @throws \Illuminate\Contracts\Container\BindingResolutionException
+	 */
+	public function make($abstract, array $parameters = []): mixed
+	{
+		$abstract = $this->getAlias($abstract);
+
+		$this->loadDeferredProviderIfNeeded($abstract);
+
+		return parent::make($abstract, $parameters);
 	}
 
 	/**
@@ -638,15 +781,19 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the path to the public / web directory.
 	 */
-	public function publicPath(string $path = ''): string
+	public function publicPath($path = ''): string
 	{
 		return $this->joinPaths($this->publicPath ?: $this->basePath('httpdocs'), $path);
 	}
 
 	/**
 	 * Register a service provider with the application.
+	 *
+	 * @param  \MVPS\Lumis\Framework\Providers\ServiceProvider|string  $provider
+	 * @param  bool  $force
+	 * @return \MVPS\Lumis\Framework\Providers\ServiceProvider
 	 */
-	public function register(ServiceProvider|string $provider, bool $force = false): ServiceProvider
+	public function register($provider, $force = false): ServiceProvider
 	{
 		$registered = $this->getProvider($provider);
 
@@ -722,7 +869,7 @@ class Application extends Container implements CachesConfiguration
 			$this->register($provider);
 		}
 
-		$this->callAppCallbacks($this->registeredCallbacks);
+		$this->fireAppCallbacks($this->registeredCallbacks);
 	}
 
 	/**
@@ -739,13 +886,13 @@ class Application extends Container implements CachesConfiguration
 			],
 			'db' => [
 				\MVPS\Lumis\Framework\Database\DatabaseManager::class,
-				\MVPS\Lumis\Framework\Database\ConnectionResolver::class,
+				\Illuminate\Database\ConnectionResolverInterface::class,
 			],
 			'db.connection' => [
-				\MVPS\Lumis\Framework\Database\Connection::class,
-				\MVPS\Lumis\Framework\Contracts\Database\Connection::class,
+				\Illuminate\Database\Connection::class,
+				\Illuminate\Database\ConnectionInterface::class,
 			],
-			'db.schema' => [\MVPS\Lumis\Framework\Database\Schema\Builder::class],
+			'db.schema' => [\Illuminate\Database\Schema\Builder::class],
 			'events' => [
 				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
 				\MVPS\Lumis\Framework\Events\Dispatcher::class,
@@ -777,6 +924,28 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Register a deferred provider and service.
+	 */
+	public function registerDeferredProvider($provider, $service = null): void
+	{
+		// Removes the service provider from the deferred services list once the
+		// provider has been registered, preventing redundant resolution attempts.
+		if ($service) {
+			unset($this->deferredServices[$service]);
+		}
+
+		$instance = new $provider($this);
+
+		$this->register($instance);
+
+		if (! $this->isBooted()) {
+			$this->booting(function () use ($instance) {
+				$this->bootProvider($instance);
+			});
+		}
+	}
+
+	/**
 	 * Register a new registered listener.
 	 */
 	public function registered(callable $callback): void
@@ -785,9 +954,26 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
-	 * Resolve a service provider instance from the class name.
+	 * Resolve the given type from the container.
+	 *
+	 * @throws \Illuminate\Contracts\Container\BindingResolutionException
+	 * @throws \Illuminate\Contracts\Container\CircularDependencyException
 	 */
-	public function resolveProvider(string $provider): ServiceProvider
+	protected function resolve($abstract, $parameters = [], $raiseEvents = true): mixed
+	{
+		$abstract = $this->getAlias($abstract);
+
+		$this->loadDeferredProviderIfNeeded($abstract);
+
+		return parent::resolve($abstract, $parameters, $raiseEvents);
+	}
+
+	/**
+	 * Resolve a service provider instance from the class name.
+	 *
+	 * @return \MVPS\Lumis\Framework\Providers\ServiceProvider
+	 */
+	public function resolveProvider($provider): ServiceProvider
 	{
 		return new $provider($this);
 	}
@@ -795,7 +981,7 @@ class Application extends Container implements CachesConfiguration
 	/**
 	 * Get the path to the resources directory.
 	 */
-	public function resourcePath(string $path = ''): string
+	public function resourcePath($path = ''): string
 	{
 		return $this->joinPaths($this->basePath('resources'), $path);
 	}
@@ -834,6 +1020,14 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Set the current application locale.
+	 */
+	public function setLocale($locale): void
+	{
+		$this['config']->set('app.locale', $locale);
+	}
+
+	/**
 	 * Determine if the framework's base configuration should be merged.
 	 */
 	public function shouldMergeFrameworkConfiguration(): bool
@@ -842,9 +1036,17 @@ class Application extends Container implements CachesConfiguration
 	}
 
 	/**
+	 * Determine if middleware has been disabled for the application.
+	 */
+	public function shouldSkipMiddleware(): bool
+	{
+		return $this->bound('middleware.disable') && $this->make('middleware.disable') === true;
+	}
+
+	/**
 	 * Get the path to the storage directory.
 	 */
-	public function storagePath(string $path = ''): string
+	public function storagePath($path = ''): string
 	{
 		return $this->joinPaths($this->storagePath ?: $this->basePath('storage'), $path);
 	}
@@ -855,6 +1057,30 @@ class Application extends Container implements CachesConfiguration
 	public function taskPath(string $path = ''): string
 	{
 		return $this->joinPaths($this->taskPath ?: $this->basePath('tasks'), $path);
+	}
+
+	/**
+	 * Terminate the application.
+	 */
+	public function terminate(): void
+	{
+		$index = 0;
+
+		while ($index < count($this->terminatingCallbacks)) {
+			$this->call($this->terminatingCallbacks[$index]);
+
+			$index++;
+		}
+	}
+
+	/**
+	 * Register a terminating callback with the application.
+	 */
+	public function terminating($callback): static
+	{
+		$this->terminatingCallbacks[] = $callback;
+
+		return $this;
 	}
 
 	/**
@@ -877,6 +1103,18 @@ class Application extends Container implements CachesConfiguration
 		$this->databasePath = $path;
 
 		$this->instance('path.database', $path);
+
+		return $this;
+	}
+
+	/**
+	 * Set the language file directory.
+	 */
+	public function useLangPath($path): static
+	{
+		$this->langPath = $path;
+
+		$this->instance('path.lang', $path);
 
 		return $this;
 	}
