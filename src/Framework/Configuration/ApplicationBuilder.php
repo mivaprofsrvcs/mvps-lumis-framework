@@ -16,6 +16,13 @@ use MVPS\Lumis\Framework\Routing\RouteServiceProvider as AppRouteServiceProvider
 class ApplicationBuilder
 {
 	/**
+	 * The framework application instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Application
+	 */
+	protected Application $app;
+
+	/**
 	 * The service provider that are marked for registration.
 	 *
 	 * @var array
@@ -25,8 +32,9 @@ class ApplicationBuilder
 	/**
 	 * Create a new application builder instance.
 	 */
-	public function __construct(protected Application $app)
+	public function __construct(Application $app)
 	{
+		$this->app = $app;
 	}
 
 	/**
