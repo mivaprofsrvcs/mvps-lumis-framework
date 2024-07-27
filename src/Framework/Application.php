@@ -882,6 +882,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				static::class,
 				\MVPS\Lumis\Framework\Contracts\Container\Container::class,
 				\MVPS\Lumis\Framework\Contracts\Framework\Application::class,
+				\Illuminate\Contracts\Container\Container::class,
+				\Illuminate\Contracts\Foundation\Application::class,
 				\Psr\Container\ContainerInterface::class,
 			],
 			'blade.compiler' => [\MVPS\Lumis\Framework\View\Compilers\BladeCompiler::class],
@@ -899,25 +901,29 @@ class Application extends Container implements ApplicationContract, CachesConfig
 			],
 			'db.schema' => [\Illuminate\Database\Schema\Builder::class],
 			'events' => [
-				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
 				\MVPS\Lumis\Framework\Events\Dispatcher::class,
+				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
+				\Illuminate\Contracts\Events\Dispatcher::class,
 			],
 			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
 			'log' => [
 				\MVPS\Lumis\Framework\Log\LogService::class,
 				\Psr\Log\LoggerInterface::class,
 			],
-			'request' => [\MVPS\Lumis\Framework\Http\Request::class],
+			'request' => [
+				Request::class,
+				\Psr\Http\Message\ServerRequestInterface::class,
+			],
 			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
 			'url' => [
-				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
+				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
 			],
 			// TODO: Implement these
 			// 'encrypter' => [Encrypter::class],
 			'view' => [
-				\MVPS\Lumis\Framework\Contracts\View\Factory::class,
 				\MVPS\Lumis\Framework\View\Factory::class,
+				\MVPS\Lumis\Framework\Contracts\View\Factory::class,
 			],
 		];
 
