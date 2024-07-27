@@ -3,6 +3,7 @@
 namespace {{ namespace }};
 
 use {{ rootNamespace }}Http\Controllers\Controller;
+use MVPS\Lumis\Framework\Http\Request;
 
 class {{ class }} extends Controller
 {
