@@ -16,6 +16,8 @@ use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionRenderer;
 use MVPS\Lumis\Framework\Contracts\Http\HttpException as HttpExceptionContract;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
+use MVPS\Lumis\Framework\Exceptions\Console\Handler as ConsoleHandler;
+use MVPS\Lumis\Framework\Exceptions\Console\Inspector;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
 use MVPS\Lumis\Framework\Http\Exceptions\BadRequestHttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
@@ -33,7 +35,6 @@ use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 use pdeans\Http\Contracts\ExceptionInterface as RequestExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Symfony\Component\Console\Application as ConsoleApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorRenderer\HtmlErrorRenderer;
@@ -626,7 +627,11 @@ class Handler implements ExceptionHandler
 			return;
 		}
 
-		(new ConsoleApplication)->renderThrowable($e, $output);
+		$handler = new ConsoleHandler;
+
+		$handler->setInspector(new Inspector($e));
+
+		$handler->handle();
 	}
 
 	/**
