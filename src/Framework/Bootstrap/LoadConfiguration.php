@@ -6,6 +6,7 @@ use Exception;
 use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Configuration\Repository;
 use MVPS\Lumis\Framework\Contracts\Bootstrap\Bootstrapper;
+use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Configuration\Repository as ConfigRepositoryContract;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
@@ -15,7 +16,7 @@ class LoadConfiguration implements Bootstrapper
 	/**
 	 * Bootstrap the given application.
 	 */
-	public function bootstrap(Application $app): void
+	public function bootstrap(ApplicationContract $app): void
 	{
 		$items = [];
 
@@ -68,7 +69,7 @@ class LoadConfiguration implements Bootstrapper
 	/**
 	 * Get all of the configuration files for the application.
 	 */
-	protected function getConfigurationFiles(Application $app): array
+	protected function getConfigurationFiles(ApplicationContract $app): array
 	{
 		$files = [];
 
@@ -137,7 +138,7 @@ class LoadConfiguration implements Bootstrapper
 	 *
 	 * @throws \Exception
 	 */
-	protected function loadConfigurationFiles(Application $app, ConfigRepositoryContract $repository): void
+	protected function loadConfigurationFiles(ApplicationContract $app, ConfigRepositoryContract $repository): void
 	{
 		$files = $this->getConfigurationFiles($app);
 

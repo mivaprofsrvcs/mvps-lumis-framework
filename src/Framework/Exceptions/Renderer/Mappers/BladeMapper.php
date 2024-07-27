@@ -2,8 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Exceptions\Renderer\Mappers;
 
-use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Collections\Collection;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\View\Factory;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\View\Compilers\BladeCompiler;

@@ -4,8 +4,8 @@ namespace MVPS\Lumis\Framework\Bootstrap;
 
 use ErrorException;
 use Exception;
-use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Errors\FatalError;
 use MVPS\Lumis\Framework\Log\LogService;
 use Symfony\Component\Console\Output\ConsoleOutput;
@@ -16,7 +16,7 @@ class HandleExceptions
 	/**
 	 * The application instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application|null
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application|null
 	 */
 	protected static Application|null $app = null;
 

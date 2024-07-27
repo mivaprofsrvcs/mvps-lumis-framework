@@ -3,15 +3,15 @@
 namespace MVPS\Lumis\Framework\Providers;
 
 use Closure;
-use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Console\Application as ConsoleApplication;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 
 abstract class ServiceProvider
 {
 	/**
 	 * The application instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
 	protected Application $app;
 

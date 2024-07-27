@@ -9,7 +9,7 @@ use Illuminate\Console\ManuallyFailedException;
 use Illuminate\Console\OutputStyle;
 use Illuminate\Console\View\Components\Factory;
 use Illuminate\Contracts\Console\Isolatable;
-use MVPS\Lumis\Framework\Application as LumisApplication;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,16 +19,16 @@ class Command extends IlluminateCommand
 	/**
 	 * Overwrite the Laravel application reference for Illuminate Command instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application|null
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
 	protected $laravel;
 
 	/**
 	 * The Lumis application instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
-	protected LumisApplication|null $lumis = null;
+	protected Application|null $lumis = null;
 
 	/**
 	 * {@inheritdoc}
@@ -76,7 +76,7 @@ class Command extends IlluminateCommand
 	/**
 	 * Get the Lumis application instance.
 	 */
-	public function getLumis(): LumisApplication
+	public function getLumis(): Application
 	{
 		return $this->lumis;
 	}
@@ -128,7 +128,7 @@ class Command extends IlluminateCommand
 	/**
 	 * Set the Lumis and Laravel application instance.
 	 */
-	public function setLumis(LumisApplication $lumis): static
+	public function setLumis(Application $lumis): static
 	{
 		$this->lumis = $lumis;
 		$this->laravel = $lumis;

@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Providers;
 use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
+use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory;
 use MVPS\Lumis\Framework\Debugging\CliDumper;
 use MVPS\Lumis\Framework\Debugging\HtmlDumper;
@@ -71,14 +72,14 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 			'lumis-exceptions-renderer'
 		);
 
-		$this->app->singleton(Renderer::class, function (Application $app) {
+		$this->app->singleton(Renderer::class, function (ApplicationContract $app) {
 			$errorRenderer = new HtmlErrorRenderer($app['config']->get('app.debug'));
 
 			return new Renderer(
 				$app->make(Factory::class),
 				$errorRenderer,
 				$app->make(BladeMapper::class),
-				$app->basePath(),
+				$app->basePath()
 			);
 		});
 	}

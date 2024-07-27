@@ -3,9 +3,9 @@
 namespace MVPS\Lumis\Framework\Bootstrap;
 
 use Dotenv\Dotenv;
-use MVPS\Lumis\Framework\Application;
-use MVPS\Lumis\Framework\Support\Env;
 use MVPS\Lumis\Framework\Contracts\Bootstrap\Bootstrapper;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
+use MVPS\Lumis\Framework\Support\Env;
 
 class LoadEnvironmentVariables implements Bootstrapper
 {

@@ -5,8 +5,8 @@ namespace MVPS\Lumis\Framework\Log;
 use BackedEnum;
 use Closure;
 use DateTimeInterface;
-use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use MVPS\Lumis\Framework\Filesystem\Filesystem;
@@ -24,7 +24,7 @@ class LogService implements LoggerInterface
 	/**
 	 * The Lumis application instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
 	protected Application $app;
 

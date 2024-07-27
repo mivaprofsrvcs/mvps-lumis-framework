@@ -161,15 +161,9 @@ class ApplicationBuilder
 	 */
 	public function withKernels(): static
 	{
-		$this->app->singleton(
-			HttpKernelContract::class,
-			HttpKernel::class,
-		);
+		$this->app->singleton(HttpKernelContract::class, HttpKernel::class);
 
-		$this->app->singleton(
-			ConsoleKernelContract::class,
-			ConsoleKernel::class,
-		);
+		$this->app->singleton(ConsoleKernelContract::class, ConsoleKernel::class);
 
 		return $this;
 	}

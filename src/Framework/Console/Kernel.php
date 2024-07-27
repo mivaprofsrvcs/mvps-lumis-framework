@@ -4,7 +4,6 @@ namespace MVPS\Lumis\Framework\Console;
 
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
-use MVPS\Lumis\Framework\Application as LumisApp;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
 use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
@@ -15,6 +14,7 @@ use MVPS\Lumis\Framework\Console\Application as LumisConsoleApp;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
@@ -34,9 +34,9 @@ class Kernel implements KernelContract
 	/**
 	 * The application implementation.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
-	protected LumisApp $app;
+	protected Application $app;
 
 	/**
 	 * The bootstrap classes for the application.
@@ -111,7 +111,7 @@ class Kernel implements KernelContract
 	/**
 	 * Create a new console kernel instance.
 	 */
-	public function __construct(LumisApp $app, Dispatcher $events)
+	public function __construct(Application $app, Dispatcher $events)
 	{
 		if (! defined('LUMIS_BINARY')) {
 			define('LUMIS_BINARY', 'lumis');

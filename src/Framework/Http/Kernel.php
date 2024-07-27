@@ -2,13 +2,13 @@
 
 namespace MVPS\Lumis\Framework\Http;
 
-use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
 use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Router;
@@ -19,7 +19,7 @@ class Kernel implements KernelContract
 	/**
 	 * The application instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
 	protected Application $app;
 
@@ -73,6 +73,14 @@ class Kernel implements KernelContract
 	}
 
 	/**
+	 * Get the Lumis application instance.
+	 */
+	public function getApplication(): Application
+	{
+		return $this->app;
+	}
+
+	/**
 	 * Handle an incoming HTTP request.
 	 */
 	public function handle(Request $request): Response
@@ -118,5 +126,15 @@ class Kernel implements KernelContract
 		$this->bootstrap();
 
 		return $this->router->dispatch($request);
+	}
+
+	/**
+	 * Set the Lumis application instance.
+	 */
+	public function setApplication(Application $app)
+	{
+		$this->app = $app;
+
+		return $this;
 	}
 }
