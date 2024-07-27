@@ -33,8 +33,7 @@ if (! function_exists('app')) {
 			return Container::getInstance();
 		}
 
-		return Container::getInstance()
-			->make($abstract, $parameters);
+		return Container::getInstance()->make($abstract, $parameters);
 	}
 }
 
