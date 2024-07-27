@@ -4,10 +4,11 @@ namespace MVPS\Lumis\Framework\Database;
 
 use Faker\Factory as FakerFactory;
 use Faker\Generator as FakerGenerator;
+use Illuminate\Database\DatabaseTransactionsManager;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\QueueEntityResolver;
 use MVPS\Lumis\Framework\Contracts\Queue\EntityResolver;
 use MVPS\Lumis\Framework\Database\Connectors\ConnectionFactory;
-use MVPS\Lumis\Framework\Database\Eloquent\Model;
-use MVPS\Lumis\Framework\Database\Eloquent\QueueEntityResolver;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
 class DatabaseServiceProvider extends ServiceProvider
