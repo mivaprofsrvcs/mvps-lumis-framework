@@ -12,6 +12,7 @@
 	"require": {
 		"php": "^8.2",
 		"fakerphp/faker": "^1.23",
+		"filp/whoops": "^2.15",
 		"illuminate/console": "^11.12",
 		"illuminate/database": "^11.17",
 		"illuminate/pagination": "^11.17",
