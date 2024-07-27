@@ -3,14 +3,14 @@
 namespace MVPS\Lumis\Framework\Database\Connectors;
 
 use Illuminate\Database\Connectors\ConnectionFactory as IlluminateConnectionFactory;
-use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Container\Container;
 
 class ConnectionFactory extends IlluminateConnectionFactory
 {
 	/**
 	 * The IoC container instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Container\Container
+	 * @var \MVPS\Lumis\Framework\Contracts\Container\Container
 	 */
 	protected $container;
 

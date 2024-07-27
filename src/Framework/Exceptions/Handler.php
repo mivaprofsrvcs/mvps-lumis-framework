@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use MVPS\Lumis\Framework\Cache\RateLimiter;
 use MVPS\Lumis\Framework\Cache\RateLimiting\Limit;
 use MVPS\Lumis\Framework\Cache\RateLimiting\Unlimited;
-use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionRenderer;
 use MVPS\Lumis\Framework\Contracts\Http\HttpException as HttpExceptionContract;
@@ -47,7 +47,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * The container implementation.
 	 *
-	 * @var \MVPS\Lumis\Framework\Container\Container
+	 * @var \MVPS\Lumis\Framework\Contracts\Container\Container
 	 */
 	protected Container $container;
 

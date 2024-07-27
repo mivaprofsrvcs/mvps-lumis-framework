@@ -14,7 +14,7 @@ class Factory extends IlluminateFactory implements FactoryContract
 	/**
 	 * The IoC container instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Container\Container
+	 * @var \MVPS\Lumis\Framework\Contracts\Container\Container
 	 */
 	protected $container;
 
