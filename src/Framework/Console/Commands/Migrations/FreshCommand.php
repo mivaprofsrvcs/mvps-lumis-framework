@@ -2,9 +2,11 @@
 
 namespace MVPS\Lumis\Framework\Console\Commands\Migrations;
 
+use Illuminate\Console\Prohibitable;
 use Illuminate\Database\Events\DatabaseRefreshed;
 use Illuminate\Database\Migrations\Migrator;
 use MVPS\Lumis\Framework\Console\Command;
+use MVPS\Lumis\Framework\Console\Traits\ConfirmableTrait;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,6 +14,9 @@ use Symfony\Component\Console\Input\InputOption;
 #[AsCommand(name: 'migrate:fresh')]
 class FreshCommand extends Command
 {
+	use ConfirmableTrait;
+	use Prohibitable;
+
 	/**
 	 * {@inheritdoc}
 	 */
@@ -170,7 +175,7 @@ class FreshCommand extends Command
 	/**
 	 * Run the database seeder command.
 	 */
-	protected function runSeeder(string $database): void
+	protected function runSeeder(string|null $database = null): void
 	{
 		$this->call('db:seed', array_filter([
 			'--database' => $database,
