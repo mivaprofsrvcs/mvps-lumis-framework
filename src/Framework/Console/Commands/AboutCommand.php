@@ -41,7 +41,9 @@ class AboutCommand extends Command
 	/**
 	 * {@inheritdoc}
 	 */
-	protected $signature = 'about {--only= : The section to display} {--json : Output the information as JSON}';
+	protected $signature = 'about
+		{--only= : The section to display}
+		{--json : Output the information as JSON}';
 
 	/**
 	 * Create a new about command instance.
