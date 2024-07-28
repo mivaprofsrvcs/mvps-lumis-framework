@@ -27,7 +27,7 @@ class RouteListCommand extends Command
 	/**
 	 * The table headers for the command.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $headers = [
 		'Domain',

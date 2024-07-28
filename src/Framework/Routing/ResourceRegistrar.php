@@ -23,7 +23,7 @@ class ResourceRegistrar
 	/**
 	 * The default actions for a resourceful controller.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $resourceDefaults = ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'];
 
@@ -37,7 +37,7 @@ class ResourceRegistrar
 	/**
 	 * The default actions for a singleton resource controller.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $singletonResourceDefaults = ['show', 'edit', 'update'];
 

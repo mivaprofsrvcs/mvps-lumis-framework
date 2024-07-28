@@ -27,7 +27,7 @@ class RouteRegistrar
 	/**
 	 * The attributes that can be set through this class.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $allowedAttributes = [
 		'as',
@@ -53,7 +53,7 @@ class RouteRegistrar
 	/**
 	 * The methods to dynamically pass through to the router.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $passthru = [
 		'get',

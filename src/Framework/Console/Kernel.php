@@ -41,7 +41,7 @@ class Kernel implements KernelContract
 	/**
 	 * The bootstrap classes for the application.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $bootstrappers = [
 		LoadEnvironmentVariables::class,

@@ -54,7 +54,7 @@ class Router
 	/**
 	 * All of the verbs supported by the router.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	public static array $verbs = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
 
