@@ -13,7 +13,7 @@ interface Kernel
 	public function all(): array;
 
 	/**
-	 * Bootstrap the application for artisan commands.
+	 * Bootstrap the application for Lumis console commands.
 	 */
 	public function bootstrap(): void;
 

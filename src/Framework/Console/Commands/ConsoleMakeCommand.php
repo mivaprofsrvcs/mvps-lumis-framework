@@ -14,7 +14,7 @@ class ConsoleMakeCommand extends GeneratorCommand
 	/**
 	 * {@inheritdoc}
 	 */
-	protected $description = 'Create a new Artisan command';
+	protected $description = 'Create a new Lumis command';
 
 	/**
 	 * {@inheritdoc}
