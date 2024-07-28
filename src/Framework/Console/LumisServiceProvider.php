@@ -18,6 +18,7 @@ use MVPS\Lumis\Framework\Console\Commands\Seeds\SeederMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ViewMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\WipeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 
@@ -36,6 +37,12 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ConfigCache' => ConfigCacheCommand::class,
 		// 'ConfigClear' => ConfigClearCommand::class,
 		// 'ConfigShow' => ConfigShowCommand::class,
+		// 'Db' => DbCommand::class,
+		// 'DbMonitor' => DatabaseMonitorCommand::class,
+		// 'DbPrune' => PruneCommand::class,
+		// 'DbShow' => ShowCommand::class,
+		// 'DbTable' => DatabaseTableCommand::class,
+		'DbWipe' => WipeCommand::class,
 		'Environment' => EnvironmentCommand::class,
 		// 'EnvironmentDecrypt' => EnvironmentDecryptCommand::class,
 		// 'EnvironmentEncrypt' => EnvironmentEncryptCommand::class,
