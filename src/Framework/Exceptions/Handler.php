@@ -119,7 +119,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * The callbacks that should be used during rendering.
 	 *
-	 * @var \Closure[]
+	 * @var array<\Closure>
 	 */
 	protected array $renderCallbacks = [];
 
