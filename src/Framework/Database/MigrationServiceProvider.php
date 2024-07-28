@@ -3,12 +3,12 @@
 namespace MVPS\Lumis\Framework\Database;
 
 use Illuminate\Database\Migrations\DatabaseMigrationRepository;
-use Illuminate\Database\Migrations\MigrationCreator;
 use Illuminate\Database\Migrations\Migrator;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\FreshCommand;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\InstallCommand;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\MigrateCommand;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\MigrateMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\Migrations\MigrationCreator;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\RefreshCommand;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\ResetCommand;
 use MVPS\Lumis\Framework\Console\Commands\Migrations\RollbackCommand;
@@ -55,7 +55,7 @@ class MigrationServiceProvider extends ServiceProvider implements DeferrableProv
 
 		$this->registerMigrator();
 
-		// $this->registerCreator();
+		$this->registerCreator();
 
 		$this->registerCommands($this->commands);
 	}
