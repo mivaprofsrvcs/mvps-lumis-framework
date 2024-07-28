@@ -12,6 +12,7 @@ use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
+use MVPS\Lumis\Framework\Console\Commands\SchemaDumpCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ViewMakeCommand;
@@ -42,6 +43,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'RouteCache' => RouteCacheCommand::class,
 		// 'RouteClear' => RouteClearCommand::class,
 		'RouteList' => RouteListCommand::class,
+		'SchemaDump' => SchemaDumpCommand::class,
 		// 'ViewCache' => ViewCacheCommand::class,
 		// 'ViewClear' => ViewClearCommand::class,
 	];
