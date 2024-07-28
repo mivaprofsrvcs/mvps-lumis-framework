@@ -8,6 +8,7 @@ use MVPS\Lumis\Framework\Console\Commands\ComponentMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConsoleMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ControllerMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
+use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
@@ -55,6 +56,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ConfigPublish' => ConfigPublishCommand::class,
 		'ConsoleMake' => ConsoleMakeCommand::class,
 		'ControllerMake' => ControllerMakeCommand::class,
+		'FactoryMake' => FactoryMakeCommand::class,
 		'ModelMake' => ModelMakeCommand::class,
 		'ProviderMake' => ProviderMakeCommand::class,
 		'TaskMake' => TaskMakeCommand::class,
