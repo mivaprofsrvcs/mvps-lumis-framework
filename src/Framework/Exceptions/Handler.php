@@ -126,7 +126,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * The callbacks that should be used during reporting.
 	 *
-	 * @var \MVPS\Lumis\Framework\Exceptions\ReportableHandler[]
+	 * @var array<\MVPS\Lumis\Framework\Exceptions\ReportableHandler>
 	 */
 	protected array $reportCallbacks = [];
 

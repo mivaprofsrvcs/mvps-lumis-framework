@@ -11,21 +11,21 @@ class RouteCollection extends AbstractRouteCollection
 	/**
 	 * A look-up table of routes by controller action.
 	 *
-	 * @var \MVPS\Lumis\Framework\Routing\Route[]
+	 * @var array<\MVPS\Lumis\Framework\Routing\Route>
 	 */
 	protected array $actionList = [];
 
 	/**
 	 * A flattened array of all of the routes.
 	 *
-	 * @var \MVPS\Lumis\Framework\Routing\Route[]
+	 * @var array<\MVPS\Lumis\Framework\Routing\Route>
 	 */
 	protected array $allRoutes = [];
 
 	/**
 	 * A look-up table of routes by their names.
 	 *
-	 * @var \MVPS\Lumis\Framework\Routing\Route[]
+	 * @var array<\MVPS\Lumis\Framework\Routing\Route>
 	 */
 	protected array $nameList = [];
 
