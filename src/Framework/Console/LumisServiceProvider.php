@@ -14,6 +14,7 @@ use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\SchemaDumpCommand;
 use MVPS\Lumis\Framework\Console\Commands\Seeds\SeedCommand;
+use MVPS\Lumis\Framework\Console\Commands\Seeds\SeederMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ViewMakeCommand;
@@ -51,7 +52,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	];
 
 	/**
-	 * The commands to be registered.
+	 * The dev commands to be registered.
 	 *
 	 * @var array
 	 */
@@ -64,6 +65,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'ModelMake' => ModelMakeCommand::class,
 		'ProviderMake' => ProviderMakeCommand::class,
 		'TaskMake' => TaskMakeCommand::class,
+		'SeederMake' => SeederMakeCommand::class,
 		'Serve' => ServeCommand::class,
 		'ViewMake' => ViewMakeCommand::class,
 	];
