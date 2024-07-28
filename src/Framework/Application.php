@@ -76,14 +76,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	/**
 	 * The array of booted callbacks.
 	 *
-	 * @var callable[]
+	 * @var array<callable>
 	 */
 	protected array $bootedCallbacks = [];
 
 	/**
 	 * The array of booting callbacks.
 	 *
-	 * @var callable[]
+	 * @var array<callable>
 	 */
 	protected array $bootingCallbacks = [];
 
@@ -181,7 +181,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	/**
 	 * The list of registered callbacks.
 	 *
-	 * @var callable[]
+	 * @var array<callable>
 	 */
 	protected array $registeredCallbacks = [];
 
@@ -209,7 +209,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	/**
 	 * The array of terminating callbacks.
 	 *
-	 * @var callable[]
+	 * @var array<callable>
 	 */
 	protected $terminatingCallbacks = [];
 
