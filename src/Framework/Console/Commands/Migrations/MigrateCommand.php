@@ -8,6 +8,7 @@ use Illuminate\Database\Events\SchemaLoaded;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Database\SQLiteDatabaseDoesNotExistException;
 use Illuminate\Database\SqlServerConnection;
+use MVPS\Lumis\Framework\Console\Traits\ConfirmableTrait;
 use MVPS\Lumis\Framework\Contracts\Console\Isolatable;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use PDOException;
@@ -20,6 +21,8 @@ use function Laravel\Prompts\confirm;
 #[AsCommand(name: 'migrate')]
 class MigrateCommand extends BaseCommand implements Isolatable
 {
+	use ConfirmableTrait;
+
 	/**
 	 * {@inheritdoc}
 	 */
