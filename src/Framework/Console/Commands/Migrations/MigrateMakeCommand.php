@@ -109,7 +109,7 @@ class MigrateMakeCommand extends BaseCommand implements PromptsForMissingInput
 	/**
 	 * Write the migration file to disk.
 	 */
-	protected function writeMigration(string $name, string $table, bool $create): void
+	protected function writeMigration(string $name, string|null $table = null, bool $create = false): void
 	{
 		$file = $this->creator->create($name, $this->getMigrationPath(), $table, $create);
 
