@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Console\Commands\Migrations;
 
 use Illuminate\Database\Console\Migrations\TableGuesser;
-use Illuminate\Database\Migrations\MigrationCreator;
+use MVPS\Lumis\Framework\Console\Commands\Migrations\MigrationCreator;
 use MVPS\Lumis\Framework\Contracts\Console\PromptsForMissingInput;
 use MVPS\Lumis\Framework\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -14,7 +14,7 @@ class MigrateMakeCommand extends BaseCommand implements PromptsForMissingInput
 	/**
 	 * The migration creator instance.
 	 *
-	 * @var \Illuminate\Database\Migrations\MigrationCreator
+	 * @var \MVPS\Lumis\Framework\Console\Commands\Migrations\MigrationCreator
 	 */
 	protected MigrationCreator $creator;
 
