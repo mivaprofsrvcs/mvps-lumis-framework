@@ -138,7 +138,7 @@ class RefreshCommand extends Command
 	/**
 	 * Run the reset command.
 	 */
-	protected function runReset(string $database, string $path): void
+	protected function runReset(string|null $database = null, string|array $path): void
 	{
 		$this->call('migrate:reset', array_filter([
 			'--database' => $database,
@@ -151,7 +151,7 @@ class RefreshCommand extends Command
 	/**
 	 * Run the rollback command.
 	 */
-	protected function runRollback(string $database, string $path, int $step): void
+	protected function runRollback(string|null $database = null, string|array $path, int $step): void
 	{
 		$this->call('migrate:rollback', array_filter([
 			'--database' => $database,
@@ -165,7 +165,7 @@ class RefreshCommand extends Command
 	/**
 	 * Run the database seeder command.
 	 */
-	protected function runSeeder(string $database): void
+	protected function runSeeder(string|null $database = null): void
 	{
 		$this->call('db:seed', array_filter([
 			'--database' => $database,
