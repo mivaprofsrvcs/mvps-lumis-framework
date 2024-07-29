@@ -661,6 +661,18 @@ class Route
 	}
 
 	/**
+	 * Get the parameters that are listed in the route / controller signature.
+	 */
+	public function signatureParameters(array $conditions = []): array
+	{
+		if (is_string($conditions)) {
+			$conditions = ['subClass' => $conditions];
+		}
+
+		return RouteSignatureParameters::fromAction($this->action, $conditions);
+	}
+
+	/**
 	 * Convert the route to a Symfony route.
 	 */
 	public function toSymfonyRoute(): SymfonyRoute
