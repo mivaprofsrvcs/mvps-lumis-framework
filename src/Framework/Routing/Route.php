@@ -145,7 +145,7 @@ class Route
 	{
 		$this->compileRoute();
 
-		$this->parameters = (new RouteParameterBinder($this))->getParameters($request);
+		$this->parameters = (new RouteParameterBinder($this))->parameters($request);
 
 		$this->originalParameters = $this->parameters;
 
@@ -190,6 +190,18 @@ class Route
 		}
 
 		return $this->compiled;
+	}
+
+	/**
+	 * Get the dispatcher for the route's controller.
+	 */
+	public function controllerDispatcher(): ControllerDispatcherContract
+	{
+		if ($this->container->bound(ControllerDispatcherContract::class)) {
+			return $this->container->make(ControllerDispatcherContract::class);
+		}
+
+		return new ControllerDispatcher($this->container);
 	}
 
 	/**
@@ -297,18 +309,6 @@ class Route
 	}
 
 	/**
-	 * Get the dispatcher for the route's controller.
-	 */
-	public function getControllerDispatcher(): ControllerDispatcherContract
-	{
-		if ($this->container->bound(ControllerDispatcherContract::class)) {
-			return $this->container->make(ControllerDispatcherContract::class);
-		}
-
-		return new ControllerDispatcher($this->container);
-	}
-
-	/**
 	 * Get the controller method used for the route.
 	 */
 	protected function getControllerMethod(): string
@@ -342,54 +342,6 @@ class Route
 		preg_match_all('/\{(\w+?)\?\}/', $this->uri(), $matches);
 
 		return isset($matches[1]) ? array_fill_keys($matches[1], null) : [];
-	}
-
-	/**
-	 * Get the key / value list of original parameters for the route.
-	 *
-	 * @throws \LogicException
-	 */
-	public function getOriginalParameters(): array
-	{
-		if (! isset($this->originalParameters)) {
-			throw new LogicException('Route is not bound.');
-		}
-
-		return $this->originalParameters;
-	}
-
-	/**
-	 * Get the parameter names for the route.
-	 */
-	public function getParameterNames(): array
-	{
-		if (is_null($this->parameterNames)) {
-			$this->parameterNames = $this->compileParameterNames();
-		}
-
-		return $this->parameterNames;
-	}
-
-	/**
-	 * Get the key / value list of parameters for the route.
-	 *
-	 * @throws \LogicException
-	 */
-	public function getParameters(): array
-	{
-		if (! isset($this->parameters)) {
-			throw new LogicException('Route is not bound.');
-		}
-
-		return $this->parameters;
-	}
-
-	/**
-	 * Get the key / value list of parameters without null values.
-	 */
-	public function getParametersWithoutNulls(): array
-	{
-		return array_filter($this->getParameters(), fn ($param) => ! is_null($param));
 	}
 
 	/**
@@ -503,11 +455,59 @@ class Route
 	}
 
 	/**
+	 * Get the key / value list of original parameters for the route.
+	 *
+	 * @throws \LogicException
+	 */
+	public function originalParameters(): array
+	{
+		if (! isset($this->originalParameters)) {
+			throw new LogicException('Route is not bound.');
+		}
+
+		return $this->originalParameters;
+	}
+
+	/**
 	 * Get a given parameter from the route.
 	 */
 	public function parameter(string $name, string|object|null $default = null): string|object|null
 	{
-		return Arr::get($this->getParameters(), $name, $default);
+		return Arr::get($this->parameters(), $name, $default);
+	}
+
+	/**
+	 * Get the parameter names for the route.
+	 */
+	public function parameterNames(): array
+	{
+		if (is_null($this->parameterNames)) {
+			$this->parameterNames = $this->compileParameterNames();
+		}
+
+		return $this->parameterNames;
+	}
+
+	/**
+	 * Get the key / value list of parameters for the route.
+	 *
+	 * @throws \LogicException
+	 */
+	public function parameters(): array
+	{
+		if (! isset($this->parameters)) {
+			throw new LogicException('Route is not bound.');
+		}
+
+		return $this->parameters;
+	}
+
+	/**
+	 * Get the key / value list of parameters without null values.
+	 */
+	public function parametersWithoutNulls(): array
+	{
+		return array_filter($this->parameters(), fn ($param) => ! is_null($param));
 	}
 
 	/**
@@ -570,7 +570,7 @@ class Route
 	 */
 	protected function runController(): mixed
 	{
-		return $this->getControllerDispatcher()
+		return $this->controllerDispatcher()
 			->dispatch($this, $this->getController(), $this->getControllerMethod());
 	}
 
