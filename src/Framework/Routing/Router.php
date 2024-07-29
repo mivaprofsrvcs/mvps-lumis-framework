@@ -18,10 +18,12 @@ use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Events\RouteMatched;
 use MVPS\Lumis\Framework\Routing\Events\Routing;
+use MVPS\Lumis\Framework\Routing\Middleware\MiddlewareNameResolver;
 use MVPS\Lumis\Framework\Routing\Middleware\SortedMiddleware;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Stringable;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 use stdClass;
 
 class Router implements BindingRegistrar, RegistrarContract
@@ -71,6 +73,20 @@ class Router implements BindingRegistrar, RegistrarContract
 	 * @var array
 	 */
 	protected array $implicitBindingCallback = [];
+
+	/**
+	 * All of the short-hand keys for middlewares.
+	 *
+	 * @var array
+	 */
+	protected array $middleware = [];
+
+	/**
+	 * All of the middleware groups.
+	 *
+	 * @var array
+	 */
+	protected array $middlewareGroups = [];
 
 	/**
 	 * The priority-sorted list of middleware.
@@ -143,6 +159,16 @@ class Router implements BindingRegistrar, RegistrarContract
 		));
 
 		return $route;
+	}
+
+	/**
+	 * Register a short-hand name for a middleware.
+	 */
+	public function aliasMiddleware(string $name, string $class): static
+	{
+		$this->middleware[$name] = $class;
+
+		return $this;
 	}
 
 	/**
@@ -361,6 +387,24 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Flush the router's middleware groups.
+	 */
+	public function flushMiddlewareGroups(): static
+	{
+		$this->middlewareGroups = [];
+
+		return $this;
+	}
+
+	/**
+	 * Gather the middleware for the given route with resolved class names.
+	 */
+	public function gatherRouteMiddleware(Route $route): array
+	{
+		return $this->resolveMiddleware($route->gatherMiddleware(), $route->excludedMiddleware());
+	}
+
+	/**
 	 * Add a new GET route to the router.
 	 */
 	public function get(string $uri, array|callable|string|null $action = null): Route
@@ -401,6 +445,22 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Get all of the defined middleware short-hand names.
+	 */
+	public function getMiddleware(): array
+	{
+		return $this->middleware;
+	}
+
+	/**
+	 * Get all of the defined middleware groups.
+	 */
+	public function getMiddlewareGroups(): array
+	{
+		return $this->middlewareGroups;
+	}
+
+	/**
 	 * Get the global "where" patterns.
 	 */
 	public function getPatterns(): array
@@ -430,6 +490,14 @@ class Router implements BindingRegistrar, RegistrarContract
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if a middlewareGroup with the given name exists.
+	 */
+	public function hasMiddlewareGroup(string $name): bool
+	{
+		return array_key_exists($name, $this->middlewareGroups);
 	}
 
 	/**
@@ -466,6 +534,16 @@ class Router implements BindingRegistrar, RegistrarContract
 	public function match(array|string $methods, string $uri, array|string|callable|null $action = null): Route
 	{
 		return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
+	}
+
+	/**
+	 * Register a group of middleware.
+	 */
+	public function middlewareGroup(string $name, array $middleware): static
+	{
+		$this->middlewareGroups[$name] = $middleware;
+
+		return $this;
 	}
 
 	/**
@@ -547,11 +625,111 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Add a middleware to the beginning of a middleware group.
+	 *
+	 * If the middleware is already in the group, it will not be added again.
+	 */
+	public function prependMiddlewareToGroup(string $group, string $middleware): static
+	{
+		if (isset($this->middlewareGroups[$group]) && ! in_array($middleware, $this->middlewareGroups[$group])) {
+			array_unshift($this->middlewareGroups[$group], $middleware);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Add a middleware to the end of a middleware group.
+	 *
+	 * If the middleware is already in the group, it will not be added again.
+	 */
+	public function pushMiddlewareToGroup(string $group, string $middleware): static
+	{
+		if (! array_key_exists($group, $this->middlewareGroups)) {
+			$this->middlewareGroups[$group] = [];
+		}
+
+		if (! in_array($middleware, $this->middlewareGroups[$group])) {
+			$this->middlewareGroups[$group][] = $middleware;
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Add a new PUT route to the router.
 	 */
 	public function put(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute('PUT', $uri, $action);
+	}
+
+	/**
+	 * Remove the given middleware from the specified group.
+	 */
+	public function removeMiddlewareFromGroup(string $group, string $middleware): static
+	{
+		if (! $this->hasMiddlewareGroup($group)) {
+			return $this;
+		}
+
+		$reversedMiddlewaresArray = array_flip($this->middlewareGroups[$group]);
+
+		if (! array_key_exists($middleware, $reversedMiddlewaresArray)) {
+			return $this;
+		}
+
+		$middlewareKey = $reversedMiddlewaresArray[$middleware];
+
+		unset($this->middlewareGroups[$group][$middlewareKey]);
+
+		return $this;
+	}
+
+	/**
+	 * Resolve a flat array of middleware classes from the provided array.
+	 */
+	public function resolveMiddleware(array $middleware, array $excluded = []): array
+	{
+		$excluded = collection($excluded)
+			->map(
+				fn ($name) => (array) MiddlewareNameResolver::resolve($name, $this->middleware, $this->middlewareGroups)
+			)
+			->flatten()
+			->values()
+			->all();
+
+		$middleware = collection($middleware)
+			->map(
+				fn ($name) => (array) MiddlewareNameResolver::resolve($name, $this->middleware, $this->middlewareGroups)
+			)
+			->flatten()
+			->reject(function ($name) use ($excluded) {
+				if (empty($excluded)) {
+					return false;
+				}
+
+				if ($name instanceof Closure) {
+					return false;
+				}
+
+				if (in_array($name, $excluded, true)) {
+					return true;
+				}
+
+				if (! class_exists($name)) {
+					return false;
+				}
+
+				$reflection = new ReflectionClass($name);
+
+				return collection($excluded)->contains(
+					fn ($exclude) => class_exists($exclude) && $reflection->isSubclassOf($exclude)
+				);
+			})
+			->values();
+
+		return $this->sortMiddleware($middleware);
 	}
 
 	/**

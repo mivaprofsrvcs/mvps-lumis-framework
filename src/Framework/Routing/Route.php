@@ -6,12 +6,17 @@ use Closure;
 use LogicException;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
+use MVPS\Lumis\Framework\Contracts\Routing\Controllers\HasMiddleware;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
+use MVPS\Lumis\Framework\Routing\Controllers\Middleware;
 use MVPS\Lumis\Framework\Routing\Matching\HostValidator;
 use MVPS\Lumis\Framework\Routing\Matching\MethodValidator;
 use MVPS\Lumis\Framework\Routing\Matching\SchemeValidator;
 use MVPS\Lumis\Framework\Routing\Matching\UriValidator;
+use MVPS\Lumis\Framework\Routing\Traits\CreatesRegularExpressionRouteConstraints;
+use MVPS\Lumis\Framework\Routing\Traits\FiltersControllerMiddleware;
+use MVPS\Lumis\Framework\Routing\Traits\ResolvesRouteDependencies;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use Symfony\Component\Routing\CompiledRoute;
@@ -19,6 +24,10 @@ use Symfony\Component\Routing\Route as SymfonyRoute;
 
 class Route
 {
+	use CreatesRegularExpressionRouteConstraints;
+	use FiltersControllerMiddleware;
+	use ResolvesRouteDependencies;
+
 	/**
 	 * The route action array.
 	 *
@@ -39,6 +48,13 @@ class Route
 	 * @var \Symfony\Component\Routing\CompiledRoute|null
 	 */
 	public CompiledRoute|null $compiled = null;
+
+	/**
+	 * The computed gathered middleware.
+	 *
+	 * @var array|null
+	 */
+	public array|null $computedMiddleware = null;
 
 	/**
 	 * The container instance used by the route.
@@ -249,6 +265,32 @@ class Route
 	}
 
 	/**
+	 * Get the middleware for the route's controller.
+	 */
+	public function controllerMiddleware(): array
+	{
+		if (! $this->isControllerAction()) {
+			return [];
+		}
+
+		[$controllerClass, $controllerMethod] = [
+			$this->getControllerClass(),
+			$this->getControllerMethod(),
+		];
+
+		if (is_a($controllerClass, HasMiddleware::class, true)) {
+			return $this->staticallyProvidedControllerMiddleware($controllerClass, $controllerMethod);
+		}
+
+		if (method_exists($controllerClass, 'getMiddleware')) {
+			return $this->controllerDispatcher()
+				->getMiddleware($this->getController(), $controllerMethod);
+		}
+
+		return [];
+	}
+
+	/**
 	 * Set a default value for the route.
 	 */
 	public function defaults(string $key, mixed $value): static
@@ -286,6 +328,14 @@ class Route
 	}
 
 	/**
+	 * Get the middleware that should be removed from the route.
+	 */
+	public function excludedMiddleware(): array
+	{
+		return (array) ($this->action['excluded_middleware'] ?? []);
+	}
+
+	/**
 	 * Mark this route as a fallback route.
 	 */
 	public function fallback(): static
@@ -293,6 +343,15 @@ class Route
 		$this->isFallback = true;
 
 		return $this;
+	}
+
+	/**
+	 * Flush the cached container instance on the route.
+	 */
+	public function flushController(): void
+	{
+		$this->computedMiddleware = null;
+		$this->controller = null;
 	}
 
 	/**
@@ -305,6 +364,23 @@ class Route
 		}
 
 		return trim(trim($uri), '/');
+	}
+
+	/**
+	 * Get all middleware, including the ones from the controller.
+	 */
+	public function gatherMiddleware(): array
+	{
+		if (! is_null($this->computedMiddleware)) {
+			return $this->computedMiddleware;
+		}
+
+		$this->computedMiddleware = [];
+
+		return $this->computedMiddleware = Router::uniqueMiddleware(array_merge(
+			$this->middleware(),
+			$this->controllerMiddleware()
+		));
 	}
 
 	/**
@@ -499,6 +575,31 @@ class Route
 	public function methods(): array
 	{
 		return $this->methods;
+	}
+
+	/**
+	 * Get or set the middlewares attached to the route.
+	 */
+	public function middleware(array|string|null $middleware = null): static|array
+	{
+		if (is_null($middleware)) {
+			return (array) ($this->action['middleware'] ?? []);
+		}
+
+		if (! is_array($middleware)) {
+			$middleware = func_get_args();
+		}
+
+		foreach ($middleware as $index => $value) {
+			$middleware[$index] = (string) $value;
+		}
+
+		$this->action['middleware'] = array_merge(
+			(array) ($this->action['middleware'] ?? []),
+			$middleware
+		);
+
+		return $this;
 	}
 
 	/**
@@ -782,6 +883,30 @@ class Route
 		}
 
 		return RouteSignatureParameters::fromAction($this->action, $conditions);
+	}
+
+	/**
+	 * Get the statically provided controller middleware for the given class and method.
+	 */
+	protected function staticallyProvidedControllerMiddleware(string $class, string $method): array
+	{
+		return collection($class::middleware())
+			->map(function ($middleware) {
+				return $middleware instanceof Middleware
+					? $middleware
+					: new Middleware($middleware);
+			})
+			->reject(function ($middleware) use ($method) {
+				return static::methodExcludedByOptions(
+					$method,
+					['only' => $middleware->only, 'except' => $middleware->except]
+				);
+			})
+			->map
+			->middleware
+			->flatten()
+			->values()
+			->all();
 	}
 
 	/**
