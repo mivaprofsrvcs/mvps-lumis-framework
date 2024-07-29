@@ -6,12 +6,14 @@ use ArrayObject;
 use Closure;
 use Illuminate\Support\Traits\Macroable;
 use JsonSerializable;
-use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Routing\Events\RouteMatched;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Stringable;
 use Psr\Http\Message\ResponseInterface;
@@ -24,9 +26,16 @@ class Router
 	}
 
 	/**
+	 * The registered route value binders.
+	 *
+	 * @var array
+	 */
+	protected array $binders = [];
+
+	/**
 	 * The IoC container instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Container\Container
+	 * @var \MVPS\Lumis\Framework\Contracts\Container\Container
 	 */
 	protected Container $container;
 
@@ -45,6 +54,27 @@ class Router
 	protected Request|null $currentRequest = null;
 
 	/**
+	 * The event dispatcher instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Contracts\Events\Dispatcher
+	 */
+	protected Dispatcher $events;
+
+	/**
+	 * The registered custom implicit binding callback.
+	 *
+	 * @var array
+	 */
+	protected array $implicitBindingCallback = [];
+
+	/**
+	 * The globally available parameter patterns.
+	 *
+	 * @var array
+	 */
+	protected array $patterns = [];
+
+	/**
 	 * The list of registered routes.
 	 *
 	 * @var \MVPS\Lumis\Framework\Contracts\Routing\RouteCollection
@@ -61,8 +91,9 @@ class Router
 	/**
 	 * Create a new Router instance.
 	 */
-	public function __construct(Container $container = null)
+	public function __construct(Dispatcher $events, Container $container = null)
 	{
+		$this->events = $events;
 		$this->container = $container ?: new Container;
 		$this->routes = new RouteCollection;
 	}
@@ -84,13 +115,28 @@ class Router
 	 */
 	public function addRoute(array|string $methods, string $uri, array|callable|string|null $action): Route
 	{
-		if ($this->actionReferencesController($action)) {
-			$action = $this->convertToControllerAction($action);
-		}
+		return $this->routes->add($this->createRoute($methods, $uri, $action));
+	}
 
-		$route = $this->createRoute($methods, $uri, $action);
+	/**
+	 * Add the necessary where clauses to the route based on its initial registration.
+	 */
+	protected function addWhereClausesToRoute(Route $route): Route
+	{
+		$route->where(array_merge(
+			$this->patterns,
+			$route->getAction()['where'] ?? []
+		));
 
-		return $this->routes->add($route);
+		return $route;
+	}
+
+	/**
+	 * Register a new route responding to all verbs.
+	 */
+	public function any(string $uri, array|callable|string|null $action = null): Route
+	{
+		return $this->addRoute(self::$verbs, $uri, $action);
 	}
 
 	/**
@@ -164,6 +210,14 @@ class Router
 	}
 
 	/**
+	 * Add a new route parameter binder.
+	 */
+	public function bind(string $key, string|callable $binder): void
+	{
+		$this->binders[str_replace('-', '_', $key)] = RouteBinding::forCallback($this->container, $binder);
+	}
+
+	/**
 	 * Add a controller based route action to an action.
 	 */
 	protected function convertToControllerAction(array|string $action): array
@@ -182,9 +236,18 @@ class Router
 	 */
 	protected function createRoute(array|string $methods, string $uri, array|callable|string|null $action): Route
 	{
-		return (new Route($methods, $uri, $action))
-			->setRouter($this)
-			->setContainer($this->container);
+		// If the route targets a controller, parse the action into an array
+		// format suitable for registration.  Create a Closure to handle the
+		// controller call and register the route.
+		if ($this->actionReferencesController($action)) {
+			$action = $this->convertToControllerAction($action);
+		}
+
+		$route = $this->newRoute($methods, $uri, $action);
+
+		$this->addWhereClausesToRoute($route);
+
+		return $route;
 	}
 
 	/**
@@ -226,7 +289,27 @@ class Router
 	{
 		$this->currentRequest = $request;
 
+		return $this->dispatchToRoute($request);
+	}
+
+	/**
+	 * Dispatch the request to a route and return the response.
+	 */
+	public function dispatchToRoute(Request $request): Response
+	{
 		return $this->runRoute($request, $this->findRoute($request));
+	}
+
+	/**
+	 * Register a new fallback route with the router.
+	 */
+	public function fallback(array|callable|string|null $action): Route
+	{
+		$placeholder = 'fallbackPlaceholder';
+
+		return $this->addRoute('GET', "{{$placeholder}}", $action)
+			->where($placeholder, '.*')
+			->fallback();
 	}
 
 	/**
@@ -254,6 +337,14 @@ class Router
 	}
 
 	/**
+	 * Get the binding callback for a given binding.
+	 */
+	public function getBindingCallback(string $key): Closure|null
+	{
+		return $this->binders[str_replace('-', '_', $key)] ?? null;
+	}
+
+	/**
 	 * Get the current dispatched route instance.
 	 */
 	public function getCurrent(): Route|null
@@ -270,11 +361,27 @@ class Router
 	}
 
 	/**
+	 * Get the currently dispatched route instance.
+	 */
+	public function getCurrentRoute(): Route|null
+	{
+		return $this->current();
+	}
+
+	/**
 	 * Get the list of registered routes.
 	 */
 	public function getRoutes(): RouteCollection
 	{
 		return $this->routes;
+	}
+
+	/**
+	 * Alias for the "currentRouteNamed" method.
+	 */
+	public function is(mixed ...$patterns): bool
+	{
+		return $this->currentRouteNamed(...$patterns);
 	}
 
 	/**
@@ -295,6 +402,16 @@ class Router
 	public function match(array|string $methods, string $uri, array|string|callable|null $action = null): Route
 	{
 		return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
+	}
+
+	/**
+	 * Create a new Route object.
+	 */
+	public function newRoute(array|string $methods, string $uri, mixed $action): Route
+	{
+		return (new Route($methods, $uri, $action))
+			->setRouter($this)
+			->setContainer($this->container);
 	}
 
 	/**
@@ -360,13 +477,35 @@ class Router
 	}
 
 	/**
+	 * Return the response returned by the given route.
+	 */
+	public function respondWithRoute(string $name): Response
+	{
+		$route = tap($this->routes->getByName($name))->bind($this->currentRequest);
+
+		return $this->runRoute($this->currentRequest, $route);
+	}
+
+	/**
 	 * Run the given route and return the response.
 	 */
 	protected function runRoute(Request $request, Route $route): Response
 	{
 		$request->setRouteResolver(fn () => $route);
 
+		$this->events->dispatch(new RouteMatched($route, $request));
+
 		return $this->prepareResponse($request, $route->run());
+	}
+
+	/**
+	 * Set the container instance used by the router.
+	 */
+	public function setContainer(Container $container): static
+	{
+		$this->container = $container;
+
+		return $this;
 	}
 
 	/**
@@ -459,6 +598,20 @@ class Router
 	}
 
 	/**
+	 * Alias for the "currentRouteUses" method.
+	 */
+	public function uses(array ...$patterns): bool
+	{
+		foreach ($patterns as $pattern) {
+			if (Str::is($pattern, $this->currentRouteAction())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Dynamically handle calls into the router instance.
 	 */
 	public function __call(string $method, array $parameters): mixed
@@ -478,5 +631,223 @@ class Router
 
 		return (new RouteRegistrar($this))
 			->attribute($method, array_key_exists(0, $parameters) ? $parameters[0] : true);
+	}
+
+	/**
+	 * Substitute the route bindings onto the route.
+	 *
+	 * @param  \Illuminate\Routing\Route  $route
+	 * @return \Illuminate\Routing\Route
+	 *
+	 * @throws \Illuminate\Database\Eloquent\ModelNotFoundException<\Illuminate\Database\Eloquent\Model>
+	 * @throws \Illuminate\Routing\Exceptions\BackedEnumCaseNotFoundException
+	 */
+	public function substituteBindings($route)
+	{
+		foreach ($route->parameters() as $key => $value) {
+			if (isset($this->binders[$key])) {
+				$route->setParameter($key, $this->performBinding($key, $value, $route));
+			}
+		}
+
+		return $route;
+	}
+
+	/**
+	 * Substitute the implicit route bindings for the given route.
+	 *
+	 * @throws \Illuminate\Database\Eloquent\ModelNotFoundException<\Illuminate\Database\Eloquent\Model>
+	 * @throws \MVPS\Lumis\Framework\Routing\Exceptions\BackedEnumCaseNotFoundException
+	 */
+	public function substituteImplicitBindings(Route $route): void
+	{
+		$default = fn () => ImplicitRouteBinding::resolveForRoute($this->container, $route);
+
+		return call_user_func(
+			$this->implicitBindingCallback ?? $default, $this->container, $route, $default
+		);
+	}
+
+	/**
+	 * Register a callback to run after implicit bindings are substituted.
+	 *
+	 * @param  callable  $callback
+	 * @return $this
+	 */
+	public function substituteImplicitBindingsUsing($callback)
+	{
+		$this->implicitBindingCallback = $callback;
+
+		return $this;
+	}
+
+	/**
+	 * Call the binding callback for the given key.
+	 *
+	 * @param  string  $key
+	 * @param  string  $value
+	 * @param  \Illuminate\Routing\Route  $route
+	 * @return mixed
+	 *
+	 * @throws \Illuminate\Database\Eloquent\ModelNotFoundException<\Illuminate\Database\Eloquent\Model>
+	 */
+	protected function performBinding($key, $value, $route)
+	{
+		return call_user_func($this->binders[$key], $value, $route);
+	}
+
+	/**
+	 * Register a model binder for a wildcard.
+	 *
+	 * @param  string  $key
+	 * @param  string  $class
+	 * @param  \Closure|null  $callback
+	 * @return void
+	 */
+	public function model($key, $class, ?Closure $callback = null)
+	{
+		$this->bind($key, RouteBinding::forModel($this->container, $class, $callback));
+	}
+
+	/**
+	 * Get the global "where" patterns.
+	 *
+	 * @return array
+	 */
+	public function getPatterns()
+	{
+		return $this->patterns;
+	}
+
+	/**
+	 * Set a global where pattern on all routes.
+	 *
+	 * @param  string  $key
+	 * @param  string  $pattern
+	 * @return void
+	 */
+	public function pattern($key, $pattern)
+	{
+		$this->patterns[$key] = $pattern;
+	}
+
+	/**
+	 * Set a group of global where patterns on all routes.
+	 *
+	 * @param  array  $patterns
+	 * @return void
+	 */
+	public function patterns($patterns)
+	{
+		foreach ($patterns as $key => $pattern) {
+			$this->pattern($key, $pattern);
+		}
+	}
+
+	/**
+	 * Get a route parameter for the current route.
+	 *
+	 * @param  string  $key
+	 * @param  string|null  $default
+	 * @return mixed
+	 */
+	public function input($key, $default = null)
+	{
+		return $this->current()->parameter($key, $default);
+	}
+
+	/**
+	 * Check if a route with the given name exists.
+	 *
+	 * @param  string|array  $name
+	 * @return bool
+	 */
+	public function has($name)
+	{
+		$names = is_array($name) ? $name : func_get_args();
+
+		foreach ($names as $value) {
+			if (! $this->routes->hasNamedRoute($value)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Determine if the current route matches a pattern.
+	 *
+	 * @param  mixed  ...$patterns
+	 * @return bool
+	 */
+	public function currentRouteNamed(...$patterns)
+	{
+		return $this->current() && $this->current()->named(...$patterns);
+	}
+
+	/**
+	 * Determine if the current route action matches a given action.
+	 *
+	 * @param  string  $action
+	 * @return bool
+	 */
+	public function currentRouteUses($action)
+	{
+		return $this->currentRouteAction() == $action;
+	}
+
+	/**
+	 * Set the unmapped global resource parameters to singular.
+	 *
+	 * @param  bool  $singular
+	 * @return void
+	 */
+	public function singularResourceParameters($singular = true)
+	{
+		ResourceRegistrar::singularParameters($singular);
+	}
+
+	/**
+	 * Set the global resource parameter mapping.
+	 *
+	 * @param  array  $parameters
+	 * @return void
+	 */
+	public function resourceParameters(array $parameters = [])
+	{
+		ResourceRegistrar::setParameters($parameters);
+	}
+
+	/**
+	 * Get or set the verbs used in the resource URIs.
+	 *
+	 * @param  array  $verbs
+	 * @return array|null
+	 */
+	public function resourceVerbs(array $verbs = [])
+	{
+		return ResourceRegistrar::verbs($verbs);
+	}
+
+	/**
+	 * Register a new route that returns a view.
+	 *
+	 * @param  string  $uri
+	 * @param  string  $view
+	 * @param  array  $data
+	 * @param  int|array  $status
+	 * @param  array  $headers
+	 * @return \Illuminate\Routing\Route
+	 */
+	public function view($uri, $view, $data = [], $status = 200, array $headers = [])
+	{
+		return $this->match(['GET', 'HEAD'], $uri, '\Illuminate\Routing\ViewController')
+				->setDefaults([
+					'view' => $view,
+					'data' => $data,
+					'status' => is_array($status) ? 200 : $status,
+					'headers' => is_array($status) ? $status : $headers,
+				]);
 	}
 }
