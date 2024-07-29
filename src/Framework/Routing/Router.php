@@ -9,6 +9,8 @@ use JsonSerializable;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
+use MVPS\Lumis\Framework\Contracts\Routing\BindingRegistrar;
+use MVPS\Lumis\Framework\Contracts\Routing\Registrar as RegistrarContract;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use MVPS\Lumis\Framework\Http\Request;
@@ -20,7 +22,7 @@ use MVPS\Lumis\Framework\Support\Stringable;
 use Psr\Http\Message\ResponseInterface;
 use stdClass;
 
-class Router
+class Router implements BindingRegistrar, RegistrarContract
 {
 	use Macroable {
 		__call as macroCall;
@@ -294,7 +296,7 @@ class Router
 	/**
 	 * Add a new DELETE route to the router.
 	 */
-	public function delete(string $uri, array|callable|string|null $action): Route
+	public function delete(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute('DELETE', $uri, $action);
 	}
@@ -350,7 +352,7 @@ class Router
 	/**
 	 * Add a new GET route to the router.
 	 */
-	public function get(string $uri, array|callable|string|null $action): Route
+	public function get(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute(['GET', 'HEAD'], $uri, $action);
 	}
@@ -484,7 +486,7 @@ class Router
 	/**
 	 * Add a new PATCH route to the router.
 	 */
-	public function patch(string $uri, array|callable|string|null $action): Route
+	public function patch(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute('PATCH', $uri, $action);
 	}
@@ -520,7 +522,7 @@ class Router
 	/**
 	 * Add a new POST route to the router.
 	 */
-	public function post(string $uri, array|callable|string|null $action): Route
+	public function post(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute('POST', $uri, $action);
 	}
@@ -536,7 +538,7 @@ class Router
 	/**
 	 * Add a new PUT route to the router.
 	 */
-	public function put(string $uri, array|callable|string|null $action): Route
+	public function put(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute('PUT', $uri, $action);
 	}
