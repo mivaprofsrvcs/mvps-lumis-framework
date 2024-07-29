@@ -914,7 +914,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				Request::class,
 				\Psr\Http\Message\ServerRequestInterface::class,
 			],
-			'router' => [\MVPS\Lumis\Framework\Routing\Router::class],
+			'router' => [
+				\MVPS\Lumis\Framework\Routing\Router::class,
+				\MVPS\Lumis\Framework\Contracts\Routing\Registrar::class,
+				\MVPS\Lumis\Framework\Contracts\Routing\BindingRegistrar::class,
+			],
 			'url' => [
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
