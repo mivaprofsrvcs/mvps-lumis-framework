@@ -584,6 +584,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
 		$response = $kernel->handle($request)
 			->send();
+
+		$kernel->terminate($request, $response);
 	}
 
 	/**
