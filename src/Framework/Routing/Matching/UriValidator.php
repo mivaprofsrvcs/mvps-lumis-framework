@@ -2,10 +2,11 @@
 
 namespace MVPS\Lumis\Framework\Routing\Matching;
 
+use MVPS\Lumis\Framework\Contracts\Routing\Matching\Validator;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\Route;
 
-class UriValidator implements ValidatorInterface
+class UriValidator implements Validator
 {
 	/**
 	 * Validate a given rule against a route and request.
