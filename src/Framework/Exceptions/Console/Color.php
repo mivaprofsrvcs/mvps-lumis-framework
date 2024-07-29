@@ -129,8 +129,6 @@ class Color
 
 	/**
 	 * Check if 256 colors are supported.
-	 *
-	 * @return bool
 	 */
 	public function are256ColorsSupported(): bool
 	{
