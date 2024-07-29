@@ -805,7 +805,7 @@ class Route
 	/**
 	 * Set a regular expression requirement on the route.
 	 */
-	public function where(array|string $name, string|null $expression = null): static
+	public function where(array|string $name, string $expression = ''): static
 	{
 		foreach ($this->parseWhere($name, $expression) as $name => $expression) {
 			$this->wheres[$name] = $expression;
