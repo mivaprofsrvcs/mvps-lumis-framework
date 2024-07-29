@@ -30,7 +30,9 @@ class SubstituteBindings
 	public function handle(Request $request, Closure $next): mixed
 	{
 		try {
-			$this->router->substituteBindings($route = $request->route());
+			$route = $request->route();
+
+			$this->router->substituteBindings($route);
 
 			$this->router->substituteImplicitBindings($route);
 		} catch (ModelNotFoundException $exception) {
