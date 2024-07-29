@@ -629,6 +629,16 @@ class Route
 	}
 
 	/**
+	 * Set a parameter to the given value.
+	 */
+	public function setParameter(string $name, string|object|null $value = null): void
+	{
+		$this->parameters();
+
+		$this->parameters[$name] = $value;
+	}
+
+	/**
 	 * Set the router instance on the route.
 	 */
 	public function setRouter(Router $router): static
