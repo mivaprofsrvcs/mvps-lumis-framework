@@ -2,15 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Routing;
 
-interface UrlRoutable
-{
-	/**
-	 * Get the value of the model's route key.
-	 */
-	public function getRouteKey(): mixed;
+use Illuminate\Contracts\Routing\UrlRoutable as IlluminateUrlRoutable;
 
-	/**
-	 * Get the route key for the model.
-	 */
-	public function getRouteKeyName(): string;
+interface UrlRoutable extends IlluminateUrlRoutable
+{
 }
