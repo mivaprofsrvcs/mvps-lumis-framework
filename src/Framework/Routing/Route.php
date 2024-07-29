@@ -69,6 +69,14 @@ class Route
 	public bool $isFallback = false;
 
 	/**
+	 * Indicates the maximum number of seconds the route should acquire a
+	 * session lock for.
+	 *
+	 * @var int|null
+	 */
+	protected int|null $lockSeconds = null;
+
+	/**
 	 * The HTTP methods the route responds to.
 	 *
 	 * @var array
@@ -118,11 +126,27 @@ class Route
 	public static array $validators = [];
 
 	/**
+	 * Indicates the maximum number of seconds the route should wait while
+	 * attempting to acquire a session lock.
+	 *
+	 * @var int|null
+	 */
+	protected int|null $waitSeconds = null;
+
+	/**
 	 * The regular expression requirements.
 	 *
 	 * @var array
 	 */
 	public array $wheres = [];
+
+	/**
+	 * Indicates "trashed" models can be retrieved when resolving implicit
+	 * model bindings for this route.
+	 *
+	 * @var bool
+	 */
+	protected bool $withTrashedBindings = false;
 
 	/**
 	 * Create a new Route instance,
@@ -136,6 +160,15 @@ class Route
 		if (in_array('GET', $this->methods) && ! in_array('HEAD', $this->methods)) {
 			$this->methods[] = 'HEAD';
 		}
+	}
+
+	/**
+	 * Determines if the route allows "trashed" models to be retrieved when
+	 * resolving implicit model bindings.
+	 */
+	public function allowsTrashedBindings(): bool
+	{
+		return $this->withTrashedBindings;
 	}
 
 	/**
@@ -168,6 +201,17 @@ class Route
 	public function bindingFields(): array
 	{
 		return $this->bindingFields ?? [];
+	}
+
+	/**
+	 * Specify that the route should not allow concurrent requests from the same session.
+	 */
+	public function block(int|null $lockSeconds = 10, int|null $waitSeconds = 10): static
+	{
+		$this->lockSeconds = $lockSeconds;
+		$this->waitSeconds = $waitSeconds;
+
+		return $this;
 	}
 
 	/**
@@ -230,6 +274,15 @@ class Route
 		$this->bindingFields = array_merge($this->bindingFields, $parsed->bindingFields);
 
 		return $this;
+	}
+
+	/**
+	 * Determine if the route should enforce scoping of multiple implicit
+	 * model bindings.
+	 */
+	public function enforcesScopedBindings(): bool
+	{
+		return (bool) ($this->action['scope_bindings'] ?? false);
 	}
 
 	/**
@@ -397,6 +450,15 @@ class Route
 	}
 
 	/**
+	 * Get the maximum number of seconds the route's session lock should be
+	 * held for.
+	 */
+	public function locksFor(): int|null
+	{
+		return $this->lockSeconds;
+	}
+
+	/**
 	 * Determine if the route matches a given request.
 	 */
 	public function matches(Request $request, bool $includingMethod = true): bool
@@ -511,6 +573,20 @@ class Route
 	}
 
 	/**
+	 * Get the parent parameter of the given parameter.
+	 */
+	public function parentOfParameter(string $parameter): string|null
+	{
+		$key = array_search($parameter, array_keys($this->parameters));
+
+		if ($key === 0 || $key === false) {
+			return null;
+		}
+
+		return array_values($this->parameters)[$key - 1];
+	}
+
+	/**
 	 * Parse the route action into a standard array.
 	 */
 	protected function parseAction(callable|array|string|null $action): array
@@ -532,6 +608,16 @@ class Route
 	protected function parseWhere(array|string $name, string $expression): array
 	{
 		return is_array($name) ? $name : [$name => $expression];
+	}
+
+	/**
+	 * Determine if the route should prevent scoping of multiple implicit
+	 * model bindings.
+	 */
+	public function preventsScopedBindings(): bool
+	{
+		return isset($this->action['scope_bindings']) &&
+			$this->action['scope_bindings'] === false;
 	}
 
 	/**
@@ -572,6 +658,17 @@ class Route
 	{
 		return $this->controllerDispatcher()
 			->dispatch($this, $this->getController(), $this->getControllerMethod());
+	}
+
+	/**
+	 * Indicate that the route should enforce scoping of multiple implicit
+	 * model bindings.
+	 */
+	public function scopeBindings(): static
+	{
+		$this->action['scope_bindings'] = true;
+
+		return $this;
 	}
 
 	/**
@@ -697,6 +794,15 @@ class Route
 	}
 
 	/**
+	 * Get the maximum number of seconds to wait while attempting to acquire
+	 * a session lock.
+	 */
+	public function waitsFor(): int|null
+	{
+		return $this->waitSeconds;
+	}
+
+	/**
 	 * Set a regular expression requirement on the route.
 	 */
 	public function where(array|string $name, string|null $expression = null): static
@@ -704,6 +810,36 @@ class Route
 		foreach ($this->parseWhere($name, $expression) as $name => $expression) {
 			$this->wheres[$name] = $expression;
 		}
+
+		return $this;
+	}
+
+	/**
+	 * Specify that the route should allow concurrent requests from the same session.
+	 */
+	public function withoutBlocking(): static
+	{
+		return $this->block(null, null);
+	}
+
+	/**
+	 * Indicate that the route should not enforce scoping of multiple implicit
+	 * model bindings.
+	 */
+	public function withoutScopedBindings(): static
+	{
+		$this->action['scope_bindings'] = false;
+
+		return $this;
+	}
+
+	/**
+	 * Allow "trashed" models to be retrieved when resolving implicit model
+	 * bindings for this route.
+	 */
+	public function withTrashed(bool $withTrashed = true): static
+	{
+		$this->withTrashedBindings = $withTrashed;
 
 		return $this;
 	}
