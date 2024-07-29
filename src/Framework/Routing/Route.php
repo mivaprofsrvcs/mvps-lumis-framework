@@ -380,6 +380,21 @@ class Route
 	}
 
 	/**
+	 * Get the value of the action that should be taken on a missing model
+	 * exception.
+	 */
+	public function getMissing(): Closure|null
+	{
+		$missing = $this->action['missing'] ?? null;
+
+		return is_string($missing) &&
+			Str::startsWith($missing, [
+				'O:47:"Laravel\\SerializableClosure\\SerializableClosure',
+				'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure',
+			]) ? unserialize($missing) : $missing;
+	}
+
+	/**
 	 * Get the name of the route instance.
 	 */
 	public function getName(): string|null
