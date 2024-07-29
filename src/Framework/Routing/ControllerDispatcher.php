@@ -45,6 +45,6 @@ class ControllerDispatcher implements ControllerDispatcherContract
 	 */
 	protected function resolveParameters(Route $route, mixed $controller, string $method): array
 	{
-		return $this->resolveClassMethodDependencies($route->getParametersWithoutNulls(), $controller, $method);
+		return $this->resolveClassMethodDependencies($route->parametersWithoutNulls(), $controller, $method);
 	}
 }

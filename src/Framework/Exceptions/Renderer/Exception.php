@@ -59,7 +59,7 @@ class Exception
 	 */
 	public function applicationRouteParametersContext(): array|null
 	{
-		$parameters = $this->request()->route()?->getParameters();
+		$parameters = $this->request()->route()?->parameters();
 
 		return $parameters
 			? json_encode(
