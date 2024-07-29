@@ -6,6 +6,7 @@ use ArrayObject;
 use Closure;
 use Illuminate\Support\Traits\Macroable;
 use JsonSerializable;
+use MVPS\Lumis\Framework\Collections\Collection;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
@@ -17,6 +18,7 @@ use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Events\RouteMatched;
 use MVPS\Lumis\Framework\Routing\Events\Routing;
+use MVPS\Lumis\Framework\Routing\Middleware\SortedMiddleware;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Stringable;
 use Psr\Http\Message\ResponseInterface;
@@ -69,6 +71,15 @@ class Router implements BindingRegistrar, RegistrarContract
 	 * @var array
 	 */
 	protected array $implicitBindingCallback = [];
+
+	/**
+	 * The priority-sorted list of middleware.
+	 *
+	 * Forces the listed middleware to always be in the given order.
+	 *
+	 * @var array
+	 */
+	public array $middlewarePriority = [];
 
 	/**
 	 * The globally available parameter patterns.
@@ -663,6 +674,14 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Sort the given middleware by priority.
+	 */
+	protected function sortMiddleware(Collection $middlewares): array
+	{
+		return (new SortedMiddleware($this->middlewarePriority, $middlewares))->all();
+	}
+
+	/**
 	 * Substitute the route bindings onto the route.
 	 *
 	 * @throws \Illuminate\Database\Eloquent\ModelNotFoundException<\Illuminate\Database\Eloquent\Model>
@@ -749,6 +768,26 @@ class Router implements BindingRegistrar, RegistrarContract
 		// }
 
 		return $response->prepare();
+	}
+
+	/**
+	 * Remove any duplicate middleware from the given array.
+	 */
+	public static function uniqueMiddleware(array $middleware): array
+	{
+		$seen = [];
+		$result = [];
+
+		foreach ($middleware as $value) {
+			$key = is_object($value) ? spl_object_id($value) : $value;
+
+			if (! isset($seen[$key])) {
+				$seen[$key] = true;
+				$result[] = $value;
+			}
+		}
+
+		return $result;
 	}
 
 	/**

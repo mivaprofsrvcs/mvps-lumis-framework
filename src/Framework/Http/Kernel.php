@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Http;
 
+use Illuminate\Support\Carbon;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
 use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
@@ -11,6 +12,7 @@ use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Routing\Middleware\SubstituteBindings;
 use MVPS\Lumis\Framework\Routing\Router;
 use Throwable;
 
@@ -35,6 +37,55 @@ class Kernel implements KernelContract
 		RegisterProviders::class,
 		BootProviders::class,
 	];
+
+	/**
+	 * The application's middleware stack.
+	 *
+	 * @var array<int, class-string|string>
+	 */
+	protected array $middleware = [];
+
+	/**
+	 * The application's middleware aliases.
+	 *
+	 * @var array<string, class-string|string>
+	 */
+	protected array $middlewareAliases = [];
+
+	/**
+	 * The priority-sorted list of middleware.
+	 *
+	 * Forces non-global middleware to always be in the given order.
+	 *
+	 * @var string[]
+	 */
+	protected array $middlewarePriority = [
+		// HandlePrecognitiveRequests::class,
+		// EncryptCookies::class,
+		// AddQueuedCookiesToResponse::class,
+		// StartSession::class,
+		// ShareErrorsFromSession::class,
+		// AuthenticatesRequests::class,
+		// ThrottleRequests::class,
+		// ThrottleRequestsWithRedis::class,
+		// AuthenticatesSessions::class,
+		SubstituteBindings::class,
+		// Authorize::class,
+	];
+
+	/**
+	 * All of the registered request duration handlers.
+	 *
+	 * @var array
+	 */
+	protected array $requestLifecycleDurationHandlers = [];
+
+	/**
+	 * When the kernel starting handling the current request.
+	 *
+	 * @var \Illuminate\Support\Carbon|null
+	 */
+	protected $requestStartedAt = null;
 
 	/**
 	 * The router instance.
