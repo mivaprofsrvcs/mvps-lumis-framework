@@ -8,6 +8,7 @@ use MVPS\Lumis\Framework\Console\Command;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Routing\Route;
 use MVPS\Lumis\Framework\Routing\Router;
+use MVPS\Lumis\Framework\Routing\ViewController;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
@@ -35,7 +36,7 @@ class RouteListCommand extends Command
 		'URI',
 		'Name',
 		'Action',
-		// 'Middleware',
+		'Middleware',
 	];
 
 	/**
@@ -178,19 +179,19 @@ class RouteListCommand extends Command
 				'action' => $action,
 				'domain' => $domain,
 				'method' => $method,
-				// 'middleware' => $middleware,
+				'middleware' => $middleware,
 				'uri' => $uri,
 			] = $route;
 
-			// $middleware = Str::of($middleware)
-			// 	->explode("\n")
-			// 	->filter()
-			// 	->whenNotEmpty(
-			// 		fn ($collection) => $collection->map(
-			// 			fn ($middleware) => sprintf('         %s⇂ %s', str_repeat(' ', $maxMethod), $middleware)
-			// 		)
-			// 	)
-			// 	->implode("\n");
+			$middleware = Str::of($middleware)
+				->explode("\n")
+				->filter()
+				->whenNotEmpty(
+					fn ($collection) => $collection->map(
+						fn ($middleware) => sprintf('         %s⇂ %s', str_repeat(' ', $maxMethod), $middleware)
+					)
+				)
+				->implode("\n");
 
 			$spaces = str_repeat(' ', max($maxMethod + 6 - mb_strlen($method), 0));
 
@@ -228,7 +229,9 @@ class RouteListCommand extends Command
 			->flatten()
 			->filter()
 			->prepend('')
-			->push('')->push($routeCount)->push('')
+			->push('')
+			->push($routeCount)
+			->push('')
 			->toArray();
 	}
 
@@ -239,9 +242,7 @@ class RouteListCommand extends Command
 	{
 		['action' => $action, 'name' => $name] = $route;
 
-		// TODO: Update conditional when implementing View support
-		// if ($action === 'Closure' || $action === ViewController::class) {
-		if ($action === 'Closure') {
+		if ($action === 'Closure' || $action === ViewController::class) {
 			return (string) $name;
 		}
 
@@ -289,15 +290,13 @@ class RouteListCommand extends Command
 
 	/**
 	 * Get the middleware for the route.
-	 *
-	 * TODO: Implement this when adding middleware functionality
 	 */
-	// protected function getMiddleware(Route $route): string
-	// {
-	// 	return collection($this->router->gatherRouteMiddleware($route))->map(function ($middleware) {
-	// 		return $middleware instanceof Closure ? 'Closure' : $middleware;
-	// 	})->implode("\n");
-	// }
+	protected function getMiddleware(Route $route): string
+	{
+		return collection($this->router->gatherRouteMiddleware($route))
+			->map(fn ($middleware) => $middleware instanceof Closure ? 'Closure' : $middleware)
+			->implode("\n");
+	}
 
 	/**
 	 * Get the console command options.
@@ -379,7 +378,7 @@ class RouteListCommand extends Command
 			'uri' => $route->uri(),
 			'name' => $route->getName(),
 			'action' => ltrim($route->getActionName(), '\\'),
-			// 'middleware' => $this->getMiddleware($route),
+			'middleware' => $this->getMiddleware($route),
 			// 'vendor' => $this->isVendorRoute($route),
 		]);
 	}
@@ -426,10 +425,9 @@ class RouteListCommand extends Command
 	 */
 	public function handle(): mixed
 	{
-		// TODO: Implement when adding middleware functionality
-		// if (! $this->output->isVeryVerbose()) {
-		// 	$this->router->flushMiddlewareGroups();
-		// }
+		if (! $this->output->isVeryVerbose()) {
+			$this->router->flushMiddlewareGroups();
+		}
 
 		if (! $this->router->getRoutes()->count()) {
 			return $this->components->error('Your application currently has no defined routes.');
