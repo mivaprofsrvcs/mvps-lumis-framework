@@ -3,6 +3,7 @@
 namespace MVPS\Lumis\Framework\Routing;
 
 use Closure;
+use Laravel\SerializableClosure\SerializableClosure;
 use LogicException;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
@@ -171,11 +172,25 @@ class Route
 	{
 		$this->methods = (array) $methods;
 		$this->uri = $this->formatUri($uri);
-		$this->action = $this->parseAction($action);
+		$this->action = Arr::except($this->parseAction($action), ['prefix']);
 
 		if (in_array('GET', $this->methods) && ! in_array('HEAD', $this->methods)) {
 			$this->methods[] = 'HEAD';
 		}
+	}
+
+	/**
+	 * Parse a string based action for the "uses" fluent method.
+	 */
+	protected function addGroupNamespaceToStringUses(string $action): string
+	{
+		$groupStack = last($this->router->getGroupStack());
+
+		if (isset($groupStack['namespace']) && ! str_starts_with($action, '\\')) {
+			return $groupStack['namespace'] . '\\' . $action;
+		}
+
+		return $action;
 	}
 
 	/**
@@ -489,6 +504,14 @@ class Route
 	}
 
 	/**
+	 * Get the prefix of the route instance.
+	 */
+	public function getPrefix(): string|null
+	{
+		return $this->action['prefix'] ?? null;
+	}
+
+	/**
 	 * Get the route validators for the instance.
 	 */
 	public static function getValidators(): array
@@ -513,7 +536,7 @@ class Route
 	 */
 	protected function isControllerAction(): bool
 	{
-		return is_string($this->action['uses'] ?? null);
+		return is_string($this->action['uses']) && ! $this->isSerializedClosure();
 	}
 
 	/**
@@ -538,6 +561,14 @@ class Route
 	public function isSecure(): bool
 	{
 		return in_array('https', $this->action, true);
+	}
+
+	/**
+	 * Determine if the route action is a serialized Closure.
+	 */
+	protected function isSerializedClosure(): bool
+	{
+		return RouteAction::containsSerializedClosure($this->action);
 	}
 
 	/**
@@ -598,6 +629,16 @@ class Route
 			(array) ($this->action['middleware'] ?? []),
 			$middleware
 		);
+
+		return $this;
+	}
+
+	/**
+	 * Define the callable that should be invoked on a missing model exception.
+	 */
+	public function missing(Closure $missing): static
+	{
+		$this->action['missing'] = $missing;
 
 		return $this;
 	}
@@ -727,6 +768,30 @@ class Route
 	}
 
 	/**
+	 * Prepare the route instance for serialization.
+	 *
+	 * @throws \LogicException
+	 */
+	public function prepareForSerialization(): void
+	{
+		if ($this->action['uses'] instanceof Closure) {
+			$this->action['uses'] = serialize(
+				SerializableClosure::unsigned($this->action['uses'])
+			);
+		}
+
+		if (isset($this->action['missing']) && $this->action['missing'] instanceof Closure) {
+			$this->action['missing'] = serialize(
+				SerializableClosure::unsigned($this->action['missing'])
+			);
+		}
+
+		$this->compileRoute();
+
+		unset($this->router, $this->container);
+	}
+
+	/**
 	 * Determine if the route should prevent scoping of multiple implicit
 	 * model bindings.
 	 */
@@ -763,8 +828,11 @@ class Route
 	{
 		$callable = $this->action['uses'];
 
-		return $this->container[CallableDispatcher::class]
-			->dispatch($this, $callable);
+		if ($this->isSerializedClosure()) {
+			$callable = unserialize($this->action['uses'])->getClosure();
+		}
+
+		return $this->container[CallableDispatcher::class]->dispatch($this, $callable);
 	}
 
 	/**
@@ -926,11 +994,41 @@ class Route
 	}
 
 	/**
+	 * Update the "prefix" attribute on the action array.
+	 */
+	protected function updatePrefixOnAction(string $prefix): void
+	{
+		if (! empty($newPrefix = trim(rtrim($prefix, '/') . '/' . ltrim($this->action['prefix'] ?? '', '/'), '/'))) {
+			$this->action['prefix'] = $newPrefix;
+		}
+	}
+
+	/**
 	 * Get the URI associated with the route.
 	 */
 	public function uri(): string
 	{
 		return $this->uri;
+	}
+
+	/**
+	 * Set the handler for the route.
+	 */
+	public function uses(Closure|array|string $action): static
+	{
+		if (is_array($action)) {
+			$action = $action[0] . '@' . $action[1];
+		}
+
+		$action = is_string($action) ? $this->addGroupNamespaceToStringUses($action) : $action;
+
+		return $this->setAction(array_merge(
+			$this->action,
+			$this->parseAction([
+				'uses' => $action,
+				'controller' => $action,
+			])
+		));
 	}
 
 	/**
@@ -960,6 +1058,19 @@ class Route
 	public function withoutBlocking(): static
 	{
 		return $this->block(null, null);
+	}
+
+	/**
+	 * Specify middleware that should be removed from the given route.
+	 */
+	public function withoutMiddleware(array|string $middleware): static
+	{
+		$this->action['excluded_middleware'] = array_merge(
+			(array) ($this->action['excluded_middleware'] ?? []),
+			Arr::wrap($middleware)
+		);
+
+		return $this;
 	}
 
 	/**

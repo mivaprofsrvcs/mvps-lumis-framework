@@ -20,12 +20,16 @@ use MVPS\Lumis\Framework\Routing\Events\RouteMatched;
 use MVPS\Lumis\Framework\Routing\Events\Routing;
 use MVPS\Lumis\Framework\Routing\Middleware\MiddlewareNameResolver;
 use MVPS\Lumis\Framework\Routing\Middleware\SortedMiddleware;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Stringable;
 use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
 use stdClass;
 
+/**
+ * @mixin \MVPS\Lumis\Framework\Routing\RouteRegistrar
+ */
 class Router implements BindingRegistrar, RegistrarContract
 {
 	use Macroable {
@@ -66,6 +70,13 @@ class Router implements BindingRegistrar, RegistrarContract
 	 * @var \MVPS\Lumis\Framework\Contracts\Events\Dispatcher
 	 */
 	protected Dispatcher $events;
+
+	/**
+	 * The route group attribute stack.
+	 *
+	 * @var array
+	 */
+	protected array $groupStack = [];
 
 	/**
 	 * The registered custom implicit binding callback.
@@ -283,7 +294,13 @@ class Router implements BindingRegistrar, RegistrarContract
 			$action = $this->convertToControllerAction($action);
 		}
 
-		$route = $this->newRoute($methods, $uri, $action);
+		$route = $this->newRoute($methods, $this->prefix($uri), $action);
+
+		// Merge any groups after the route is created and ready. Once merged,
+		// the route will be returned to the caller.
+		if ($this->hasGroupStack()) {
+			$this->mergeGroupAttributesIntoRoute($route);
+		}
 
 		$this->addWhereClausesToRoute($route);
 
@@ -445,6 +462,28 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Get the current group stack for the router.
+	 */
+	public function getGroupStack(): array
+	{
+		return $this->groupStack;
+	}
+
+	/**
+	 * Get the prefix from the last group on the stack.
+	 */
+	public function getLastGroupPrefix(): string
+	{
+		if ($this->hasGroupStack()) {
+			$last = end($this->groupStack);
+
+			return $last['prefix'] ?? '';
+		}
+
+		return '';
+	}
+
+	/**
 	 * Get all of the defined middleware short-hand names.
 	 */
 	public function getMiddleware(): array
@@ -477,6 +516,24 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Create a route group with shared attributes.
+	 */
+	public function group(array $attributes, Closure|array|string $routes): static
+	{
+		foreach (Arr::wrap($routes) as $groupRoutes) {
+			$this->updateGroupStack($attributes);
+
+			// Update the group stack, load routes, merge group's attributes,
+			// and create routes. After creation, pop the attributes off the stack.
+			$this->loadRoutes($groupRoutes);
+
+			array_pop($this->groupStack);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Check if a route with the given name exists.
 	 */
 	public function has(string|array $name): bool
@@ -490,6 +547,14 @@ class Router implements BindingRegistrar, RegistrarContract
 		}
 
 		return true;
+	}
+
+	/**
+	 * Determine if the router currently has a group stack.
+	 */
+	public function hasGroupStack(): bool
+	{
+		return ! empty($this->groupStack);
 	}
 
 	/**
@@ -524,7 +589,7 @@ class Router implements BindingRegistrar, RegistrarContract
 		if ($routes instanceof Closure) {
 			$routes($this);
 		} else {
-			require $routes;
+			(new RouteFileRegistrar($this))->register($routes);
 		}
 	}
 
@@ -534,6 +599,22 @@ class Router implements BindingRegistrar, RegistrarContract
 	public function match(array|string $methods, string $uri, array|string|callable|null $action = null): Route
 	{
 		return $this->addRoute(array_map('strtoupper', (array) $methods), $uri, $action);
+	}
+
+	/**
+	 * Merge the group stack with the controller action.
+	 */
+	protected function mergeGroupAttributesIntoRoute(Route $route): void
+	{
+		$route->setAction($this->mergeWithLastGroup($route->getAction(), false));
+	}
+
+	/**
+	 * Merge the given array with the last group stack.
+	 */
+	public function mergeWithLastGroup(array $new, bool $prependExistingPrefix = true): array
+	{
+		return RouteGroup::merge($new, end($this->groupStack), $prependExistingPrefix);
 	}
 
 	/**
@@ -617,11 +698,55 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Prefix the given URI with the last prefix.
+	 */
+	protected function prefix(string $uri): string
+	{
+		return trim(trim($this->getLastGroupPrefix(), '/') . '/' . trim($uri, '/'), '/') ?: '/';
+	}
+
+	/**
 	 * Create a response instance from the given value.
 	 */
 	public function prepareResponse(Request $request, mixed $response): Response
 	{
 		return static::toResponse($request, $response);
+	}
+
+	/**
+	 * Prepend the last group controller onto the use clause.
+	 */
+	protected function prependGroupController(string $class): string
+	{
+		$group = end($this->groupStack);
+
+		if (! isset($group['controller'])) {
+			return $class;
+		}
+
+		if (class_exists($class)) {
+			return $class;
+		}
+
+		if (str_contains($class, '@')) {
+			return $class;
+		}
+
+		return $group['controller'] . '@' . $class;
+	}
+
+	/**
+	 * Prepend the last group namespace onto the use clause.
+	 */
+	protected function prependGroupNamespace(string $class): string
+	{
+		$group = end($this->groupStack);
+
+		return isset($group['namespace']) &&
+			! str_starts_with($class, '\\')
+			&& ! str_starts_with($class, $group['namespace'])
+				? $group['namespace'] . '\\' . $class
+				: $class;
 	}
 
 	/**
@@ -790,7 +915,23 @@ class Router implements BindingRegistrar, RegistrarContract
 
 		$this->events->dispatch(new RouteMatched($route, $request));
 
-		return $this->prepareResponse($request, $route->run());
+		return $this->prepareResponse($request, $this->runRouteWithinStack($route, $request));
+	}
+
+	/**
+	 * Run the given route within a Stack "onion" instance.
+	 */
+	protected function runRouteWithinStack(Route $route, Request $request): mixed
+	{
+		$shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
+			$this->container->make('middleware.disable') === true;
+
+		$middleware = $shouldSkipMiddleware ? [] : $this->gatherRouteMiddleware($route);
+
+		return (new Pipeline($this->container))
+			->send($request)
+			->through($middleware)
+			->then(fn ($request) => $this->prepareResponse($request, $route->run()));
 	}
 
 	/**
@@ -966,6 +1107,18 @@ class Router implements BindingRegistrar, RegistrarContract
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Update the group stack with the given attributes.
+	 */
+	protected function updateGroupStack(array $attributes): void
+	{
+		if ($this->hasGroupStack()) {
+			$attributes = $this->mergeWithLastGroup($attributes);
+		}
+
+		$this->groupStack[] = $attributes;
 	}
 
 	/**
