@@ -2,10 +2,10 @@
 
 namespace MVPS\Lumis\Framework\Routing;
 
+use Illuminate\Contracts\Routing\UrlRoutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
-use MVPS\Lumis\Framework\Contracts\Routing\UrlRoutable;
 use MVPS\Lumis\Framework\Routing\Exceptions\BackedEnumCaseNotFoundException;
 use MVPS\Lumis\Framework\Support\Reflector;
 use MVPS\Lumis\Framework\Support\Str;
