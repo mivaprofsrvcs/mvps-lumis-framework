@@ -451,7 +451,7 @@ class Kernel implements KernelContract
 			$this->router->middlewareGroup($key, $middleware);
 		}
 
-		foreach (array_merge($this->middlewareAliases) as $key => $middleware) {
+		foreach ($this->middlewareAliases as $key => $middleware) {
 			$this->router->aliasMiddleware($key, $middleware);
 		}
 	}
