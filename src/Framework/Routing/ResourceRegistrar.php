@@ -418,9 +418,7 @@ class ResourceRegistrar
 			$me->resource($name, $controller, $options);
 		};
 
-		$this->router->loadRoutes($callback);
-
-		return $this->router;
+		return $this->router->group(compact('prefix'), $callback);
 	}
 
 	/**
@@ -437,9 +435,7 @@ class ResourceRegistrar
 			$me->singleton($name, $controller, $options);
 		};
 
-		$this->router->loadRoutes($callback);
-
-		return $this->router;
+		return $this->router->group(compact('prefix'), $callback);
 	}
 
 	/**
