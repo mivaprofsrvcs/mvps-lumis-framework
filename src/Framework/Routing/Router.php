@@ -81,9 +81,9 @@ class Router implements BindingRegistrar, RegistrarContract
 	/**
 	 * The registered custom implicit binding callback.
 	 *
-	 * @var array
+	 * @var callable
 	 */
-	protected array $implicitBindingCallback = [];
+	protected $implicitBindingCallback;
 
 	/**
 	 * All of the short-hand keys for middlewares.
