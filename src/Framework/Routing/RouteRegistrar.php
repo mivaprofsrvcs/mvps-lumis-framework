@@ -9,6 +9,27 @@ use MVPS\Lumis\Framework\Routing\Traits\CreatesRegularExpressionRouteConstraints
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Reflector;
 
+/**
+ * @method \MVPS\Lumis\Framework\Routing\Route any(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\Route delete(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\Route get(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\Route options(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\Route patch(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\Route post(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\Route put(string $uri, \Closure|array|string|null $action = null)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar as(string $value)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar controller(string $controller)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar domain(string $value)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar middleware(array|string|null $middleware)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar missing(\Closure $missing)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar name(string $value)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar namespace(string|null $value)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar prefix(string $prefix)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar scopeBindings()
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar where(array $where)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar withoutMiddleware(array|string $middleware)
+ * @method \MVPS\Lumis\Framework\Routing\RouteRegistrar withoutScopedBindings()
+ */
 class RouteRegistrar
 {
 	use CreatesRegularExpressionRouteConstraints;
@@ -155,6 +176,16 @@ class RouteRegistrar
 		}
 
 		return array_merge($this->attributes, $action);
+	}
+
+	/**
+	 * Create a route group with shared attributes.
+	 */
+	public function group(Closure|array|string $callback): static
+	{
+		$this->router->group($this->attributes, $callback);
+
+		return $this;
 	}
 
 	/**
