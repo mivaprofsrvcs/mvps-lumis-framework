@@ -6,6 +6,9 @@ use Closure;
 use Exception;
 use Illuminate\Console\View\Components\BulletList;
 use Illuminate\Console\View\Components\Error;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\MultipleRecordsFoundException;
+use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
 use MVPS\Lumis\Framework\Cache\RateLimiter;
@@ -105,6 +108,9 @@ class Handler implements ExceptionHandler
 		BackedEnumCaseNotFoundException::class,
 		HttpException::class,
 		HttpResponseException::class,
+		ModelNotFoundException::class,
+		MultipleRecordsFoundException::class,
+		RecordsNotFoundException::class,
 		RequestExceptionInterface::class,
 		ValidationException::class,
 	];
@@ -449,6 +455,8 @@ class Handler implements ExceptionHandler
 	{
 		return match (true) {
 			$e instanceof BackedEnumCaseNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
+			$e instanceof ModelNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
+			$e instanceof RecordsNotFoundException => new NotFoundHttpException('Not found.', $e),
 			$e instanceof RequestExceptionInterface => new BadRequestHttpException('Bad request.', $e),
 			default => $e,
 		};
