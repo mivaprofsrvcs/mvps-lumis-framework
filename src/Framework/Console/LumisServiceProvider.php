@@ -7,6 +7,7 @@ use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
 use MVPS\Lumis\Framework\Console\Commands\ComponentMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConsoleMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ControllerMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\DbCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
@@ -37,7 +38,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ConfigCache' => ConfigCacheCommand::class,
 		// 'ConfigClear' => ConfigClearCommand::class,
 		// 'ConfigShow' => ConfigShowCommand::class,
-		// 'Db' => DbCommand::class,
+		'Db' => DbCommand::class,
 		// 'DbMonitor' => DatabaseMonitorCommand::class,
 		// 'DbPrune' => PruneCommand::class,
 		// 'DbShow' => ShowCommand::class,
