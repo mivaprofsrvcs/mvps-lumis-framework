@@ -155,8 +155,6 @@ class SetCookie
 
 	/**
 	 * The UNIX timestamp when the cookie Expires.
-	 *
-	 * @return string|int|null
 	 */
 	public function getExpires(): string|int|null
 	{

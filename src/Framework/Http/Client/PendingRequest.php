@@ -389,8 +389,6 @@ class PendingRequest
 
 	/**
 	 * Build the recorder handler.
-	 *
-	 * @return \Closure
 	 */
 	public function buildRecorderHandler(): Closure
 	{
@@ -412,8 +410,6 @@ class PendingRequest
 
 	/**
 	 * Build the stub handler.
-	 *
-	 * @return \Closure
 	 */
 	public function buildStubHandler(): Closure
 	{
