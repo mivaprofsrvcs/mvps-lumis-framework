@@ -6,11 +6,12 @@ use MVPS\Lumis\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
-use MVPS\Lumis\Framework\Contracts\View\Factory;
+use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactoryContract;
 use MVPS\Lumis\Framework\Debugging\CliDumper;
 use MVPS\Lumis\Framework\Debugging\HtmlDumper;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Mappers\BladeMapper;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
+use MVPS\Lumis\Framework\Http\Client\Factory as HttpFactory;
 use MVPS\Lumis\Framework\Log\Events\MessageLogged;
 use MVPS\Lumis\Framework\Testing\LoggedExceptionCollection;
 use MVPS\Lumis\Framework\View\Factory as ViewFactory;
@@ -20,6 +21,15 @@ use Symfony\Component\VarDumper\Cloner\AbstractCloner;
 
 class FrameworkServiceProvider extends AggregateServiceProvider
 {
+	/**
+	 * The singletons to register into the container.
+	 *
+	 * @var array
+	 */
+	public array $singletons = [
+		HttpFactory::class => HttpFactory::class,
+	];
+
 	/**
 	 * Register the framework service provider.
 	 */
@@ -76,7 +86,7 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 			$errorRenderer = new HtmlErrorRenderer($app['config']->get('app.debug'));
 
 			return new Renderer(
-				$app->make(Factory::class),
+				$app->make(ViewFactoryContract::class),
 				$errorRenderer,
 				$app->make(BladeMapper::class),
 				$app->basePath()

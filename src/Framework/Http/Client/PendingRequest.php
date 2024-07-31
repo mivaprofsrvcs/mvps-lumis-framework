@@ -4,6 +4,8 @@ namespace MVPS\Lumis\Framework\Http\Client;
 
 use Closure;
 use Exception;
+use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
 use JsonSerializable;
 use MVPS\Lumis\Framework\Collections\Collection;
 use MVPS\Lumis\Framework\Contracts\Http\Client\Promise;
@@ -29,6 +31,9 @@ use Symfony\Component\VarDumper\VarDumper;
 
 class PendingRequest
 {
+	use Conditionable;
+	use Macroable;
+
 	/**
 	 * Whether the requests should be asynchronous.
 	 *
