@@ -105,7 +105,7 @@ class DbMonitorCommand extends DatabaseInspectionCommand
 		return collection(explode(',', $databases))
 			->map(function ($database) {
 				if (! $database) {
-					$database = $this->laravel['config']['database.default'];
+					$database = $this->lumis['config']['database.default'];
 				}
 
 				$maxConnections = $this->option('max');
