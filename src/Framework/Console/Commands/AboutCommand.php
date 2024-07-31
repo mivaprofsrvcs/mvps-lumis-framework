@@ -35,17 +35,15 @@ class AboutCommand extends Command
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Display basic information about your application';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
-	protected $signature = 'about {--only= : The section to display} {--json : Output the information as JSON}';
+	protected $signature = 'about
+		{--only= : The section to display}
+		{--json : Output the information as JSON}';
 
 	/**
 	 * Create a new about command instance.
@@ -188,11 +186,11 @@ class AboutCommand extends Command
 		// 	),
 		// ]);
 
-		// TODO: Implement this when adding caching & driver support
-		// static::addToSection('Drivers', fn () => array_filter([
-		// 	'Cache' => config('cache.default'),
-		// 	'Database' => config('database.default'),
-		// ]));
+		// TODO: Implement this when adding caching support
+		static::addToSection('Drivers', fn () => array_filter([
+			// 'Cache' => config('cache.default'),
+			'Database' => config('database.default'),
+		]));
 
 		collection(static::$customDataResolvers)
 			->each

@@ -6,16 +6,21 @@ use Closure;
 use Exception;
 use Illuminate\Console\View\Components\BulletList;
 use Illuminate\Console\View\Components\Error;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\MultipleRecordsFoundException;
+use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
 use MVPS\Lumis\Framework\Cache\RateLimiter;
 use MVPS\Lumis\Framework\Cache\RateLimiting\Limit;
 use MVPS\Lumis\Framework\Cache\RateLimiting\Unlimited;
-use MVPS\Lumis\Framework\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionRenderer;
 use MVPS\Lumis\Framework\Contracts\Http\HttpException as HttpExceptionContract;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
+use MVPS\Lumis\Framework\Exceptions\Console\Handler as ConsoleHandler;
+use MVPS\Lumis\Framework\Exceptions\Console\Inspector;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
 use MVPS\Lumis\Framework\Http\Exceptions\BadRequestHttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
@@ -33,7 +38,6 @@ use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 use pdeans\Http\Contracts\ExceptionInterface as RequestExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Symfony\Component\Console\Application as ConsoleApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorRenderer\HtmlErrorRenderer;
@@ -47,7 +51,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * The container implementation.
 	 *
-	 * @var \MVPS\Lumis\Framework\Container\Container
+	 * @var \MVPS\Lumis\Framework\Contracts\Container\Container
 	 */
 	protected Container $container;
 
@@ -104,6 +108,9 @@ class Handler implements ExceptionHandler
 		BackedEnumCaseNotFoundException::class,
 		HttpException::class,
 		HttpResponseException::class,
+		ModelNotFoundException::class,
+		MultipleRecordsFoundException::class,
+		RecordsNotFoundException::class,
 		RequestExceptionInterface::class,
 		ValidationException::class,
 	];
@@ -118,14 +125,14 @@ class Handler implements ExceptionHandler
 	/**
 	 * The callbacks that should be used during rendering.
 	 *
-	 * @var \Closure[]
+	 * @var array<\Closure>
 	 */
 	protected array $renderCallbacks = [];
 
 	/**
 	 * The callbacks that should be used during reporting.
 	 *
-	 * @var \MVPS\Lumis\Framework\Exceptions\ReportableHandler[]
+	 * @var array<\MVPS\Lumis\Framework\Exceptions\ReportableHandler>
 	 */
 	protected array $reportCallbacks = [];
 
@@ -448,6 +455,8 @@ class Handler implements ExceptionHandler
 	{
 		return match (true) {
 			$e instanceof BackedEnumCaseNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
+			$e instanceof ModelNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
+			$e instanceof RecordsNotFoundException => new NotFoundHttpException('Not found.', $e),
 			$e instanceof RequestExceptionInterface => new BadRequestHttpException('Bad request.', $e),
 			default => $e,
 		};
@@ -626,7 +635,11 @@ class Handler implements ExceptionHandler
 			return;
 		}
 
-		(new ConsoleApplication)->renderThrowable($e, $output);
+		$handler = new ConsoleHandler;
+
+		$handler->setInspector(new Inspector($e));
+
+		$handler->handle();
 	}
 
 	/**

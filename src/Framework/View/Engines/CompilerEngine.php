@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\View\Engines;
 
+use Illuminate\Database\RecordsNotFoundException;
 use MVPS\Lumis\Framework\Contracts\View\Compiler;
 use MVPS\Lumis\Framework\Filesystem\Filesystem;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
@@ -115,7 +116,11 @@ class CompilerEngine extends PhpEngine
 	 */
 	protected function handleViewException(Throwable $e, $obLevel): void
 	{
-		if ($e instanceof HttpException || $e instanceof HttpResponseException) {
+		if (
+			$e instanceof HttpException ||
+			$e instanceof HttpResponseException ||
+			$e instanceof RecordsNotFoundException
+		) {
 			parent::handleViewException($e, $obLevel);
 		}
 

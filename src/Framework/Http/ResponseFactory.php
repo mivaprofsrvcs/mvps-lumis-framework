@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Http;
 
+use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use MVPS\Lumis\Framework\Contracts\Support\Renderable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithContent;
@@ -9,7 +10,7 @@ use MVPS\Lumis\Framework\Http\Traits\ResponseTrait;
 use pdeans\Http\Factories\ResponseFactory as BaseResponseFactory;
 use pdeans\Http\Factories\StreamFactory;
 
-class ResponseFactory extends BaseResponseFactory
+class ResponseFactory extends BaseResponseFactory implements ResponseFactoryContract
 {
 	use InteractsWithContent;
 	use ResponseTrait;
@@ -57,6 +58,14 @@ class ResponseFactory extends BaseResponseFactory
 			$status,
 			$headers
 		);
+	}
+
+	/**
+	 * Create a new "no content" response.
+	 */
+	public function noContent(int $status = 204, array $headers = []): Response
+	{
+		return $this->make('', $status, $headers);
 	}
 
 	/**

@@ -36,7 +36,7 @@ class RouteParameterBinder
 	/**
 	 * Get the parameters for the route.
 	 */
-	public function getParameters(Request $request): array
+	public function parameters(Request $request): array
 	{
 		return $this->bindPathParameters($request);
 	}
@@ -46,7 +46,7 @@ class RouteParameterBinder
 	 */
 	protected function matchToKeys(array $matches): array
 	{
-		$parameterNames = $this->route->getParameterNames();
+		$parameterNames = $this->route->parameterNames();
 
 		if (empty($parameterNames)) {
 			return [];

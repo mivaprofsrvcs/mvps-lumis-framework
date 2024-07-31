@@ -5,9 +5,10 @@ namespace MVPS\Lumis\Framework\Console;
 use Closure;
 use Illuminate\Console\ContainerCommandLoader;
 use Illuminate\Support\ProcessUtils;
-use MVPS\Lumis\Framework\Application as LumisApplication;
+use MVPS\Lumis\Framework\Console\Events\LumisStarting;
 use MVPS\Lumis\Framework\Contracts\Console\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
+use MVPS\Lumis\Framework\Contracts\Framework\Application as FrameworkApplication;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
@@ -52,14 +53,14 @@ class Application extends SymfonyApplication implements ApplicationContract
 	/**
 	 * The Lumis application instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Application
+	 * @var \MVPS\Lumis\Framework\Contracts\Framework\Application
 	 */
-	protected LumisApplication $lumis;
+	protected FrameworkApplication $lumis;
 
 	/**
 	 * Create a new console application instance.
 	 */
-	public function __construct(LumisApplication $lumis, Dispatcher $events, string $version)
+	public function __construct(FrameworkApplication $lumis, Dispatcher $events, string $version)
 	{
 		parent::__construct('Lumis Framework', $version);
 
@@ -68,6 +69,8 @@ class Application extends SymfonyApplication implements ApplicationContract
 
 		$this->setAutoExit(false);
 		$this->setCatchExceptions(false);
+
+		$this->events->dispatch(new LumisStarting($this));
 
 		$this->bootstrap();
 	}
@@ -155,9 +158,10 @@ class Application extends SymfonyApplication implements ApplicationContract
 	#[\Override]
 	protected function getDefaultInputDefinition(): InputDefinition
 	{
-		return tap(parent::getDefaultInputDefinition(), function ($definition) {
-			$definition->addOption($this->getEnvironmentOption());
-		});
+		return tap(
+			parent::getDefaultInputDefinition(),
+			fn ($definition) => $definition->addOption($this->getEnvironmentOption())
+		);
 	}
 
 	/**
@@ -173,7 +177,7 @@ class Application extends SymfonyApplication implements ApplicationContract
 	/**
 	 * Get the Lumis application instance.
 	 */
-	public function getLumis(): LumisApplication
+	public function getLumis(): FrameworkApplication
 	{
 		return $this->lumis;
 	}

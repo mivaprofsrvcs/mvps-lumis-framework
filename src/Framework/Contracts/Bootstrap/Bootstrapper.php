@@ -2,7 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Bootstrap;
 
-use MVPS\Lumis\Framework\Application;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 
 interface Bootstrapper
 {

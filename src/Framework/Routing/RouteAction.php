@@ -5,10 +5,22 @@ namespace MVPS\Lumis\Framework\Routing;
 use LogicException;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Reflector;
+use MVPS\Lumis\Framework\Support\Str;
 use UnexpectedValueException;
 
 class RouteAction
 {
+	/**
+	 * Determine if the given array actions contain a serialized Closure.
+	 */
+	public static function containsSerializedClosure(array $action): bool
+	{
+		return is_string($action['uses']) && Str::startsWith($action['uses'], [
+			'O:47:"Laravel\\SerializableClosure\\SerializableClosure',
+			'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure',
+		]) !== false;
+	}
+
 	/**
 	 * Find the callable in an action array.
 	 */

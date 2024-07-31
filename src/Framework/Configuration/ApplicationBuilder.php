@@ -16,6 +16,20 @@ use MVPS\Lumis\Framework\Routing\RouteServiceProvider as AppRouteServiceProvider
 class ApplicationBuilder
 {
 	/**
+	 * The framework application instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Application
+	 */
+	protected Application $app;
+
+	/**
+	 * The page middleware that have been defined by the user.
+	 *
+	 * @var array
+	 */
+	protected array $pageMiddleware = [];
+
+	/**
 	 * The service provider that are marked for registration.
 	 *
 	 * @var array
@@ -25,8 +39,9 @@ class ApplicationBuilder
 	/**
 	 * Create a new application builder instance.
 	 */
-	public function __construct(protected Application $app)
+	public function __construct(Application $app)
 	{
+		$this->app = $app;
 	}
 
 	/**
@@ -60,12 +75,14 @@ class ApplicationBuilder
 					foreach ($web as $webRoute) {
 						if (realpath($webRoute) !== false) {
 							$this->app->make('router')
-								->loadRoutes($webRoute);
+								->middleware('web')
+								->group($webRoute);
 						}
 					}
 				} else {
 					$this->app->make('router')
-						->loadRoutes($web);
+						->middleware('web')
+						->group($web);
 				}
 			}
 
@@ -153,15 +170,40 @@ class ApplicationBuilder
 	 */
 	public function withKernels(): static
 	{
-		$this->app->singleton(
-			HttpKernelContract::class,
-			HttpKernel::class,
-		);
+		$this->app->singleton(HttpKernelContract::class, HttpKernel::class);
 
-		$this->app->singleton(
-			ConsoleKernelContract::class,
-			ConsoleKernel::class,
-		);
+		$this->app->singleton(ConsoleKernelContract::class, ConsoleKernel::class);
+
+		return $this;
+	}
+
+	/**
+	 * Register the global middleware, middleware groups, and middleware aliases
+	 * for the application.
+	 */
+	public function withMiddleware(callable|null $callback = null): static
+	{
+		$this->app->afterResolving(HttpKernel::class, function ($kernel) use ($callback) {
+			$middleware = new Middleware;
+				// TODO: Implement this with authentication system
+				// ->redirectGuestsTo(fn () => route('login'));
+
+			if (! is_null($callback)) {
+				$callback($middleware);
+			}
+
+			$this->pageMiddleware = $middleware->getPageMiddleware();
+
+			$kernel->setGlobalMiddleware($middleware->getGlobalMiddleware());
+			$kernel->setMiddlewareGroups($middleware->getMiddlewareGroups());
+			$kernel->setMiddlewareAliases($middleware->getMiddlewareAliases());
+
+			$priorities = $middleware->getMiddlewarePriority();
+
+			if (! empty($priorities)) {
+				$kernel->setMiddlewarePriority($priorities);
+			}
+		});
 
 		return $this;
 	}

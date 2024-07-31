@@ -62,7 +62,7 @@ class RoutingServiceProvider extends ServiceProvider
 	protected function registerRouter(): void
 	{
 		$this->app->singleton('router', function ($app) {
-			return new Router($app);
+			return new Router($app['events'], $app);
 		});
 	}
 

@@ -67,7 +67,7 @@ class BladeCompiler extends Compiler implements CompilerContract
 	/**
 	 * All of the available compiler functions.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $compilers = [
 		// 'Comments',
@@ -93,7 +93,7 @@ class BladeCompiler extends Compiler implements CompilerContract
 	/**
 	 * Array of opening and closing tags for regular echos.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $contentTags = ['{{', '}}'];
 
@@ -114,7 +114,7 @@ class BladeCompiler extends Compiler implements CompilerContract
 	/**
 	 * Array of opening and closing tags for escaped echos.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $escapedTags = ['{{{', '}}}'];
 
@@ -163,7 +163,7 @@ class BladeCompiler extends Compiler implements CompilerContract
 	/**
 	 * Array of opening and closing tags for raw echos.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $rawTags = ['{!!', '!!}'];
 

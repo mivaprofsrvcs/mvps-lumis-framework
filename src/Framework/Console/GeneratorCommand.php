@@ -20,7 +20,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 	/**
 	 * Reserved names that cannot be used for generation.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $reservedNames = [
 		'__halt_compiler',
@@ -136,7 +136,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 	/**
 	 * Build the class with the given name.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	protected function buildClass(string $name): string
 	{
@@ -202,7 +202,7 @@ abstract class GeneratorCommand extends Command implements PromptsForMissingInpu
 	/**
 	 * Execute the console command.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	public function handle(): bool|null
 	{

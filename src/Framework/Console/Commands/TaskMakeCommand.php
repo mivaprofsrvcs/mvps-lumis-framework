@@ -3,7 +3,6 @@
 namespace MVPS\Lumis\Framework\Console\Commands;
 
 use MVPS\Lumis\Framework\Console\GeneratorCommand;
-use MVPS\Lumis\Framework\Contracts\Console\PromptsForMissingInput as PromptsForMissingInputContract;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Tasks\Task;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -18,15 +17,11 @@ class TaskMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new Task class';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:task';
 
@@ -45,8 +40,6 @@ class TaskMakeCommand extends GeneratorCommand
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected string $type = 'Task';
 
@@ -190,7 +183,7 @@ class TaskMakeCommand extends GeneratorCommand
 	/**
 	 * Execute the console command.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	public function handle(): bool|null
 	{

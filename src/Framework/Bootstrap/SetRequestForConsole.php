@@ -2,7 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Bootstrap;
 
-use MVPS\Lumis\Framework\Application;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Http\Request;
 
 class SetRequestForConsole

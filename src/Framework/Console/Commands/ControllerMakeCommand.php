@@ -18,22 +18,16 @@ class ControllerMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new controller class';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:controller';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected string $type = 'Controller';
 
@@ -58,17 +52,16 @@ class ControllerMakeCommand extends GeneratorCommand
 			$input->setOption($type, true);
 		}
 
-		// TODO: Implement this when adding model support.
-		// if (in_array($type, ['api', 'resource', 'singleton'])) {
-		// 	$model = suggest(
-		// 		"What model should this {$type} controller be for? (Optional)",
-		// 		$this->possibleModels()
-		// 	);
+		if (in_array($type, ['api', 'resource', 'singleton'])) {
+			$model = suggest(
+				"What model should this $type controller be for? (Optional)",
+				$this->possibleModels()
+			);
 
-		// 	if ($model) {
-		// 		$input->setOption('model', $model);
-		// 	}
-		// }
+			if ($model) {
+				$input->setOption('model', $model);
+			}
+		}
 	}
 
 	/**
@@ -83,13 +76,13 @@ class ControllerMakeCommand extends GeneratorCommand
 
 		$replace = [];
 
-		// if ($this->option('parent')) {
-		// 	$replace = $this->buildParentReplacements();
-		// }
+		if ($this->option('parent')) {
+			$replace = $this->buildParentReplacements();
+		}
 
-		// if ($this->option('model')) {
-		// 	$replace = $this->buildModelReplacements($replace);
-		// }
+		if ($this->option('model')) {
+			$replace = $this->buildModelReplacements($replace);
+		}
 
 		if ($this->option('creatable')) {
 			$replace['abort(404);'] = '//';
@@ -123,16 +116,18 @@ class ControllerMakeCommand extends GeneratorCommand
 			$this->call('make:model', ['name' => $modelClass]);
 		}
 
+		$modelClassBasename = class_basename($modelClass);
+
 		return array_merge($replace, [
 			'DummyFullModelClass' => $modelClass,
 			'{{ namespacedModel }}' => $modelClass,
 			'{{namespacedModel}}' => $modelClass,
-			'DummyModelClass' => class_basename($modelClass),
-			'{{ model }}' => class_basename($modelClass),
-			'{{model}}' => class_basename($modelClass),
-			'DummyModelVariable' => lcfirst(class_basename($modelClass)),
-			'{{ modelVariable }}' => lcfirst(class_basename($modelClass)),
-			'{{modelVariable}}' => lcfirst(class_basename($modelClass)),
+			'DummyModelClass' => $modelClassBasename,
+			'{{ model }}' => $modelClassBasename,
+			'{{model}}' => $modelClassBasename,
+			'DummyModelVariable' => lcfirst($modelClassBasename),
+			'{{ modelVariable }}' => lcfirst($modelClassBasename),
+			'{{modelVariable}}' => lcfirst($modelClassBasename),
 		]);
 	}
 
@@ -150,16 +145,18 @@ class ControllerMakeCommand extends GeneratorCommand
 			$this->call('make:model', ['name' => $parentModelClass]);
 		}
 
+		$parentModelClassBasename = class_basename($parentModelClass);
+
 		return [
 			'ParentDummyFullModelClass' => $parentModelClass,
 			'{{ namespacedParentModel }}' => $parentModelClass,
 			'{{namespacedParentModel}}' => $parentModelClass,
-			'ParentDummyModelClass' => class_basename($parentModelClass),
-			'{{ parentModel }}' => class_basename($parentModelClass),
-			'{{parentModel}}' => class_basename($parentModelClass),
-			'ParentDummyModelVariable' => lcfirst(class_basename($parentModelClass)),
-			'{{ parentModelVariable }}' => lcfirst(class_basename($parentModelClass)),
-			'{{parentModelVariable}}' => lcfirst(class_basename($parentModelClass)),
+			'ParentDummyModelClass' => $parentModelClassBasename,
+			'{{ parentModel }}' => $parentModelClassBasename,
+			'{{parentModel}}' => $parentModelClassBasename,
+			'ParentDummyModelVariable' => lcfirst($parentModelClassBasename),
+			'{{ parentModelVariable }}' => lcfirst($parentModelClassBasename),
+			'{{parentModelVariable}}' => lcfirst($parentModelClassBasename),
 		];
 	}
 
@@ -201,18 +198,18 @@ class ControllerMakeCommand extends GeneratorCommand
 				InputOption::VALUE_NONE,
 				'Generate a single method, invokable controller class',
 			],
-			// [
-			// 	'model',
-			// 	'm',
-			// 	InputOption::VALUE_OPTIONAL,
-			// 	'Generate a resource controller for the given model',
-			// ],
-			// [
-			// 	'parent',
-			// 	'p',
-			// 	InputOption::VALUE_OPTIONAL,
-			// 	'Generate a nested resource controller class',
-			// ],
+			[
+				'model',
+				'm',
+				InputOption::VALUE_OPTIONAL,
+				'Generate a resource controller for the given model',
+			],
+			[
+				'parent',
+				'p',
+				InputOption::VALUE_OPTIONAL,
+				'Generate a nested resource controller class',
+			],
 			[
 				'resource',
 				'r',
@@ -240,13 +237,16 @@ class ControllerMakeCommand extends GeneratorCommand
 	protected function getStub(): string
 	{
 		$stub = null;
+		$type = $this->option('type');
 
-		if ($type = $this->option('type')) {
+		if ($type) {
 			$stub = "/stubs/controller.{$type}.stub";
-		// } elseif ($this->option('parent')) {
-		// 	$stub = $this->option('singleton')
-		// 		? '/stubs/controller.nested.singleton.stub'
-		// 		: '/stubs/controller.nested.stub';
+		} elseif ($this->option('parent')) {
+			$stub = $this->option('singleton')
+				? '/stubs/controller.nested.singleton.stub'
+				: '/stubs/controller.nested.stub';
+		} elseif ($this->option('model')) {
+			$stub = '/stubs/controller.model.stub';
 		} elseif ($this->option('invokable')) {
 			$stub = '/stubs/controller.invokable.stub';
 		} elseif ($this->option('singleton')) {

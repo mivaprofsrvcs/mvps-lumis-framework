@@ -1,11 +1,11 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Routing\Matching;
+namespace MVPS\Lumis\Framework\Contracts\Routing\Matching;
 
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\Route;
 
-interface ValidatorInterface
+interface Validator
 {
 	/**
 	 * Validate a given rule against a route and request.

@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Filesystem;
 
 use Illuminate\Filesystem\Filesystem as IlluminateFilesystem;
-use MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException;
+use MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException;
 use Throwable;
 
 class Filesystem extends IlluminateFilesystem
@@ -11,7 +11,7 @@ class Filesystem extends IlluminateFilesystem
 	/**
 	 * {@inheritdoc}
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	#[\Override]
 	public function get($path, $lock = false)
@@ -26,7 +26,7 @@ class Filesystem extends IlluminateFilesystem
 	/**
 	 * {@inheritdoc}
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	#[\Override]
 	public function getRequire($path, array $data = [])
@@ -41,7 +41,7 @@ class Filesystem extends IlluminateFilesystem
 	/**
 	 * {@inheritdoc}
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	#[\Override]
 	public function lines($path)
@@ -56,7 +56,7 @@ class Filesystem extends IlluminateFilesystem
 	/**
 	 * {@inheritdoc}
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	#[\Override]
 	public function requireOnce($path, array $data = [])

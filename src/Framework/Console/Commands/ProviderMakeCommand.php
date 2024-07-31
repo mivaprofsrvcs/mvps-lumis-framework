@@ -12,15 +12,11 @@ class ProviderMakeCommand extends GeneratorCommand
 {
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $description = 'Create a new service provider class';
 
 	/**
 	 * {@inheritdoc}
-	 *
-	 * @var string
 	 */
 	protected $name = 'make:provider';
 
@@ -65,7 +61,7 @@ class ProviderMakeCommand extends GeneratorCommand
 	/**
 	 * Execute the console command.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Contracts\Filesystem\FileNotFoundException
+	 * @throws \MVPS\Lumis\Framework\Filesystem\Exceptions\FileNotFoundException
 	 */
 	public function handle(): bool|null
 	{

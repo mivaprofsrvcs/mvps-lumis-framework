@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Contracts\Filesystem;
+namespace MVPS\Lumis\Framework\Filesystem\Exceptions;
 
 use Exception;
 

@@ -1,6 +1,8 @@
 <?php
 
 use Carbon\Carbon;
+use Faker\Factory as FakerFactory;
+use Faker\Generator as FakerGenerator;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
@@ -33,8 +35,7 @@ if (! function_exists('app')) {
 			return Container::getInstance();
 		}
 
-		return Container::getInstance()
-			->make($abstract, $parameters);
+		return Container::getInstance()->make($abstract, $parameters);
 	}
 }
 
@@ -85,6 +86,38 @@ if (! function_exists('config_path')) {
 	function config_path(string $path = ''): string
 	{
 		return app()->configPath($path);
+	}
+}
+
+if (! function_exists('database_path')) {
+	/**
+	 * Get the database path.
+	 */
+	function database_path(string $path = ''): string
+	{
+		return app()->databasePath($path);
+	}
+}
+
+if (! function_exists('fake') && class_exists(FakerFactory::class)) {
+	/**
+	 * Get a faker instance.
+	 */
+	function fake(string|null $locale = null): FakerGenerator
+	{
+		if (app()->bound('config')) {
+			$locale ??= app('config')->get('app.faker_locale');
+		}
+
+		$locale ??= 'en_US';
+
+		$abstract = FakerGenerator::class . ':' . $locale;
+
+		if (! app()->bound($abstract)) {
+			app()->singleton($abstract, fn () => FakerFactory::create($locale));
+		}
+
+		return app()->make($abstract);
 	}
 }
 

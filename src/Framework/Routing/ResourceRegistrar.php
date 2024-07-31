@@ -23,7 +23,7 @@ class ResourceRegistrar
 	/**
 	 * The default actions for a resourceful controller.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $resourceDefaults = ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'];
 
@@ -37,7 +37,7 @@ class ResourceRegistrar
 	/**
 	 * The default actions for a singleton resource controller.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $singletonResourceDefaults = ['show', 'edit', 'update'];
 
@@ -418,9 +418,7 @@ class ResourceRegistrar
 			$me->resource($name, $controller, $options);
 		};
 
-		$this->router->loadRoutes($callback);
-
-		return $this->router;
+		return $this->router->group(compact('prefix'), $callback);
 	}
 
 	/**
@@ -437,9 +435,7 @@ class ResourceRegistrar
 			$me->singleton($name, $controller, $options);
 		};
 
-		$this->router->loadRoutes($callback);
-
-		return $this->router;
+		return $this->router->group(compact('prefix'), $callback);
 	}
 
 	/**

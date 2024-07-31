@@ -57,16 +57,14 @@ class Exception
 	/**
 	 * Get the application's route parameters context.
 	 */
-	public function applicationRouteParametersContext(): array|null
+	public function applicationRouteParametersContext(): string|null
 	{
-		$parameters = $this->request()->route()?->getParameters();
+		$parameters = $this->request()->route()?->parameters();
 
-		return $parameters
-			? json_encode(
-				array_map(fn ($value) => $value, (array) $parameters),
-				JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
-			)
-			: null;
+		return $parameters ? json_encode(
+			array_map(fn ($value) => $value, (array) $parameters),
+			JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT
+		) : null;
 	}
 
 	/**
