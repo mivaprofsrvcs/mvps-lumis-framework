@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Console;
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
 use MVPS\Lumis\Framework\Console\Commands\ComponentMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\ConfigShowCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConsoleMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ControllerMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\DbCommand;
@@ -41,7 +42,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ClearCompiled' => ClearCompiledCommand::class,
 		// 'ConfigCache' => ConfigCacheCommand::class,
 		// 'ConfigClear' => ConfigClearCommand::class,
-		// 'ConfigShow' => ConfigShowCommand::class,
+		'ConfigShow' => ConfigShowCommand::class,
 		'Db' => DbCommand::class,
 		'DbMonitor' => DbMonitorCommand::class,
 		'DbShow' => DbShowCommand::class,
