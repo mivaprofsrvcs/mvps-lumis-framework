@@ -572,6 +572,8 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
 		$status = $kernel->handle($input, new ConsoleOutput);
 
+		$kernel->terminate($input, $status);
+
 		return $status;
 	}
 
