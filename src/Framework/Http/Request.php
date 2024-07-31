@@ -272,7 +272,7 @@ class Request extends ServerRequest
 	 */
 	public static function getParsedBodyFromRequest(ServerRequestInterface $request): array
 	{
-		return (new static)->isJson($request->getHeader('content-type')[0] ?? '')
+		return $request->hasHeader('Content-Type') && str_contains($request->getHeader('Content-Type')[0], 'json')
 			? json_decode((string) $request->getBody(), true)
 			: $request->getParsedBody();
 	}
@@ -364,24 +364,6 @@ class Request extends ServerRequest
 
 		return collection($patterns)
 			->contains(fn ($pattern) => Str::is($pattern, $path));
-	}
-
-	/**
-	 * Determine if the request is sending JSON.
-	 */
-	public function isJson(string $contentType): bool
-	{
-		if ($contentType === '') {
-			return false;
-		}
-
-		foreach (['/json', '+json'] as $jsonContentCheck) {
-			if (str_contains($contentType, $jsonContentCheck)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	/**
