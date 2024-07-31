@@ -1,0 +1,96 @@
+<?php
+
+namespace MVPS\Lumis\Framework\Console;
+
+use Closure;
+use Illuminate\Support\Traits\ForwardsCalls;
+use MVPS\Lumis\Framework\Console\Exceptions\ManuallyFailedException;
+use ReflectionFunction;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
+class ClosureCommand extends Command
+{
+	use ForwardsCalls;
+
+	/**
+	 * The command callback.
+	 *
+	 * @var \Closure
+	 */
+	protected Closure $callback;
+
+	/**
+	 * Create a new closure command instance.
+	 */
+	public function __construct(string $signature, Closure $callback)
+	{
+		$this->callback = $callback;
+		$this->signature = $signature;
+
+		parent::__construct();
+	}
+
+	/**
+	 * Set the description for the command.
+	 */
+	public function describe(string $description): static
+	{
+		$this->setDescription($description);
+
+		return $this;
+	}
+
+	/**
+	 * Execute the console command.
+	 */
+	protected function execute(InputInterface $input, OutputInterface $output): int
+	{
+		$inputs = array_merge($input->getArguments(), $input->getOptions());
+
+		$parameters = [];
+
+		foreach ((new ReflectionFunction($this->callback))->getParameters() as $parameter) {
+			if (isset($inputs[$parameter->getName()])) {
+				$parameters[$parameter->getName()] = $inputs[$parameter->getName()];
+			}
+		}
+
+		try {
+			return (int) $this->lumis->call($this->callback->bindTo($this, $this), $parameters);
+		} catch (ManuallyFailedException $e) {
+			$this->components->error($e->getMessage());
+
+			return static::FAILURE;
+		}
+	}
+
+	/**
+	 * Set the description for the command.
+	 */
+	public function purpose(string $description): static
+	{
+		return $this->describe($description);
+	}
+
+	/**
+	 * Create a new scheduled event for the command.
+	 *
+	 * TODO: Update this when Implementing scheduling
+	 */
+	// public function schedule(array $parameters = []): Scheduling\Event
+	public function schedule(array $parameters = []): void
+	{
+		// return Schedule::command($this->name, $parameters);
+	}
+
+	/**
+	 * Dynamically proxy calls to a new scheduled event.
+	 *
+	 * @throws \BadMethodCallException
+	 */
+	public function __call(string $method, array $parameters): mixed
+	{
+		return $this->forwardCallTo($this->schedule(), $method, $parameters);
+	}
+}
