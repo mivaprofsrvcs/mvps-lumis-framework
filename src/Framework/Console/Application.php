@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Console;
 use Closure;
 use Illuminate\Console\ContainerCommandLoader;
 use Illuminate\Support\ProcessUtils;
+use MVPS\Lumis\Framework\Console\Events\LumisStarting;
 use MVPS\Lumis\Framework\Contracts\Console\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Framework\Application as FrameworkApplication;
@@ -68,6 +69,8 @@ class Application extends SymfonyApplication implements ApplicationContract
 
 		$this->setAutoExit(false);
 		$this->setCatchExceptions(false);
+
+		$this->events->dispatch(new LumisStarting($this));
 
 		$this->bootstrap();
 	}
@@ -155,9 +158,10 @@ class Application extends SymfonyApplication implements ApplicationContract
 	#[\Override]
 	protected function getDefaultInputDefinition(): InputDefinition
 	{
-		return tap(parent::getDefaultInputDefinition(), function ($definition) {
-			$definition->addOption($this->getEnvironmentOption());
-		});
+		return tap(
+			parent::getDefaultInputDefinition(),
+			fn ($definition) => $definition->addOption($this->getEnvironmentOption())
+		);
 	}
 
 	/**
