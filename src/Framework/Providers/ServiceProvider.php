@@ -126,9 +126,7 @@ abstract class ServiceProvider
 	{
 		$commands = is_array($commands) ? $commands : func_get_args();
 
-		ConsoleApplication::starting(function ($lumis) use ($commands) {
-			$lumis->resolveCommands($commands);
-		});
+		ConsoleApplication::starting(fn ($lumis) => $lumis->resolveCommands($commands));
 	}
 
 	/**
