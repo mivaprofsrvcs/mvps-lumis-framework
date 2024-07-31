@@ -12,6 +12,7 @@ use MVPS\Lumis\Framework\Console\Commands\DbMonitorCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\ModelPruneCommand;
 use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
 use MVPS\Lumis\Framework\Console\Commands\SchemaDumpCommand;
@@ -41,7 +42,6 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ConfigShow' => ConfigShowCommand::class,
 		'Db' => DbCommand::class,
 		'DbMonitor' => DbMonitorCommand::class,
-		// 'DbPrune' => PruneCommand::class,
 		// 'DbShow' => ShowCommand::class,
 		// 'DbTable' => DatabaseTableCommand::class,
 		'DbWipe' => WipeCommand::class,
@@ -49,6 +49,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'EnvironmentDecrypt' => EnvironmentDecryptCommand::class,
 		// 'EnvironmentEncrypt' => EnvironmentEncryptCommand::class,
 		// 'KeyGenerate' => KeyGenerateCommand::class,
+		'ModelPrune' => ModelPruneCommand::class,
 		// 'Optimize' => OptimizeCommand::class,
 		// 'OptimizeClear' => OptimizeClearCommand::class,
 		// 'RouteCache' => RouteCacheCommand::class,
