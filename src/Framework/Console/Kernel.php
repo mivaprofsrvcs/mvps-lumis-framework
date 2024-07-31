@@ -2,15 +2,20 @@
 
 namespace MVPS\Lumis\Framework\Console;
 
+use Carbon\CarbonInterval;
+use Closure;
+use DateTimeInterface;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\InteractsWithTime;
 use MVPS\Lumis\Framework\Bootstrap\BootProviders;
 use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Bootstrap\LoadConfiguration;
 use MVPS\Lumis\Framework\Bootstrap\LoadEnvironmentVariables;
 use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
 use MVPS\Lumis\Framework\Bootstrap\SetRequestForConsole;
-use MVPS\Lumis\Framework\Console\Application as LumisConsoleApp;
+use MVPS\Lumis\Framework\Console\Application as ConsoleApplication;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
@@ -19,6 +24,7 @@ use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
 use SplFileInfo;
+use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Event\ConsoleTerminateEvent;
@@ -31,6 +37,8 @@ use Throwable;
 
 class Kernel implements KernelContract
 {
+	use InteractsWithTime;
+
 	/**
 	 * The application implementation.
 	 *
@@ -53,18 +61,11 @@ class Kernel implements KernelContract
 	];
 
 	/**
-	 * The Lumis commands provided by the application.
+	 * All of the registered command duration handlers.
 	 *
 	 * @var array
 	 */
-	protected array $commands = [];
-
-	/**
-	 * Indicates if the Closure commands have been loaded.
-	 *
-	 * @var bool
-	 */
-	protected bool $commandsLoaded = false;
+	protected array $commandLifecycleDurationHandlers = [];
 
 	/**
 	 * The paths where Lumis commands should be automatically discovered.
@@ -79,6 +80,27 @@ class Kernel implements KernelContract
 	 * @var array
 	 */
 	protected array $commandRoutePaths = [];
+
+	/**
+	 * The Lumis commands provided by the application.
+	 *
+	 * @var array
+	 */
+	protected array $commands = [];
+
+	/**
+	 * Indicates if the Closure commands have been loaded.
+	 *
+	 * @var bool
+	 */
+	protected bool $commandsLoaded = false;
+
+	/**
+	 * When the currently handled command started.
+	 *
+	 * @var \Illuminate\Support\Carbon|null
+	 */
+	protected $commandStartedAt;
 
 	/**
 	 * The event dispatcher instance.
@@ -99,7 +121,7 @@ class Kernel implements KernelContract
 	 *
 	 * @var \MVPS\Lumis\Framework\Console\Application|null
 	 */
-	protected LumisConsoleApp|null $lumis = null;
+	protected ConsoleApplication|null $lumis = null;
 
 	/**
 	 * The Symfony event dispatcher implementation.
@@ -174,7 +196,11 @@ class Kernel implements KernelContract
 			$this->app->bootstrapWith($this->bootstrappers());
 		}
 
+		$this->app->loadDeferredProviders();
+
 		if (! $this->commandsLoaded) {
+			$this->commands();
+
 			if ($this->shouldDiscoverCommands()) {
 				$this->discoverCommands();
 			}
@@ -209,9 +235,9 @@ class Kernel implements KernelContract
 	public function bootstrapWithoutBootingProviders(): void
 	{
 		$this->app->bootstrapWith(
-			collection($this->bootstrappers())->reject(function ($bootstrapper) {
-				return $bootstrapper === BootProviders::class;
-			})->all()
+			collection($this->bootstrappers())
+				->reject(fn ($bootstrapper) => $bootstrapper === BootProviders::class)
+				->all()
 		);
 	}
 
@@ -230,6 +256,18 @@ class Kernel implements KernelContract
 	}
 
 	/**
+	 * Register a closure based command with the application.
+	 */
+	public function command(string $signature, Closure $callback): ClosureCommand
+	{
+		$command = new ClosureCommand($signature, $callback);
+
+		ConsoleApplication::starting(fn ($lumis) => $lumis->add($command));
+
+		return $command;
+	}
+
+	/**
 	 * Extract the command class name from the given file path.
 	 */
 	protected function commandClassFromFile(SplFileInfo $file, string $namespace): string
@@ -239,6 +277,22 @@ class Kernel implements KernelContract
 			['\\', ''],
 			Str::after($file->getRealPath(), realpath(app_path()) . DIRECTORY_SEPARATOR)
 		);
+	}
+
+	/**
+	 * Register the commands for the application.
+	 */
+	protected function commands(): void
+	{
+		//
+	}
+
+	/**
+	 * When the command being handled started.
+	 */
+	public function commandStartedAt(): Carbon|null
+	{
+		return $this->commandStartedAt;
 	}
 
 	/**
@@ -262,10 +316,10 @@ class Kernel implements KernelContract
 	/**
 	 * Get the Lumis console application instance.
 	 */
-	protected function getLumis(): LumisConsoleApp
+	protected function getLumis(): ConsoleApplication
 	{
 		if (is_null($this->lumis)) {
-			$this->lumis = (new LumisConsoleApp($this->app, $this->events, $this->app->version()))
+			$this->lumis = (new ConsoleApplication($this->app, $this->events, $this->app->version()))
 				->resolveCommands($this->commands)
 				->setContainerCommandLoader();
 
@@ -283,11 +337,16 @@ class Kernel implements KernelContract
 	 */
 	public function handle(InputInterface $input, OutputInterface|null $output = null): int
 	{
+		$this->commandStartedAt = Carbon::now();
+
 		try {
+			if (in_array($input->getFirstArgument(), ['env:encrypt', 'env:decrypt'], true)) {
+				$this->bootstrapWithoutBootingProviders();
+			}
+
 			$this->bootstrap();
 
-			return $this->getLumis()
-				->run($input, $output);
+			return $this->getLumis()->run($input, $output);
 		} catch (Throwable $e) {
 			$this->reportException($e);
 
@@ -310,9 +369,10 @@ class Kernel implements KernelContract
 	 */
 	protected function load(array|string $paths): void
 	{
-		$paths = array_filter(array_unique(Arr::wrap($paths)), function ($path) {
-			return is_dir($path);
-		});
+		$paths = array_filter(
+			array_unique(Arr::wrap($paths)),
+			fn ($path) => is_dir($path)
+		);
 
 		if (empty($paths)) {
 			return;
@@ -328,9 +388,7 @@ class Kernel implements KernelContract
 			$command = $this->commandClassFromFile($file, $namespace);
 
 			if (is_subclass_of($command, Command::class) && ! (new ReflectionClass($command))->isAbstract()) {
-				LumisConsoleApp::starting(function ($lumis) use ($command) {
-					$lumis->resolve($command);
-				});
+				ConsoleApplication::starting(fn ($lumis) => $lumis->resolve($command));
 			}
 		}
 	}
@@ -343,6 +401,14 @@ class Kernel implements KernelContract
 		$this->bootstrap();
 
 		return $this->getLumis()->output();
+	}
+
+	/**
+	 * Register the given command with the console application.
+	 */
+	public function registerCommand(SymfonyCommand $command): void
+	{
+		$this->getLumis()->add($command);
 	}
 
 	/**
@@ -397,10 +463,64 @@ class Kernel implements KernelContract
 	}
 
 	/**
+	 * Set the Lumis console application instance.
+	 */
+	public function setLumis(ConsoleApplication|null $lumis): void
+	{
+		$this->lumis = $lumis;
+	}
+
+	/**
 	 * Determine if the kernel should discover commands.
 	 */
 	protected function shouldDiscoverCommands(): bool
 	{
 		return get_class($this) === __CLASS__;
+	}
+
+	/**
+	 * Terminate the console application.
+	 */
+	public function terminate(InputInterface $input, int $status): void
+	{
+		$this->app->terminate();
+
+		if (is_null($this->commandStartedAt)) {
+			return;
+		}
+
+		$this->commandStartedAt->setTimezone($this->app['config']->get('app.timezone') ?? 'UTC');
+
+		foreach ($this->commandLifecycleDurationHandlers as ['threshold' => $threshold, 'handler' => $handler]) {
+			$end ??= Carbon::now();
+
+			if ($this->commandStartedAt->diffInMilliseconds($end) > $threshold) {
+				$handler($this->commandStartedAt, $input, $status);
+			}
+		}
+
+		$this->commandStartedAt = null;
+	}
+
+	/**
+	 * Register a callback to be invoked when the command lifecycle duration
+	 * exceeds a given amount of time.
+	 */
+	public function whenCommandLifecycleIsLongerThan(
+		DateTimeInterface|CarbonInterval|float|int $threshold,
+		callable $handler
+	): void {
+		$threshold = $threshold instanceof DateTimeInterface
+			? $this->secondsUntil($threshold) * 1000
+			: $threshold;
+
+		$threshold = $threshold instanceof CarbonInterval
+			? $threshold->totalMilliseconds
+			: $threshold;
+
+		$this->commandLifecycleDurationHandlers[] = [
+			'threshold' => $threshold,
+			'handler' => $handler,
+		];
 	}
 }
