@@ -106,6 +106,7 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 
 			return new Renderer(
 				$app->make(ViewFactoryContract::class),
+				$app->make(Listener::class),
 				$errorRenderer,
 				$app->make(BladeMapper::class),
 				$app->basePath()
