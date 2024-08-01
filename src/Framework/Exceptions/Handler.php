@@ -38,7 +38,9 @@ use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 use pdeans\Http\Contracts\ExceptionInterface as RequestExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\Console\Application as ConsoleApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
+use Symfony\Component\Console\Exception\ExceptionInterface as SymfonyConsoleExceptionInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorRenderer\HtmlErrorRenderer;
 use Throwable;
@@ -611,26 +613,35 @@ class Handler implements ExceptionHandler
 	/**
 	 * Render an exception to the console.
 	 *
-	 * @internal This method is not meant to be used or overwritten outside the framework.
+	 * @internal This method is not meant to be used or overwritten outside of
+	 * the framework.
 	 */
 	public function renderForConsole(OutputInterface $output, Throwable $e): void
 	{
-		if ($e instanceof CommandNotFoundException) {
-			$message = str($e->getMessage())
-				->explode('.')
-				->first();
+		if ($e instanceof SymfonyConsoleExceptionInterface) {
+			if ($e instanceof CommandNotFoundException) {
+				$message = str($e->getMessage())
+					->explode('.')
+					->first();
 
-			if (! empty($alternatives = $e->getAlternatives())) {
-				$message .= '. Did you mean one of these?';
+				$alternatives = $e->getAlternatives();
 
-				with(new Error($output))->render($message);
+				if (! empty($alternatives)) {
+					$message .= '. Did you mean one of these?';
 
-				with(new BulletList($output))->render($alternatives);
+					with(new Error($output))->render($message);
 
-				$output->writeln('');
-			} else {
-				with(new Error($output))->render($message);
+					with(new BulletList($output))->render($alternatives);
+
+					$output->writeln('');
+				} else {
+					with(new Error($output))->render($message);
+				}
+
+				return;
 			}
+
+			(new ConsoleApplication)->renderThrowable($e, $output);
 
 			return;
 		}
