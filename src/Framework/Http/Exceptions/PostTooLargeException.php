@@ -7,7 +7,7 @@ use Throwable;
 class PostTooLargeException extends HttpException
 {
 	/**
-	 * Create a new "post too large" exception instance.
+	 * Create a new "post too large" HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',
