@@ -4,16 +4,16 @@ namespace MVPS\Lumis\Framework\Http\Exceptions;
 
 use Throwable;
 
-class PostTooLargeException extends HttpException
+class ContentTooLargeException extends HttpException
 {
 	/**
-	 * Create a new "post too large" HTTP exception instance.
+	 * Create a new "Content Too Large" HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',
 		Throwable|null $previous = null,
-		array $headers = [],
-		int $code = 0
+		int $code = 0,
+		array $headers = []
 	) {
 		parent::__construct(413, $message, $previous, $headers, $code);
 	}
