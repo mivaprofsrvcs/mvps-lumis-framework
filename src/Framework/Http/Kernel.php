@@ -83,7 +83,6 @@ class Kernel implements KernelContract
 		// ShareErrorsFromSession::class,
 		// AuthenticatesRequests::class,
 		// ThrottleRequests::class,
-		// ThrottleRequestsWithRedis::class,
 		// AuthenticatesSessions::class,
 		SubstituteBindings::class,
 		// Authorize::class,
