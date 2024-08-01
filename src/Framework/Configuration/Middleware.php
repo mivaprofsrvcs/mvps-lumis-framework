@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Configuration;
 
 use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
+use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
 use MVPS\Lumis\Framework\Support\Arr;
 
 class Middleware
@@ -236,7 +237,7 @@ class Middleware
 			// HandleCors::class,
 			// PreventRequestsDuringMaintenance::class,
 			// ValidatePostSize::class,
-			// TrimStrings::class,
+			TrimStrings::class,
 			ConvertEmptyStringsToNull::class,
 		]));
 
@@ -526,16 +527,15 @@ class Middleware
 
 	/**
 	 * Configure the string trimming middleware.
-	 *
-	 * TODO: Implement this
 	 */
 	public function trimStrings(array $except = []): static
 	{
-		// [$skipWhen, $except] = collection($except)->partition(fn ($value) => $value instanceof Closure);
+		[$skipWhen, $except] = collection($except)
+			->partition(fn ($value) => $value instanceof Closure);
 
-		// $skipWhen->each(fn (Closure $callback) => TrimStrings::skipWhen($callback));
+		$skipWhen->each(fn (Closure $callback) => TrimStrings::skipWhen($callback));
 
-		// TrimStrings::except($except->all());
+		TrimStrings::except($except->all());
 
 		return $this;
 	}
