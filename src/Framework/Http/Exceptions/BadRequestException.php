@@ -4,10 +4,10 @@ namespace MVPS\Lumis\Framework\Http\Exceptions;
 
 use Throwable;
 
-class NotFoundHttpException extends HttpException
+class BadRequestException extends HttpException
 {
 	/**
-	 * Create a new not found HTTP exception instance.
+	 * Create a new bad request HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',
@@ -15,6 +15,6 @@ class NotFoundHttpException extends HttpException
 		int $code = 0,
 		array $headers = []
 	) {
-		parent::__construct(404, $message, $previous, $headers, $code);
+		parent::__construct(400, $message, $previous, $headers, $code);
 	}
 }

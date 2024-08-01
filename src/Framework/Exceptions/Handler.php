@@ -22,10 +22,10 @@ use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Exceptions\Console\Handler as ConsoleHandler;
 use MVPS\Lumis\Framework\Exceptions\Console\Inspector;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
-use MVPS\Lumis\Framework\Http\Exceptions\BadRequestHttpException;
+use MVPS\Lumis\Framework\Http\Exceptions\BadRequestException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
-use MVPS\Lumis\Framework\Http\Exceptions\NotFoundHttpException;
+use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
@@ -456,10 +456,10 @@ class Handler implements ExceptionHandler
 	protected function prepareException(Throwable $e): Throwable
 	{
 		return match (true) {
-			$e instanceof BackedEnumCaseNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
-			$e instanceof ModelNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
-			$e instanceof RecordsNotFoundException => new NotFoundHttpException('Not found.', $e),
-			$e instanceof RequestExceptionInterface => new BadRequestHttpException('Bad request.', $e),
+			$e instanceof BackedEnumCaseNotFoundException => new NotFoundException($e->getMessage(), $e),
+			$e instanceof ModelNotFoundException => new NotFoundException($e->getMessage(), $e),
+			$e instanceof RecordsNotFoundException => new NotFoundException('Not found.', $e),
+			$e instanceof RequestExceptionInterface => new BadRequestException('Bad request.', $e),
 			default => $e,
 		};
 	}

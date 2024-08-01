@@ -4,7 +4,7 @@ namespace MVPS\Lumis\Framework\Http\Exceptions;
 
 use Throwable;
 
-class MethodNotAllowedHttpException extends HttpException
+class MethodNotAllowedException extends HttpException
 {
 	/**
 	 * Create a method not allowed HTTP exception instance.
