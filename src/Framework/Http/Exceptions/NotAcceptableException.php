@@ -7,7 +7,7 @@ use Throwable;
 class NotAcceptableException extends HttpException
 {
 	/**
-	 * Create a new access denied HTTP exception instance.
+	 * Create a new not acceptable HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',
