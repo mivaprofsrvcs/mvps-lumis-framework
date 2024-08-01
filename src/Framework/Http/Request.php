@@ -13,6 +13,7 @@ use MVPS\Lumis\Framework\Support\Str;
 use pdeans\Http\Factories\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\HttpFoundation\AcceptHeader;
+use Symfony\Component\HttpFoundation\InputBag;
 
 class Request extends ServerRequest
 {
@@ -55,6 +56,13 @@ class Request extends ServerRequest
 		'txt' => ['text/plain'],
 		'xml' => ['text/xml', 'application/xml', 'application/x-xml'],
 	];
+
+	/**
+	 * The decoded JSON content for the request.
+	 *
+	 * @var \Symfony\Component\HttpFoundation\InputBag|null
+	 */
+	protected InputBag|null $json = null;
 
 	/**
 	 * The route resolver callback.
@@ -374,9 +382,30 @@ class Request extends ServerRequest
 		return $this->getMethod() === strtoupper($method);
 	}
 
+	/**
+	 * Determine if the current request is secure (https).
+	 */
 	public function isSecure(): bool
 	{
 		return $this->getUri()->getScheme() === 'https';
+	}
+
+	/**
+	 * Get the JSON payload for the request.
+	 */
+	public function json(string|null $key = null, mixed $default = null): mixed
+	{
+		if (! isset($this->json)) {
+			$this->json = new InputBag(
+				(array) json_decode((string) $this->getBody() ?: '[]', true)
+			);
+		}
+
+		if (is_null($key)) {
+			return $this->json;
+		}
+
+		return data_get($this->json->all(), $key, $default);
 	}
 
 	/**
@@ -509,6 +538,16 @@ class Request extends ServerRequest
 		$route = $this->route();
 
 		return $route && $route->named(...$patterns);
+	}
+
+	/**
+	 * Set the JSON payload for the request.
+	 */
+	public function setJson(InputBag $json): static
+	{
+		$this->json = $json;
+
+		return $this;
 	}
 
 	/**
