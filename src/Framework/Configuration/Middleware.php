@@ -2,6 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Configuration;
 
+use Closure;
+use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
 use MVPS\Lumis\Framework\Support\Arr;
 
 class Middleware
@@ -178,12 +180,11 @@ class Middleware
 
 	/**
 	 * Configure the empty string conversion middleware.
-	 *
-	 * TODO: Implement this
 	 */
 	public function convertEmptyStringsToNull(array $except = []): static
 	{
-		// collection($except)->each(fn (Closure $callback) => ConvertEmptyStringsToNull::skipWhen($callback));
+		collection($except)
+			->each(fn (Closure $callback) => ConvertEmptyStringsToNull::skipWhen($callback));
 
 		return $this;
 	}
@@ -226,22 +227,18 @@ class Middleware
 
 	/**
 	 * Get the global middleware.
-	 *
-	 * TODO: Implement array_values array
 	 */
 	public function getGlobalMiddleware(): array
 	{
-		// TODO: Remove this line when implementing
-		$middleware = $this->global;
-		// $middleware = $this->global ?: array_values(array_filter([
-		// 	$this->trustHosts ? \Illuminate\Http\Middleware\TrustHosts::class : null,
-		// 	\Illuminate\Http\Middleware\TrustProxies::class,
-		// 	\Illuminate\Http\Middleware\HandleCors::class,
-		// 	\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
-		// 	\Illuminate\Http\Middleware\ValidatePostSize::class,
-		// 	\Illuminate\Foundation\Http\Middleware\TrimStrings::class,
-		// 	\Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-		// ]));
+		$middleware = $this->global ?: array_values(array_filter([
+			// $this->trustHosts ? TrustHosts::class : null,
+			// TrustProxies::class,
+			// HandleCors::class,
+			// PreventRequestsDuringMaintenance::class,
+			// ValidatePostSize::class,
+			// TrimStrings::class,
+			ConvertEmptyStringsToNull::class,
+		]));
 
 		$middleware = array_map(function ($middleware) {
 			return $this->replacements[$middleware] ?? $middleware;
