@@ -12,6 +12,7 @@ use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use pdeans\Http\Factories\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use Symfony\Component\HttpFoundation\AcceptHeader;
 use Symfony\Component\HttpFoundation\InputBag;
 
@@ -65,11 +66,54 @@ class Request extends ServerRequest
 	protected InputBag|null $json = null;
 
 	/**
+	 * The input bag instance for the query string parameters.
+	 *
+	 * @var \Symfony\Component\HttpFoundation\InputBag
+	 */
+	public InputBag $queryBag;
+
+	/**
+	 * The input bag instance for the request parameters.
+	 *
+	 * @var \Symfony\Component\HttpFoundation\InputBag
+	 */
+	public InputBag $requestBag;
+
+	/**
 	 * The route resolver callback.
 	 *
 	 * @var \Closure|null
 	 */
 	protected Closure|null $routeResolver = null;
+
+	public function __construct(
+		array $serverParams = [],
+		array $uploadedFiles = [],
+		null|string|UriInterface $uri = null,
+		string|null $method = null,
+		$body = 'php://input',
+		array $headers = [],
+		array $cookieParams = [],
+		array $queryParams = [],
+		$parsedBody = null,
+		string $protocol = '1.1'
+	) {
+		parent::__construct(
+			serverParams: $serverParams,
+			uploadedFiles: $uploadedFiles,
+			uri: $uri,
+			method: $method,
+			body: $body,
+			headers: $headers,
+			cookieParams: $cookieParams,
+			queryParams: $queryParams,
+			parsedBody: $parsedBody,
+			protocol: $protocol
+		);
+
+		$this->queryBag = new InputBag($this->getQueryParams());
+		$this->requestBag = new InputBag((array) $this->getParsedBody());
+	}
 
 	/**
 	 * Determine if the request is the result of an AJAX call.
