@@ -7,7 +7,7 @@ use Throwable;
 class AccessDeniedException extends HttpException
 {
 	/**
-	 * Create a new access denied HTTP exception instance.
+	 * Create a new "Access Denied" HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',

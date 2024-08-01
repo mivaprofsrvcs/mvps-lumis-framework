@@ -7,7 +7,7 @@ use Throwable;
 class BadRequestException extends HttpException
 {
 	/**
-	 * Create a new bad request HTTP exception instance.
+	 * Create a new "Bad Request" HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',
