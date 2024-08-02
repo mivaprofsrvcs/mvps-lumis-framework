@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Http;
 
 use MVPS\Lumis\Framework\Http\Traits\ResponseTrait;
 use pdeans\Http\Response as BaseResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class Response extends BaseResponse
 {
@@ -15,6 +16,23 @@ class Response extends BaseResponse
 	 * @var string
 	 */
 	protected string $charset = 'UTF-8';
+
+	/**
+	 * The header bag instance for the headers.
+	 *
+	 * @var \Symfony\Component\HttpFoundation\ResponseHeaderBag
+	 */
+	public ResponseHeaderBag $headerBag;
+
+	/**
+	 * Create a new HTTP response instance.
+	 */
+	public function __construct($body = 'php://memory', int $status = 200, array $headers = [])
+	{
+		parent::__construct(body: $body, status: $status, headers: $headers);
+
+		$this->headerBag = new ResponseHeaderBag($this->getHeaders());
+	}
 
 	/**
 	 * Cleans or flushes output buffers up to target level.
