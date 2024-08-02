@@ -174,7 +174,7 @@ class Exception
 	 */
 	public function requestBody(): string|null
 	{
-		$payload = $this->request()->input();
+		$payload = $this->request()->all();
 
 		if (empty($payload)) {
 			return null;
