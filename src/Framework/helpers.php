@@ -121,6 +121,24 @@ if (! function_exists('fake') && class_exists(FakerFactory::class)) {
 	}
 }
 
+if (! function_exists('join_paths')) {
+	/**
+	 * Join the given paths together.
+	 */
+	function join_paths(string|null $basePath, string ...$paths): string
+	{
+		foreach ($paths as $index => $path) {
+			if (empty($path) && $path !== '0') {
+				unset($paths[$index]);
+			} else {
+				$paths[$index] = DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
+			}
+		}
+
+		return $basePath . implode('', $paths);
+	}
+}
+
 if (! function_exists('method_field')) {
 	/**
 	 * Generate a hidden form field to spoof the HTTP verb used by the form.
