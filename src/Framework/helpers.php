@@ -10,12 +10,14 @@ use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\Http\Client\Cookies\CookieJar;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
+use Symfony\Component\HttpFoundation\Cookie;
 
 if (! function_exists('abort')) {
 	/**
@@ -112,6 +114,31 @@ if (! function_exists('config_path')) {
 		return app()->configPath($path);
 	}
 }
+
+// if (! function_exists('cookie')) {
+// 	/**
+// 	 * Create a new cookie instance.
+// 	 */
+// 	function cookie(
+// 		string|null $name = null,
+// 		string|null $value = null,
+// 		int $minutes = 0,
+// 		string|null $path = null,
+// 		string|null $domain = null,
+// 		bool|null $secure = null,
+// 		bool $httpOnly = true,
+// 		bool $raw = false,
+// 		string|null $sameSite = null
+// 	): CookieJar|Cookie {
+// 		$cookie = app(CookieFactory::class);
+
+// 		if (is_null($name)) {
+// 			return $cookie;
+// 		}
+
+// 		return $cookie->make($name, $value, $minutes, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
+// 	}
+// }
 
 if (! function_exists('database_path')) {
 	/**
