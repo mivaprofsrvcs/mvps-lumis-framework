@@ -11,6 +11,8 @@ use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
 use MVPS\Lumis\Framework\Events\EventServiceProvider;
+use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
+use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Log\LogServiceProvider;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
@@ -43,7 +45,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.5.0';
+	public const VERSION = '2.6.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -225,6 +227,23 @@ class Application extends Container implements ApplicationContract, CachesConfig
 		$this->registerBaseBindings();
 		$this->registerBaseServiceProviders();
 		$this->registerCoreContainerAliases();
+	}
+
+	/**
+	 * Terminates execution and generates an HTTP response.
+	 *
+	 * Creates an appropriate HTTP exception based on the provided data.
+	 *
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
+	 */
+	public function abort(int $code, string $message = '', array $headers = []): never
+	{
+		if ($code === 404) {
+			throw new NotFoundException(message: $message, headers: $headers);
+		}
+
+		throw new HttpException(statusCode: $code, message: $message, headers: $headers);
 	}
 
 	/**
@@ -910,6 +929,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\Illuminate\Contracts\Events\Dispatcher::class,
 			],
 			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
+			'filesystem' => [
+				\MVPS\Lumis\Framework\Filesystem\FilesystemManager::class,
+				\MVPS\Lumis\Framework\Contracts\Filesystem\Factory::class,
+			],
+			'filesystem.disk' => [\MVPS\Lumis\Framework\Contracts\Filesystem\Filesystem::class],
 			'log' => [
 				\MVPS\Lumis\Framework\Log\LogService::class,
 				\Psr\Log\LoggerInterface::class,

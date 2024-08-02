@@ -5,15 +5,41 @@ use Faker\Factory as FakerFactory;
 use Faker\Generator as FakerGenerator;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
+use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\Http\Client\Cookies\CookieJar;
+use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
+use Symfony\Component\HttpFoundation\Cookie;
+
+if (! function_exists('abort')) {
+	/**
+	 * Terminates execution and generates an HTTP response.
+	 *
+	 * Creates an appropriate HTTP exception based on the provided data.
+	 *
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException
+	 */
+	function abort(Response|Responsable|int $code, string $message = '', array $headers = []): never
+	{
+		if ($code instanceof Response) {
+			throw new HttpResponseException($code);
+		} elseif ($code instanceof Responsable) {
+			throw new HttpResponseException($code->toResponse(request()));
+		}
+
+		app()->abort($code, $message, $headers);
+	}
+}
 
 if (! function_exists('action')) {
 	/**
@@ -89,6 +115,31 @@ if (! function_exists('config_path')) {
 	}
 }
 
+// if (! function_exists('cookie')) {
+// 	/**
+// 	 * Create a new cookie instance.
+// 	 */
+// 	function cookie(
+// 		string|null $name = null,
+// 		string|null $value = null,
+// 		int $minutes = 0,
+// 		string|null $path = null,
+// 		string|null $domain = null,
+// 		bool|null $secure = null,
+// 		bool $httpOnly = true,
+// 		bool $raw = false,
+// 		string|null $sameSite = null
+// 	): CookieJar|Cookie {
+// 		$cookie = app(CookieFactory::class);
+
+// 		if (is_null($name)) {
+// 			return $cookie;
+// 		}
+
+// 		return $cookie->make($name, $value, $minutes, $path, $domain, $secure, $httpOnly, $raw, $sameSite);
+// 	}
+// }
+
 if (! function_exists('database_path')) {
 	/**
 	 * Get the database path.
@@ -121,6 +172,24 @@ if (! function_exists('fake') && class_exists(FakerFactory::class)) {
 	}
 }
 
+if (! function_exists('join_paths')) {
+	/**
+	 * Join the given paths together.
+	 */
+	function join_paths(string|null $basePath, string ...$paths): string
+	{
+		foreach ($paths as $index => $path) {
+			if (empty($path) && $path !== '0') {
+				unset($paths[$index]);
+			} else {
+				$paths[$index] = DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR);
+			}
+		}
+
+		return $basePath . implode('', $paths);
+	}
+}
+
 if (! function_exists('method_field')) {
 	/**
 	 * Generate a hidden form field to spoof the HTTP verb used by the form.
@@ -141,6 +210,32 @@ if (! function_exists('now')) {
 	function now(DateTimeZone|string|null $timezone = null): Carbon
 	{
 		return Carbon::now($timezone);
+	}
+}
+
+if (! function_exists('precognitive')) {
+	/**
+	 * Handle a precognition controller hook.
+	 */
+	function precognitive(null|callable $callable = null): mixed
+	{
+		$callable ??= function () {
+			//
+		};
+
+		$payload = $callable(function ($default, $precognition = null) {
+			$response = request()->isPrecognitive()
+				? ($precognition ?? $default)
+				: $default;
+
+			abort(app('router')->toResponse(request(), value($response)));
+		});
+
+		if (request()->isPrecognitive()) {
+			abort(204, headers: ['Precognition-Success' => 'true']);
+		}
+
+		return $payload;
 	}
 }
 
@@ -208,7 +303,7 @@ if (! function_exists('request')) {
 			return $request->only($key);
 		}
 
-		$value = $request->input($key);
+		$value = app('request')->__get($key);
 
 		return is_null($value) ? value($default) : $value;
 	}

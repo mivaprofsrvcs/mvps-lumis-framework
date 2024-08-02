@@ -50,8 +50,8 @@ interface RouteCollection
 	/**
 	 * Find the first route matching a given request.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedHttpException
-	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundHttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
 	 */
 	public function match(Request $request): Route;
 

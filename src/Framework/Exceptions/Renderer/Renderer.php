@@ -40,6 +40,13 @@ class Renderer
 	protected HtmlErrorRenderer $htmlErrorRenderer;
 
 	/**
+	 * The exception listener instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Exceptions\Renderer\Listener
+	 */
+	protected Listener $listener;
+
+	/**
 	 * The view factory instance.
 	 *
 	 * @var \MVPS\Lumis\Framework\Contracts\View\Factory
@@ -51,11 +58,13 @@ class Renderer
 	 */
 	public function __construct(
 		Factory $viewFactory,
+		Listener $listener,
 		HtmlErrorRenderer $htmlErrorRenderer,
 		BladeMapper $bladeMapper,
 		string $basePath
 	) {
 		$this->viewFactory = $viewFactory;
+		$this->listener = $listener;
 		$this->htmlErrorRenderer = $htmlErrorRenderer;
 		$this->bladeMapper = $bladeMapper;
 		$this->basePath = $basePath;
@@ -106,7 +115,7 @@ class Renderer
 
 		return $this->viewFactory->make(
 			'lumis-exceptions-renderer::show',
-			['exception' => new Exception($flattenException, $request, $this->basePath)]
+			['exception' => new Exception($flattenException, $request, $this->listener, $this->basePath)]
 		)
 		->render();
 	}

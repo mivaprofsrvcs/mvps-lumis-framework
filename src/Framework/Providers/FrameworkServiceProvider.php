@@ -9,6 +9,7 @@ use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactoryContract;
 use MVPS\Lumis\Framework\Debugging\CliDumper;
 use MVPS\Lumis\Framework\Debugging\HtmlDumper;
+use MVPS\Lumis\Framework\Exceptions\Renderer\Listener;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Mappers\BladeMapper;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
 use MVPS\Lumis\Framework\Http\Client\Factory as HttpFactory;
@@ -29,6 +30,24 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 	public array $singletons = [
 		HttpFactory::class => HttpFactory::class,
 	];
+
+	/**
+	 * Boot the framework service provider.
+	 */
+	public function boot(): void
+	{
+		if ($this->app->runningInConsole()) {
+			$this->publishes(
+				[__DIR__ . '/../Exceptions/views' => $this->app->resourcePath('views/errors/')],
+				'lumis-errors'
+			);
+		}
+
+		if ($this->app->hasDebugModeEnabled()) {
+			$this->app->make(Listener::class)
+				->registerListeners($this->app->make(Dispatcher::class));
+		}
+	}
 
 	/**
 	 * Register the framework service provider.
@@ -87,6 +106,7 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 
 			return new Renderer(
 				$app->make(ViewFactoryContract::class),
+				$app->make(Listener::class),
 				$errorRenderer,
 				$app->make(BladeMapper::class),
 				$app->basePath()

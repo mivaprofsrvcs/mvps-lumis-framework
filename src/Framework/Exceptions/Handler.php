@@ -22,10 +22,10 @@ use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Exceptions\Console\Handler as ConsoleHandler;
 use MVPS\Lumis\Framework\Exceptions\Console\Inspector;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
-use MVPS\Lumis\Framework\Http\Exceptions\BadRequestHttpException;
+use MVPS\Lumis\Framework\Http\Exceptions\BadRequestException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
-use MVPS\Lumis\Framework\Http\Exceptions\NotFoundHttpException;
+use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
@@ -38,7 +38,9 @@ use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 use pdeans\Http\Contracts\ExceptionInterface as RequestExceptionInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Symfony\Component\Console\Application as ConsoleApplication;
 use Symfony\Component\Console\Exception\CommandNotFoundException;
+use Symfony\Component\Console\Exception\ExceptionInterface as SymfonyConsoleExceptionInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorRenderer\HtmlErrorRenderer;
 use Throwable;
@@ -454,10 +456,10 @@ class Handler implements ExceptionHandler
 	protected function prepareException(Throwable $e): Throwable
 	{
 		return match (true) {
-			$e instanceof BackedEnumCaseNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
-			$e instanceof ModelNotFoundException => new NotFoundHttpException($e->getMessage(), $e),
-			$e instanceof RecordsNotFoundException => new NotFoundHttpException('Not found.', $e),
-			$e instanceof RequestExceptionInterface => new BadRequestHttpException('Bad request.', $e),
+			$e instanceof BackedEnumCaseNotFoundException => new NotFoundException($e->getMessage(), $e),
+			$e instanceof ModelNotFoundException => new NotFoundException($e->getMessage(), $e),
+			$e instanceof RecordsNotFoundException => new NotFoundException('Not found.', $e),
+			$e instanceof RequestExceptionInterface => new BadRequestException('Bad request.', $e),
 			default => $e,
 		};
 	}
@@ -611,26 +613,35 @@ class Handler implements ExceptionHandler
 	/**
 	 * Render an exception to the console.
 	 *
-	 * @internal This method is not meant to be used or overwritten outside the framework.
+	 * @internal This method is not meant to be used or overwritten outside of
+	 * the framework.
 	 */
 	public function renderForConsole(OutputInterface $output, Throwable $e): void
 	{
-		if ($e instanceof CommandNotFoundException) {
-			$message = str($e->getMessage())
-				->explode('.')
-				->first();
+		if ($e instanceof SymfonyConsoleExceptionInterface) {
+			if ($e instanceof CommandNotFoundException) {
+				$message = str($e->getMessage())
+					->explode('.')
+					->first();
 
-			if (! empty($alternatives = $e->getAlternatives())) {
-				$message .= '. Did you mean one of these?';
+				$alternatives = $e->getAlternatives();
 
-				with(new Error($output))->render($message);
+				if (! empty($alternatives)) {
+					$message .= '. Did you mean one of these?';
 
-				with(new BulletList($output))->render($alternatives);
+					with(new Error($output))->render($message);
 
-				$output->writeln('');
-			} else {
-				with(new Error($output))->render($message);
+					with(new BulletList($output))->render($alternatives);
+
+					$output->writeln('');
+				} else {
+					with(new Error($output))->render($message);
+				}
+
+				return;
 			}
+
+			(new ConsoleApplication)->renderThrowable($e, $output);
 
 			return;
 		}

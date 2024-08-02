@@ -2,6 +2,14 @@
 
 namespace MVPS\Lumis\Framework\Configuration;
 
+use Closure;
+use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
+use MVPS\Lumis\Framework\Http\Middleware\HandlePrecognitiveRequests;
+use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
+use MVPS\Lumis\Framework\Http\Middleware\TrustHosts;
+use MVPS\Lumis\Framework\Http\Middleware\TrustProxies;
+use MVPS\Lumis\Framework\Http\Middleware\ValidatePostSize;
+use MVPS\Lumis\Framework\Routing\Middleware\SubstituteBindings;
 use MVPS\Lumis\Framework\Support\Arr;
 
 class Middleware
@@ -178,12 +186,11 @@ class Middleware
 
 	/**
 	 * Configure the empty string conversion middleware.
-	 *
-	 * TODO: Implement this
 	 */
 	public function convertEmptyStringsToNull(array $except = []): static
 	{
-		// collection($except)->each(fn (Closure $callback) => ConvertEmptyStringsToNull::skipWhen($callback));
+		collection($except)
+			->each(fn (Closure $callback) => ConvertEmptyStringsToNull::skipWhen($callback));
 
 		return $this;
 	}
@@ -191,22 +198,22 @@ class Middleware
 	/**
 	 * Get the default middleware aliases.
 	 *
-	 * TODO: Implement this
+	 * TODO: Implement this list
 	 */
 	protected function defaultAliases(): array
 	{
 		$aliases = [
-			// 'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-			// 'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-			// 'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-			// 'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-			// 'can' => \Illuminate\Auth\Middleware\Authorize::class,
-			// 'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
-			// 'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-			// 'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
-			// 'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-			// 'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-			// 'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+			// 'auth' => Authenticate::class,
+			// 'auth.basic' => AuthenticateWithBasicAuth::class,
+			// 'auth.session' => AuthenticateSession::class,
+			// 'cache.headers' => SetCacheHeaders::class,
+			// 'can' => Authorize::class,
+			// 'guest' => RedirectIfAuthenticated::class,
+			// 'password.confirm' => RequirePassword::class,
+			'precognitive' => HandlePrecognitiveRequests::class,
+			// 'signed' => ValidateSignature::class,
+			// 'throttle' => ThrottleRequests::class,
+			// 'verified' => EnsureEmailIsVerified::class,
 		];
 
 		return $aliases;
@@ -226,26 +233,23 @@ class Middleware
 
 	/**
 	 * Get the global middleware.
-	 *
-	 * TODO: Implement array_values array
 	 */
 	public function getGlobalMiddleware(): array
 	{
-		// TODO: Remove this line when implementing
-		$middleware = $this->global;
-		// $middleware = $this->global ?: array_values(array_filter([
-		// 	$this->trustHosts ? \Illuminate\Http\Middleware\TrustHosts::class : null,
-		// 	\Illuminate\Http\Middleware\TrustProxies::class,
-		// 	\Illuminate\Http\Middleware\HandleCors::class,
-		// 	\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class,
-		// 	\Illuminate\Http\Middleware\ValidatePostSize::class,
-		// 	\Illuminate\Foundation\Http\Middleware\TrimStrings::class,
-		// 	\Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-		// ]));
+		$middleware = $this->global ?: array_values(array_filter([
+			$this->trustHosts ? TrustHosts::class : null,
+			TrustProxies::class,
+			// HandleCors::class,
+			// PreventRequestsDuringMaintenance::class,
+			ValidatePostSize::class,
+			TrimStrings::class,
+			ConvertEmptyStringsToNull::class,
+		]));
 
-		$middleware = array_map(function ($middleware) {
-			return $this->replacements[$middleware] ?? $middleware;
-		}, $middleware);
+		$middleware = array_map(
+			fn ($middleware) => $this->replacements[$middleware] ?? $middleware,
+			$middleware
+		);
 
 		return array_values(array_filter(array_diff(
 			array_unique(array_merge($this->prepends, $middleware, $this->appends)),
@@ -270,19 +274,19 @@ class Middleware
 	{
 		$middleware = [
 			'web' => array_values(array_filter([
-				// \Illuminate\Cookie\Middleware\EncryptCookies::class,
-				// \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-				// \Illuminate\Session\Middleware\StartSession::class,
-				// \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-				// \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-				\MVPS\Lumis\Framework\Routing\Middleware\SubstituteBindings::class,
+				// EncryptCookies::class,
+				// AddQueuedCookiesToResponse::class,
+				// StartSession::class,
+				// ShareErrorsFromSession::class,
+				// ValidateCsrfToken::class,
+				SubstituteBindings::class,
 				// $this->authenticatedSessions ? 'auth.session' : null,
 			])),
 
 			// TODO: Look at implementing this
 			// 'api' => array_values(array_filter([
 			// 	$this->apiLimiter ? 'throttle:'.$this->apiLimiter : null,
-			// 	\Illuminate\Routing\Middleware\SubstituteBindings::class,
+			// 	SubstituteBindings::class,
 			// ])),
 		];
 
@@ -529,50 +533,45 @@ class Middleware
 
 	/**
 	 * Configure the string trimming middleware.
-	 *
-	 * TODO: Implement this
 	 */
 	public function trimStrings(array $except = []): static
 	{
-		// [$skipWhen, $except] = collection($except)->partition(fn ($value) => $value instanceof Closure);
+		[$skipWhen, $except] = collection($except)
+			->partition(fn ($value) => $value instanceof Closure);
 
-		// $skipWhen->each(fn (Closure $callback) => TrimStrings::skipWhen($callback));
+		$skipWhen->each(fn (Closure $callback) => TrimStrings::skipWhen($callback));
 
-		// TrimStrings::except($except->all());
+		TrimStrings::except($except->all());
 
 		return $this;
 	}
 
 	/**
 	 * Indicate that the trusted host middleware should be enabled.
-	 *
-	 * TODO: Implement this
 	 */
 	public function trustHosts(array|callable|null $at = null, bool $subdomains = true): static
 	{
-		// $this->trustHosts = true;
+		$this->trustHosts = true;
 
-		// if (! is_null($at)) {
-		// 	TrustHosts::at($at, $subdomains);
-		// }
+		if (! is_null($at)) {
+			TrustHosts::at($at, $subdomains);
+		}
 
 		return $this;
 	}
 
 	/**
 	 * Configure the trusted proxies for the application.
-	 *
-	 * TODO: Implement this
 	 */
 	public function trustProxies(array|string|null $at = null, int|null $headers = null): static
 	{
-		// if (! is_null($at)) {
-		// 	TrustProxies::at($at);
-		// }
+		if (! is_null($at)) {
+			TrustProxies::at($at);
+		}
 
-		// if (! is_null($headers)) {
-		// 	TrustProxies::withHeaders($headers);
-		// }
+		if (! is_null($headers)) {
+			TrustProxies::withHeaders($headers);
+		}
 
 		return $this;
 	}

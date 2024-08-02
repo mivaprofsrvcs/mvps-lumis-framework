@@ -4,10 +4,10 @@ namespace MVPS\Lumis\Framework\Http\Exceptions;
 
 use Throwable;
 
-class BadRequestHttpException extends HttpException
+class LockedException extends HttpException
 {
 	/**
-	 * Create a new bad request HTTP exception instance.
+	 * Create a new "Locked" HTTP exception instance.
 	 */
 	public function __construct(
 		string $message = '',
@@ -15,6 +15,6 @@ class BadRequestHttpException extends HttpException
 		int $code = 0,
 		array $headers = []
 	) {
-		parent::__construct(400, $message, $previous, $headers, $code);
+		parent::__construct(423, $message, $previous, $headers, $code);
 	}
 }

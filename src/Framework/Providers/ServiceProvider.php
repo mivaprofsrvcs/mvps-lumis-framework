@@ -28,6 +28,27 @@ abstract class ServiceProvider
 	protected array $bootingCallbacks = [];
 
 	/**
+	 * The paths that should be published.
+	 *
+	 * @var array
+	 */
+	public static array $publishes = [];
+
+	/**
+	 * The paths that should be published by group.
+	 *
+	 * @var array
+	 */
+	public static array $publishGroups = [];
+
+	/**
+	 * The migration paths available for publishing.
+	 *
+	 * @var array
+	 */
+	protected static array $publishableMigrationPaths = [];
+
+	/**
 	 * Create a new service provider instance.
 	 */
 	public function __construct(Application $app)
@@ -61,6 +82,21 @@ abstract class ServiceProvider
 		file_put_contents($path, static::providerBootstrapFileContent($providers) . PHP_EOL);
 
 		return true;
+	}
+
+	/**
+	 * Add a publish group / tag to the service provider.
+	 */
+	protected function addPublishGroup(string $group, array $paths): void
+	{
+		if (! array_key_exists($group, static::$publishGroups)) {
+			static::$publishGroups[$group] = [];
+		}
+
+		static::$publishGroups[$group] = array_merge(
+			static::$publishGroups[$group],
+			$paths
+		);
 	}
 
 	/**
@@ -138,6 +174,16 @@ abstract class ServiceProvider
 	}
 
 	/**
+	 * Ensure the publish array for the service provider is initialized.
+	 */
+	protected function ensurePublishArrayInitialized(string $class): void
+	{
+		if (! array_key_exists($class, static::$publishes)) {
+			static::$publishes[$class] = [];
+		}
+	}
+
+	/**
 	 * Register a view file namespace.
 	 */
 	protected function loadViewsFrom(string|array $path, string $namespace): void
@@ -155,6 +201,51 @@ abstract class ServiceProvider
 
 			$view->addNamespace($namespace, $path);
 		});
+	}
+
+	/**
+	 * Get the paths for the provider and group.
+	 */
+	protected static function pathsForProviderAndGroup(string $provider, string $group): array
+	{
+		if (! empty(static::$publishes[$provider]) && ! empty(static::$publishGroups[$group])) {
+			return array_intersect_key(static::$publishes[$provider], static::$publishGroups[$group]);
+		}
+
+		return [];
+	}
+
+	/**
+	 * Get the paths for the provider or group (or both).
+	 */
+	protected static function pathsForProviderOrGroup(string|null $provider, string|null $group): array|null
+	{
+		if ($provider && $group) {
+			return static::pathsForProviderAndGroup($provider, $group);
+		} elseif ($group && array_key_exists($group, static::$publishGroups)) {
+			return static::$publishGroups[$group];
+		} elseif ($provider && array_key_exists($provider, static::$publishes)) {
+			return static::$publishes[$provider];
+		} elseif ($group || $provider) {
+			return [];
+		}
+
+		return null;
+	}
+
+	/**
+	 * Get the paths to publish.
+	 */
+	public static function pathsToPublish(string|null $provider = null, string|null $group = null): array
+	{
+		$paths = static::pathsForProviderOrGroup($provider, $group);
+
+		if (! is_null($paths)) {
+			return $paths;
+		}
+
+		return collection(static::$publishes)
+			->reduce(fn ($paths, $p) => array_merge($paths, $p), []);
 	}
 
 	/**
@@ -176,6 +267,61 @@ abstract class ServiceProvider
 	public function provides(): array
 	{
 		return [];
+	}
+
+	/**
+	 * Get the migration paths available for publishing.
+	 */
+	public static function publishableMigrationPaths(): array
+	{
+		return static::$publishableMigrationPaths;
+	}
+
+	/**
+	 * Get the groups available for publishing.
+	 */
+	public static function publishableGroups(): array
+	{
+		return array_keys(static::$publishGroups);
+	}
+
+	/**
+	 * Get the service providers available for publishing.
+	 */
+	public static function publishableProviders(): array
+	{
+		return array_keys(static::$publishes);
+	}
+
+	/**
+	 * Register paths to be published by the publish command.
+	 */
+	protected function publishes(array $paths, mixed $groups = null): void
+	{
+		$class = static::class;
+
+		$this->ensurePublishArrayInitialized($class);
+
+		static::$publishes[$class] = array_merge(static::$publishes[$class], $paths);
+
+		foreach ((array) $groups as $group) {
+			$this->addPublishGroup($group, $paths);
+		}
+	}
+
+	/**
+	 * Register migration paths to be published by the publish command.
+	 */
+	protected function publishesMigrations(array $paths, mixed $groups = null): void
+	{
+		$this->publishes($paths, $groups);
+
+		if ($this->app->config->get('database.migrations.update_date_on_publish', false)) {
+			static::$publishableMigrationPaths = array_unique(array_merge(
+				static::$publishableMigrationPaths,
+				array_keys($paths)
+			));
+		}
 	}
 
 	/**

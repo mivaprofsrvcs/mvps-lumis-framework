@@ -4,7 +4,7 @@ namespace MVPS\Lumis\Framework\Http\Exceptions;
 
 use Throwable;
 
-class NotFoundHttpException extends HttpException
+class NotFoundException extends HttpException
 {
 	/**
 	 * Create a new not found HTTP exception instance.

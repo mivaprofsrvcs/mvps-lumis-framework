@@ -7,8 +7,8 @@ use Countable;
 use IteratorAggregate;
 use LogicException;
 use MVPS\Lumis\Framework\Contracts\Routing\RouteCollection as RouteCollectionContract;
-use MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedHttpException;
-use MVPS\Lumis\Framework\Http\Exceptions\NotFoundHttpException;
+use MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedException;
+use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Support\Str;
 use Symfony\Component\Routing\Matcher\Dumper\CompiledUrlMatcherDumper;
@@ -123,7 +123,7 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
 	/**
 	 * Get a route (if necessary) that responds when other available methods are present.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedHttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedException
 	 */
 	protected function getRouteForMethods(Request $request, array $methods): Route
 	{
@@ -139,7 +139,7 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
 	/**
 	 * Handle the matched route.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundHttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
 	 */
 	protected function handleMatchedRoute(Request $request, Route|null $route): Route
 	{
@@ -156,7 +156,7 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
 			return $this->getRouteForMethods($request, $others);
 		}
 
-		throw new NotFoundHttpException(sprintf('The route %s could not be found.', $request->getPath()));
+		throw new NotFoundException(sprintf('The route %s could not be found.', $request->getPath()));
 	}
 
 	/**
@@ -177,11 +177,11 @@ abstract class AbstractRouteCollection implements Countable, IteratorAggregate, 
 	/**
 	 * Throw a method not allowed HTTP exception.
 	 *
-	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedHttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\MethodNotAllowedException
 	 */
 	protected function requestMethodNotAllowed(Request $request, array $others, string $method): void
 	{
-		throw new MethodNotAllowedHttpException(
+		throw new MethodNotAllowedException(
 			$others,
 			sprintf(
 				'The %s method is not supported for route %s. Supported methods: %s.',

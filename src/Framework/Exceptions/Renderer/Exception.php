@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Exceptions\Renderer;
 
+use Closure;
 use Composer\Autoload\ClassLoader;
 use MVPS\Lumis\Framework\Bootstrap\HandleExceptions;
 use MVPS\Lumis\Framework\Collections\Collection;
@@ -25,6 +26,13 @@ class Exception
 	protected FlattenException $exception;
 
 	/**
+	 * The exception listener instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Exceptions\Renderer\Listener
+	 */
+	protected Listener $listener;
+
+	/**
 	 * The current request instance.
 	 *
 	 * @var \MVPS\Lumis\Framework\Http\Request
@@ -34,11 +42,39 @@ class Exception
 	/**
 	 * Creates a new exception renderer instance.
 	 */
-	public function __construct(FlattenException $exception, Request $request, string $basePath)
+	public function __construct(FlattenException $exception, Request $request, Listener $listener, string $basePath)
 	{
 		$this->exception = $exception;
 		$this->request = $request;
+		$this->listener = $listener;
 		$this->basePath = $basePath;
+	}
+
+	/**
+	 * Get the application's SQL queries.
+	 */
+	public function applicationQueries(): array
+	{
+		return array_map(
+			function (array $query) {
+				$sql = $query['sql'];
+
+				foreach ($query['bindings'] as $binding) {
+					$sql = match (gettype($binding)) {
+						'integer', 'double' => preg_replace('/\?/', $binding, $sql, 1),
+						'NULL' => preg_replace('/\?/', 'NULL', $sql, 1),
+						default => preg_replace('/\?/', "'$binding'", $sql, 1),
+					};
+				}
+
+				return [
+					'connectionName' => $query['connectionName'],
+					'time' => $query['time'],
+					'sql' => $sql,
+				];
+			},
+			$this->listener->queries()
+		);
 	}
 
 	/**
@@ -51,6 +87,10 @@ class Exception
 		return $route ? array_filter([
 			'controller' => $route->getActionName(),
 			'route name' => $route->getName() ?: null,
+			'middleware' => implode(', ', array_map(
+				fn ($middleware) => $middleware instanceof Closure ? 'Closure' : $middleware,
+				$route->gatherMiddleware()
+			)),
 		]) : [];
 	}
 
@@ -80,9 +120,10 @@ class Exception
 	 */
 	public function defaultFrame(): int
 	{
-		$key = array_search(false, array_map(function (Frame $frame) {
-			return $frame->isFromVendor();
-		}, $this->frames()->all()));
+		$key = array_search(false, array_map(
+			fn (Frame $frame) => $frame->isFromVendor(),
+			$this->frames()->all()
+		));
 
 		return $key === false ? 0 : $key;
 	}
@@ -106,12 +147,10 @@ class Exception
 			array_shift($trace);
 		}
 
-		return collection(
-			array_map(
-				fn (array $trace) => new Frame($this->exception, $classMap, $trace, $this->basePath),
-				$trace
-			)
-		);
+		return collection(array_map(
+			fn (array $trace) => new Frame($this->exception, $classMap, $trace, $this->basePath),
+			$trace
+		));
 	}
 
 	/**
@@ -135,7 +174,7 @@ class Exception
 	 */
 	public function requestBody(): string|null
 	{
-		$payload = $this->request()->input();
+		$payload = $this->request()->all();
 
 		if (empty($payload)) {
 			return null;
@@ -151,9 +190,10 @@ class Exception
 	 */
 	public function requestHeaders(): array
 	{
-		return array_map(function (array $header) {
-			return implode(', ', $header);
-		}, $this->request()->getHeaders());
+		return array_map(
+			fn (array $header) => implode(', ', $header),
+			$this->request()->getHeaders()
+		);
 	}
 
 	/**
