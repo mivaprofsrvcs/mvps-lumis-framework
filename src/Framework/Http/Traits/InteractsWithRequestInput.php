@@ -325,14 +325,6 @@ trait InteractsWithRequestInput
 	}
 
 	/**
-	 * Retrieve the JSON payload from the request.
-	 */
-	public function json(string|null $key = null, string|array|null $default = null): string|array|null
-	{
-		return data_get(json_decode((string) $this->getBody(), true), $key, $default);
-	}
-
-	/**
 	 * Get all of the query string items for the request, or a specific query string item with the given key.
 	 */
 	public function query(string|null $key = null, mixed $default = null): mixed
