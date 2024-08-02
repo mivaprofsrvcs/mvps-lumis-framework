@@ -6,7 +6,9 @@ use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
 use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
 use MVPS\Lumis\Framework\Http\Middleware\TrustHosts;
+use MVPS\Lumis\Framework\Http\Middleware\TrustProxies;
 use MVPS\Lumis\Framework\Http\Middleware\ValidatePostSize;
+use MVPS\Lumis\Framework\Routing\Middleware\SubstituteBindings;
 use MVPS\Lumis\Framework\Support\Arr;
 
 class Middleware
@@ -235,7 +237,7 @@ class Middleware
 	{
 		$middleware = $this->global ?: array_values(array_filter([
 			$this->trustHosts ? TrustHosts::class : null,
-			// TrustProxies::class,
+			TrustProxies::class,
 			// HandleCors::class,
 			// PreventRequestsDuringMaintenance::class,
 			ValidatePostSize::class,
@@ -271,19 +273,19 @@ class Middleware
 	{
 		$middleware = [
 			'web' => array_values(array_filter([
-				// \Illuminate\Cookie\Middleware\EncryptCookies::class,
-				// \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-				// \Illuminate\Session\Middleware\StartSession::class,
-				// \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-				// \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-				\MVPS\Lumis\Framework\Routing\Middleware\SubstituteBindings::class,
+				// EncryptCookies::class,
+				// AddQueuedCookiesToResponse::class,
+				// StartSession::class,
+				// ShareErrorsFromSession::class,
+				// ValidateCsrfToken::class,
+				SubstituteBindings::class,
 				// $this->authenticatedSessions ? 'auth.session' : null,
 			])),
 
 			// TODO: Look at implementing this
 			// 'api' => array_values(array_filter([
 			// 	$this->apiLimiter ? 'throttle:'.$this->apiLimiter : null,
-			// 	\Illuminate\Routing\Middleware\SubstituteBindings::class,
+			// 	SubstituteBindings::class,
 			// ])),
 		];
 
@@ -559,18 +561,16 @@ class Middleware
 
 	/**
 	 * Configure the trusted proxies for the application.
-	 *
-	 * TODO: Implement this
 	 */
 	public function trustProxies(array|string|null $at = null, int|null $headers = null): static
 	{
-		// if (! is_null($at)) {
-		// 	TrustProxies::at($at);
-		// }
+		if (! is_null($at)) {
+			TrustProxies::at($at);
+		}
 
-		// if (! is_null($headers)) {
-		// 	TrustProxies::withHeaders($headers);
-		// }
+		if (! is_null($headers)) {
+			TrustProxies::withHeaders($headers);
+		}
 
 		return $this;
 	}
