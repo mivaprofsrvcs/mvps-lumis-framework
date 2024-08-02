@@ -5,15 +5,39 @@ use Faker\Factory as FakerFactory;
 use Faker\Generator as FakerGenerator;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
+use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
+
+if (! function_exists('abort')) {
+	/**
+	 * Terminates execution and generates an HTTP response.
+	 *
+	 * Creates an appropriate HTTP exception based on the provided data.
+	 *
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException
+	 */
+	function abort(Response|Responsable|int $code, string $message = '', array $headers = []): never
+	{
+		if ($code instanceof Response) {
+			throw new HttpResponseException($code);
+		} elseif ($code instanceof Responsable) {
+			throw new HttpResponseException($code->toResponse(request()));
+		}
+
+		app()->abort($code, $message, $headers);
+	}
+}
 
 if (! function_exists('action')) {
 	/**
