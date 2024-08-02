@@ -3,8 +3,6 @@
 namespace MVPS\Lumis\Framework\Http\Traits;
 
 use ArrayObject;
-use InvalidArgumentException;
-use JsonException;
 use JsonSerializable;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
@@ -12,6 +10,20 @@ use stdClass;
 
 trait InteractsWithContent
 {
+	/**
+	 * Transform the given content to JSON.
+	 */
+	public function morphToJson(mixed $content): string|false
+	{
+		if ($content instanceof Jsonable) {
+			return $content->toJson();
+		} elseif ($content instanceof Arrayable) {
+			return json_encode($content->toArray());
+		}
+
+		return json_encode($content);
+	}
+
 	/**
 	 * Determine if the given content should be transformed into JSON.
 	 */
@@ -23,23 +35,5 @@ trait InteractsWithContent
 			$content instanceof JsonSerializable ||
 			$content instanceof stdClass ||
 			is_array($content);
-	}
-
-	/**
-	 * Transform the given content to JSON.
-	 *
-	 * @throws \InvalidArgumentException
-	 */
-	public function transformToJson(mixed $content): string
-	{
-		try {
-			return json_encode($content, JSON_THROW_ON_ERROR);
-		} catch (JsonException $exception) {
-			throw new InvalidArgumentException(
-				'Unable to encode data to JSON in ' . static::class . ': ' . $exception->getMessage(),
-				0,
-				$exception
-			);
-		}
 	}
 }
