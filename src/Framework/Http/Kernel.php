@@ -17,6 +17,7 @@ use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Http\Events\RequestHandled;
+use MVPS\Lumis\Framework\Http\Middleware\HandlePrecognitiveRequests;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Middleware\SubstituteBindings;
 use MVPS\Lumis\Framework\Routing\Pipeline;
@@ -73,10 +74,10 @@ class Kernel implements KernelContract
 	 *
 	 * Forces non-global middleware to always be in the given order.
 	 *
-	 * @var string[]
+	 * @var array<string>
 	 */
 	protected array $middlewarePriority = [
-		// HandlePrecognitiveRequests::class,
+		HandlePrecognitiveRequests::class,
 		// EncryptCookies::class,
 		// AddQueuedCookiesToResponse::class,
 		// StartSession::class,

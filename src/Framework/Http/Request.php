@@ -6,6 +6,7 @@ use ArrayAccess;
 use Closure;
 use Laminas\Diactoros\ServerRequest;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Http\Traits\CanBePrecognitive;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithContent;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithContentTypes;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
@@ -28,6 +29,7 @@ use Symfony\Component\HttpFoundation\ServerBag;
 
 class Request extends ServerRequest implements Arrayable, ArrayAccess
 {
+	use CanBePrecognitive;
 	use InteractsWithContent;
 	use InteractsWithContentTypes;
 	use InteractsWithRequestInput;

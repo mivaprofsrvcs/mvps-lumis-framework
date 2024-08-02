@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Configuration;
 
 use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
+use MVPS\Lumis\Framework\Http\Middleware\HandlePrecognitiveRequests;
 use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
 use MVPS\Lumis\Framework\Http\Middleware\TrustHosts;
 use MVPS\Lumis\Framework\Http\Middleware\TrustProxies;
@@ -197,22 +198,22 @@ class Middleware
 	/**
 	 * Get the default middleware aliases.
 	 *
-	 * TODO: Implement this
+	 * TODO: Implement this list
 	 */
 	protected function defaultAliases(): array
 	{
 		$aliases = [
-			// 'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-			// 'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-			// 'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-			// 'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-			// 'can' => \Illuminate\Auth\Middleware\Authorize::class,
-			// 'guest' => \Illuminate\Auth\Middleware\RedirectIfAuthenticated::class,
-			// 'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-			// 'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
-			// 'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-			// 'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-			// 'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+			// 'auth' => Authenticate::class,
+			// 'auth.basic' => AuthenticateWithBasicAuth::class,
+			// 'auth.session' => AuthenticateSession::class,
+			// 'cache.headers' => SetCacheHeaders::class,
+			// 'can' => Authorize::class,
+			// 'guest' => RedirectIfAuthenticated::class,
+			// 'password.confirm' => RequirePassword::class,
+			'precognitive' => HandlePrecognitiveRequests::class,
+			// 'signed' => ValidateSignature::class,
+			// 'throttle' => ThrottleRequests::class,
+			// 'verified' => EnsureEmailIsVerified::class,
 		];
 
 		return $aliases;
