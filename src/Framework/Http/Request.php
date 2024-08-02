@@ -73,6 +73,18 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	public const HEADER_X_FORWARDED_TRAEFIK = 0b0111110;
 
 	/**
+	 * Mapping of trusted headers to their corresponding parameter names.
+	 *
+	 * @var array<string, string>
+	 */
+	protected const FORWARDED_PARAMS = [
+		self::HEADER_X_FORWARDED_FOR => 'for',
+		self::HEADER_X_FORWARDED_HOST => 'host',
+		self::HEADER_X_FORWARDED_PROTO => 'proto',
+		self::HEADER_X_FORWARDED_PORT => 'host',
+	];
+
+	/**
 	 * Trusted headers for proxy information.
 	 *
 	 * Contains standard and commonly used headers for extracting proxy
@@ -87,18 +99,6 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 		self::HEADER_X_FORWARDED_PROTO => 'X_FORWARDED_PROTO',
 		self::HEADER_X_FORWARDED_PORT => 'X_FORWARDED_PORT',
 		self::HEADER_X_FORWARDED_PREFIX => 'X_FORWARDED_PREFIX',
-	];
-
-	/**
-	 * Mapping of trusted headers to their corresponding parameter names.
-	 *
-	 * @var array<string, string>
-	 */
-	protected const FORWARDED_PARAMS = [
-		self::HEADER_X_FORWARDED_FOR => 'for',
-		self::HEADER_X_FORWARDED_HOST => 'host',
-		self::HEADER_X_FORWARDED_PROTO => 'proto',
-		self::HEADER_X_FORWARDED_PORT => 'host',
 	];
 
 	/**
@@ -215,13 +215,6 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	public ServerBag $serverBag;
 
 	/**
-	 * Cache for trusted header values.
-	 *
-	 * @var array
-	 */
-	protected array $trustedValuesCache = [];
-
-	/**
 	 * A flag indicating whether the trusted headers have been set.
 	 *
 	 * @var int
@@ -234,6 +227,13 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	 * @var array<string>
 	 */
 	protected static array $trustedProxies = [];
+
+	/**
+	 * Cache for trusted header values.
+	 *
+	 * @var array
+	 */
+	protected array $trustedValuesCache = [];
 
 	public function __construct(
 		array $serverParams = [],
