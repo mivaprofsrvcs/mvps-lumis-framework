@@ -910,6 +910,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\Illuminate\Contracts\Events\Dispatcher::class,
 			],
 			'files' => [\MVPS\Lumis\Framework\Filesystem\Filesystem::class],
+			'filesystem' => [
+				\MVPS\Lumis\Framework\Filesystem\FilesystemManager::class,
+				\MVPS\Lumis\Framework\Contracts\Filesystem\Factory::class,
+			],
+			'filesystem.disk' => [\MVPS\Lumis\Framework\Contracts\Filesystem\Filesystem::class],
 			'log' => [
 				\MVPS\Lumis\Framework\Log\LogService::class,
 				\Psr\Log\LoggerInterface::class,
