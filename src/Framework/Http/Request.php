@@ -635,6 +635,14 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	}
 
 	/**
+	 * Gets the list of trusted host patterns.
+	 */
+	public static function getTrustedHosts(): array
+	{
+		return self::$trustedHostPatterns;
+	}
+
+	/**
 	 * Gets the list of trusted proxies.
 	 */
 	public static function getTrustedProxies(): array
