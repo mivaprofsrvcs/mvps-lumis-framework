@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Configuration;
 use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
 use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
+use MVPS\Lumis\Framework\Http\Middleware\TrustHosts;
 use MVPS\Lumis\Framework\Http\Middleware\ValidatePostSize;
 use MVPS\Lumis\Framework\Support\Arr;
 
@@ -233,7 +234,7 @@ class Middleware
 	public function getGlobalMiddleware(): array
 	{
 		$middleware = $this->global ?: array_values(array_filter([
-			// $this->trustHosts ? TrustHosts::class : null,
+			$this->trustHosts ? TrustHosts::class : null,
 			// TrustProxies::class,
 			// HandleCors::class,
 			// PreventRequestsDuringMaintenance::class,
@@ -544,16 +545,14 @@ class Middleware
 
 	/**
 	 * Indicate that the trusted host middleware should be enabled.
-	 *
-	 * TODO: Implement this
 	 */
 	public function trustHosts(array|callable|null $at = null, bool $subdomains = true): static
 	{
-		// $this->trustHosts = true;
+		$this->trustHosts = true;
 
-		// if (! is_null($at)) {
-		// 	TrustHosts::at($at, $subdomains);
-		// }
+		if (! is_null($at)) {
+			TrustHosts::at($at, $subdomains);
+		}
 
 		return $this;
 	}
