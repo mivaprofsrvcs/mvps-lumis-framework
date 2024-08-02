@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Http;
 
+use InvalidArgumentException;
 use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use MVPS\Lumis\Framework\Contracts\Support\Renderable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
@@ -40,7 +41,11 @@ class ResponseFactory extends BaseResponseFactory implements ResponseFactoryCont
 		$defaultContentType = 'text/html';
 
 		if ($this->shouldBeJson($content)) {
-			$content = $this->transformToJson($content);
+			$content = $this->morphToJson($content);
+
+			if ($content === false) {
+				throw new InvalidArgumentException(json_last_error_msg());
+			}
 
 			$defaultContentType = 'application/json';
 		} elseif ($content instanceof Renderable) {
@@ -49,8 +54,11 @@ class ResponseFactory extends BaseResponseFactory implements ResponseFactoryCont
 			$content = (string) $content;
 		}
 
-		if (empty($headers)) {
-			$headers = ['Content-Type' => $defaultContentType];
+		if (! array_key_exists('content-type', array_change_key_case($headers))) {
+			$headers = array_merge(
+				['Content-Type' => $defaultContentType],
+				$headers
+			);
 		}
 
 		return new Response(
