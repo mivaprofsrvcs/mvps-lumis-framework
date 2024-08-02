@@ -222,6 +222,23 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	protected static int $trustedHeaderSet = -1;
 
 	/**
+	 * An array of regular expressions representing the trusted host patterns.
+	 *
+	 * @var array<string>
+	 */
+	protected static array $trustedHostPatterns = [];
+
+	/**
+	 * A list of trusted hosts derived from the trusted host patterns.
+	 *
+	 * This array is populated based on the host patterns and serves as a cache
+	 * of resolved trusted hosts to improve performance during host validation.
+	 *
+	 * @var array<string>
+	 */
+	protected static array $trustedHosts = [];
+
+	/**
 	 * A list of trusted proxy IP addresses or subnets.
 	 *
 	 * @var array<string>
@@ -1131,6 +1148,22 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 		$this->routeResolver = $callback;
 
 		return $this;
+	}
+
+	/**
+	 * Sets a list of trusted host patterns.
+	 *
+	 * This method allows you to specify trusted hosts using regular expressions.
+	 * Only include hosts that you directly manage.
+	 */
+	public static function setTrustedHosts(array $hostPatterns): void
+	{
+		self::$trustedHostPatterns = array_map(
+			fn ($hostPattern) => sprintf('{%s}i', $hostPattern),
+			$hostPatterns
+		);
+
+		self::$trustedHosts = [];
 	}
 
 	/**
