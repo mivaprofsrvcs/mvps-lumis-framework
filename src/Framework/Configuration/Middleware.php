@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Configuration;
 use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
 use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
+use MVPS\Lumis\Framework\Http\Middleware\ValidatePostSize;
 use MVPS\Lumis\Framework\Support\Arr;
 
 class Middleware
@@ -236,14 +237,15 @@ class Middleware
 			// TrustProxies::class,
 			// HandleCors::class,
 			// PreventRequestsDuringMaintenance::class,
-			// ValidatePostSize::class,
+			ValidatePostSize::class,
 			TrimStrings::class,
 			ConvertEmptyStringsToNull::class,
 		]));
 
-		$middleware = array_map(function ($middleware) {
-			return $this->replacements[$middleware] ?? $middleware;
-		}, $middleware);
+		$middleware = array_map(
+			fn ($middleware) => $this->replacements[$middleware] ?? $middleware,
+			$middleware
+		);
 
 		return array_values(array_filter(array_diff(
 			array_unique(array_merge($this->prepends, $middleware, $this->appends)),
