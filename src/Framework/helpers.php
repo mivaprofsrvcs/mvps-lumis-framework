@@ -226,7 +226,7 @@ if (! function_exists('request')) {
 			return $request->only($key);
 		}
 
-		$value = $request->input($key);
+		$value = app('request')->__get($key);
 
 		return is_null($value) ? value($default) : $value;
 	}
