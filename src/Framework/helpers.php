@@ -213,6 +213,32 @@ if (! function_exists('now')) {
 	}
 }
 
+if (! function_exists('precognitive')) {
+	/**
+	 * Handle a precognition controller hook.
+	 */
+	function precognitive(null|callable $callable = null): mixed
+	{
+		$callable ??= function () {
+			//
+		};
+
+		$payload = $callable(function ($default, $precognition = null) {
+			$response = request()->isPrecognitive()
+				? ($precognition ?? $default)
+				: $default;
+
+			abort(app('router')->toResponse(request(), value($response)));
+		});
+
+		if (request()->isPrecognitive()) {
+			abort(204, headers: ['Precognition-Success' => 'true']);
+		}
+
+		return $payload;
+	}
+}
+
 if (! function_exists('public_path')) {
 	/**
 	 * Get the path to the public directory.
