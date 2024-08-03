@@ -10,14 +10,12 @@ use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
-use MVPS\Lumis\Framework\Http\Client\Cookies\CookieJar;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
-use MVPS\Lumis\Framework\Http\ResponseFactory;
+use MVPS\Lumis\Framework\Routing\ResponseFactory;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
-use Symfony\Component\HttpFoundation\Cookie;
 
 if (! function_exists('abort')) {
 	/**
@@ -351,8 +349,16 @@ if (! function_exists('response')) {
 	/**
 	 * Create and return a new response from the application.
 	 */
-	function response(mixed $content = '', $status = 200, array $headers = []): Response
+	function response(mixed $content = '', $status = 200, array $headers = []): ResponseFactory|Response
 	{
+		$factory = app(ResponseFactory::class);
+
+		if (func_num_args() === 0) {
+			return $factory;
+		}
+
+		return $factory->make($content ?? '', $status, $headers);
+
 		return app(ResponseFactory::class)->make($content, $status, $headers);
 	}
 }

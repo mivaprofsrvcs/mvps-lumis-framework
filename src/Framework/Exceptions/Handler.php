@@ -28,7 +28,6 @@ use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
-use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Routing\Exceptions\BackedEnumCaseNotFoundException;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Lottery;
@@ -146,13 +145,6 @@ class Handler implements ExceptionHandler
 	protected WeakMap $reportedExceptionMap;
 
 	/**
-	 * The response factory instance.
-	 *
-	 * @var \MVPS\Lumis\Framework\Http\ResponseFactory
-	 */
-	protected ResponseFactory $responseFactory;
-
-	/**
 	 * The callback that determines if the exception handler response should be JSON.
 	 *
 	 * @var callable|null
@@ -180,7 +172,6 @@ class Handler implements ExceptionHandler
 	{
 		$this->container = $container;
 		$this->reportedExceptionMap = new WeakMap;
-		$this->responseFactory = app(ResponseFactory::class);
 
 		$this->register();
 	}
@@ -250,7 +241,7 @@ class Handler implements ExceptionHandler
 			$headers = $e->getHeaders();
 		}
 
-		return $this->responseFactory->make($this->renderExceptionContent($e), $statusCode, $headers);
+		return new Response($this->renderExceptionContent($e), $statusCode, $headers);
 	}
 
 	/**
@@ -366,11 +357,13 @@ class Handler implements ExceptionHandler
 	 */
 	protected function invalid(Request $request, ValidationException $exception): Response
 	{
-		return $this->responseFactory->make('Bad Request', 400);
+		return new Response('Bad Request', 400);
 	}
 
 	/**
 	 * Convert a validation exception into a JSON response.
+	 *
+	 * TODO: Update this when implementing JSONResponse
 	 */
 	protected function invalidJson(Request $request, ValidationException $exception): Response
 	{
@@ -379,7 +372,7 @@ class Handler implements ExceptionHandler
 			'errors' => $exception->errors()
 		];
 
-		return $this->responseFactory->make($data, $exception->status);
+		return new Response($data, $exception->status);
 	}
 
 	/**
@@ -477,7 +470,7 @@ class Handler implements ExceptionHandler
 			$headers = $e->getHeaders();
 		}
 
-		return $this->responseFactory->make($this->convertExceptionToArray($e), $statusCode, $headers);
+		return new Response($this->convertExceptionToArray($e), $statusCode, $headers);
 	}
 
 	/**
@@ -664,7 +657,7 @@ class Handler implements ExceptionHandler
 
 		if ($view) {
 			try {
-				return $this->responseFactory->view(
+				return response()->view(
 					$view,
 					['errors' => new ViewErrorBag, 'exception' => $e],
 					$e->getStatusCode(),
