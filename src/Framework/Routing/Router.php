@@ -1078,7 +1078,7 @@ class Router implements BindingRegistrar, RegistrarContract
 				}
 			}
 
-			$response = response($content, $status, ['Content-Type' => $contentType]);
+			$response = new Response($content, $status, ['Content-Type' => $contentType]);
 		}
 
 		// TODO: Implement not modified response
