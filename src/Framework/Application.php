@@ -947,6 +947,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Contracts\Routing\Registrar::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\BindingRegistrar::class,
 			],
+			'session.store' => [
+				\MVPS\Lumis\Framework\Session\Store::class,
+				\MVPS\Lumis\Framework\Contracts\Session\Session::class,
+			],
 			'url' => [
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
