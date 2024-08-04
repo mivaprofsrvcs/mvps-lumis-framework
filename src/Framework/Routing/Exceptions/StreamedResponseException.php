@@ -13,7 +13,7 @@ class StreamedResponseException extends RuntimeException
 	 *
 	 * @var Throwable
 	 */
-	public $originalException;
+	public Throwable $originalException;
 
 	/**
 	 * Create a new streamed response exception instance.
