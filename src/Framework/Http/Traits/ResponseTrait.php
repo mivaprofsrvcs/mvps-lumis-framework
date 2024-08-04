@@ -27,7 +27,7 @@ trait ResponseTrait
 	 */
 	public function content(): string
 	{
-		return (string) $this->getBody();
+		return $this->getContent();
 	}
 
 	/**
