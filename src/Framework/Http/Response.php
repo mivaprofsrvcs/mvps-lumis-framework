@@ -255,19 +255,19 @@ class Response extends BaseResponse
 	}
 
 	/**
-	 * Determines if the response status code indicates an empty response.
-	 */
-	public function isEmpty(): bool
-	{
-		return in_array($this->getStatusCode(), [204, 304]);
-	}
-
-	/**
 	 * Determines if the response status code indicates a client error.
 	 */
 	public function isClientError(): bool
 	{
 		return $this->getStatusCode() >= 400 && $this->getStatusCode() < 500;
+	}
+
+	/**
+	 * Determines if the response status code indicates an empty response.
+	 */
+	public function isEmpty(): bool
+	{
+		return in_array($this->getStatusCode(), [204, 304]);
 	}
 
 	/**
