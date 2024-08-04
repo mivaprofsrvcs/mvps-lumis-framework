@@ -914,6 +914,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
 			],
+			'cookie' => [
+				\MVPS\Lumis\Framework\Cookie\CookieJar::class,
+				\MVPS\Lumis\Framework\Contracts\Cookie\Factory::class,
+				\MVPS\Lumis\Framework\Contracts\Cookie\QueueingFactory::class,
+			],
 			'db' => [
 				\MVPS\Lumis\Framework\Database\DatabaseManager::class,
 				\Illuminate\Database\ConnectionResolverInterface::class,
