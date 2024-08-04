@@ -6,6 +6,7 @@ use Faker\Generator as FakerGenerator;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
+use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
@@ -13,7 +14,6 @@ use MVPS\Lumis\Framework\Contracts\View\View;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
-use MVPS\Lumis\Framework\Routing\ResponseFactory;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
 
