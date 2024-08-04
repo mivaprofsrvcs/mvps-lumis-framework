@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Routing;
 
+use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Response;
 
 interface ResponseFactory
@@ -24,18 +25,18 @@ interface ResponseFactory
 	/**
 	 * Create a new JSON response instance.
 	 */
-	// public function json(mixed $data = [], int $status = 200, array $headers = [], int $options = 0): JsonResponse;
+	public function json(mixed $data = [], int $status = 200, array $headers = [], int $options = 0): JsonResponse;
 
 	/**
 	 * Create a new JSONP response instance.
 	 */
-	// public function jsonp(
-	// 	string $callback,
-	// 	mixed $data = [],
-	// 	int $status = 200,
-	// 	array $headers = [],
-	// 	int $options = 0
-	// ): JsonResponse;
+	public function jsonp(
+		string $callback,
+		mixed $data = [],
+		int $status = 200,
+		array $headers = [],
+		int $options = 0
+	): JsonResponse;
 
 	/**
 	 * Create a new response instance.
