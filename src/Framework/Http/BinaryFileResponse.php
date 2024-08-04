@@ -141,50 +141,52 @@ class BinaryFileResponse extends Response
 	 */
 	public function prepare(Request $request): static
 	{
-		if ($this->isInformational() || $this->isEmpty()) {
+		$response = $this;
+
+		if ($response->isInformational() || $response->isEmpty()) {
 			parent::prepare($request);
 
-			$this->maxlen = 0;
+			$response->maxlen = 0;
 
-			return $this;
+			return $response;
 		}
 
-		if (! $this->headerBag->has('Content-Type')) {
-			$this->headerBag->set(
+		if (! $response->headerBag->has('Content-Type')) {
+			$response->headerBag->set(
 				'Content-Type',
-				$this->file->getMimeType() ?: 'application/octet-stream'
+				$response->file->getMimeType() ?: 'application/octet-stream'
 			);
 		}
 
 		parent::prepare($request);
 
-		$this->offset = 0;
-		$this->maxlen = -1;
+		$response->offset = 0;
+		$response->maxlen = -1;
 
-		$fileSize = $this->file->getSize();
+		$fileSize = $response->file->getSize();
 
 		if ($fileSize === false) {
-			return $this;
+			return $response;
 		}
 
-		$this->headerBag->remove('Transfer-Encoding');
+		$response->headerBag->remove('Transfer-Encoding');
 
-		$this->headerBag->set('Content-Length', $fileSize);
+		$response->headerBag->set('Content-Length', $fileSize);
 
 		// Set the Accept-Ranges header based on the request method.
-		if (! $this->headerBag->has('Accept-Ranges')) {
+		if (! $response->headerBag->has('Accept-Ranges')) {
 			// For safe HTTP methods, allow byte ranges; otherwise, disable them.
-			$this->headerBag->set('Accept-Ranges', $request->isMethodSafe() ? 'bytes' : 'none');
+			$response->headerBag->set('Accept-Ranges', $request->isMethodSafe() ? 'bytes' : 'none');
 		}
 
 		if (static::$trustXSendfileTypeHeader && $request->headerBag->has('X-Sendfile-Type')) {
 			// If the X-Sendfile header is present, use it to send the file directly.
 			$type = $request->headerBag->get('X-Sendfile-Type');
-			$path = $this->file->getRealPath();
+			$path = $response->file->getRealPath();
 
 			// Fallback to using the file path if real path is not available.
 			if ($path === false) {
-				$path = $this->file->getPathname();
+				$path = $response->file->getPathname();
 			}
 
 			if (strtolower($type) === 'x-accel-redirect') {
@@ -202,20 +204,20 @@ class BinaryFileResponse extends Response
 					if (str_starts_with($path, $pathPrefix)) {
 						$path = $location . substr($path, strlen($pathPrefix));
 
-						$this->headerBag->set($type, $path);
-						$this->maxlen = 0;
+						$response->headerBag->set($type, $path);
+						$response->maxlen = 0;
 
 						break;
 					}
 				}
 			} else {
-				$this->headerBag->set($type, $path);
-				$this->maxlen = 0;
+				$response->headerBag->set($type, $path);
+				$response->maxlen = 0;
 			}
 		} elseif ($request->headerBag->has('Range') && $request->isMethod('GET')) {
 			if (
 				! $request->headerBag->has('If-Range') ||
-				$this->hasValidIfRangeHeader($request->headerBag->get('If-Range'))
+				$response->hasValidIfRangeHeader($request->headerBag->get('If-Range'))
 			) {
 				$range = $request->headerBag->get('Range');
 
@@ -235,17 +237,21 @@ class BinaryFileResponse extends Response
 						$end = min($end, $fileSize - 1);
 
 						if ($start < 0 || $start > $end) {
-							$this->headerBag->set('Content-Range', sprintf('bytes */%s', $fileSize));
-						} elseif ($end - $start < $fileSize - 1) {
-							$this->maxlen = $end < $fileSize ? $end - $start + 1 : -1;
-							$this->offset = $start;
+							$response = $response->withStatus(416);
 
-							$this->headerBag->set(
+							$response->headerBag->set('Content-Range', sprintf('bytes */%s', $fileSize));
+						} elseif ($end - $start < $fileSize - 1) {
+							$response->maxlen = $end < $fileSize ? $end - $start + 1 : -1;
+							$response->offset = $start;
+
+							$response = $response->withStatus(206);
+
+							$response->headerBag->set(
 								'Content-Range',
 								sprintf('bytes %s-%s/%s', $start, $end, $fileSize)
 							);
 
-							$this->headerBag->set('Content-Length', $end - $start + 1);
+							$response->headerBag->set('Content-Length', $end - $start + 1);
 						}
 					}
 				}
@@ -253,10 +259,10 @@ class BinaryFileResponse extends Response
 		}
 
 		if ($request->isMethod('HEAD')) {
-			$this->maxlen = 0;
+			$response->maxlen = 0;
 		}
 
-		return $this;
+		return $response;
 	}
 
 	/**
