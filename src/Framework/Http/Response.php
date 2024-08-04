@@ -916,6 +916,15 @@ class Response extends BaseResponse
 	}
 
 	/**
+	 * {@inheritdoc}
+	 */
+	#[\Override]
+	public function withStatus(int $code, string $reasonPhrase = ''): static
+	{
+		return parent::withStatus($code, $reasonPhrase);
+	}
+
+	/**
 	 * Returns the response as a string representation.
 	 *
 	 * The string representation of the response is the same as the one
