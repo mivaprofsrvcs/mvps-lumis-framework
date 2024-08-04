@@ -66,7 +66,7 @@ class BinaryFileResponse extends Response
 	protected static bool $trustXSendfileTypeHeader = false;
 
 	/**
-	 * Create a new binary file response instance.
+	 * Create a new binary file HTTP response instance.
 	 *
 	 * Constructs a response representing a file resource, setting default
 	 * headers and options.
