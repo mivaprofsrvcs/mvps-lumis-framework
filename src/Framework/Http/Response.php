@@ -725,6 +725,33 @@ class Response extends BaseResponse
 	}
 
 	/**
+	 * Prepares the response for a 304 Not Modified status code.
+	 *
+	 * @see https://tools.ietf.org/html/rfc2616#section-10.3.5
+	 */
+	public function setNotModified(): static
+	{
+		$this->setContent(null);
+
+		// Remove headers prohibited by RFC 2616 for 304 Not Modified responses.
+		foreach (
+			[
+				'Allow',
+				'Content-Encoding',
+				'Content-Language',
+				'Content-Length',
+				'Content-MD5',
+				'Content-Type',
+				'Last-Modified'
+			] as $header
+		) {
+			$this->headerBag->remove($header);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Sets the "private" cache control directive.
 	 *
 	 * Prevents the response from being cached by intermediate proxies.
@@ -803,33 +830,6 @@ class Response extends BaseResponse
 			$content instanceof JsonSerializable ||
 			$content instanceof stdClass ||
 			is_array($content);
-	}
-
-	/**
-	 * Prepares the response for a 304 Not Modified status code.
-	 *
-	 * @see https://tools.ietf.org/html/rfc2616#section-10.3.5
-	 */
-	public function setNotModified(): static
-	{
-		$this->setContent(null);
-
-		// Remove headers prohibited by RFC 2616 for 304 Not Modified responses.
-		foreach (
-			[
-				'Allow',
-				'Content-Encoding',
-				'Content-Language',
-				'Content-Length',
-				'Content-MD5',
-				'Content-Type',
-				'Last-Modified'
-			] as $header
-		) {
-			$this->headerBag->remove($header);
-		}
-
-		return $this;
 	}
 
 	/**
