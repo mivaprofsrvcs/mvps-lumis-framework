@@ -62,7 +62,7 @@ class Response extends BaseResponse
 	 *
 	 * @var string
 	 */
-	protected string $content;
+	protected string $content = '';
 
 	/**
 	 * The header bag instance for the headers.
