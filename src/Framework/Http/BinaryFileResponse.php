@@ -136,6 +136,9 @@ class BinaryFileResponse extends Response
 		return $lastModified->format('D, d M Y H:i:s') . ' GMT' === $header;
 	}
 
+	/**
+	 * Prepares the file download response.
+	 */
 	public function prepare(Request $request): static
 	{
 		if ($this->isInformational() || $this->isEmpty()) {
