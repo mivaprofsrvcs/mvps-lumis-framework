@@ -147,6 +147,13 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	public FileBag $fileBag;
 
 	/**
+	 * The requested format for the response.
+	 *
+	 * @var string|null
+	 */
+	protected string|null $format = null;
+
+	/**
 	 * The request format MIME types.
 	 *
 	 * @var array
@@ -604,6 +611,19 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	public function getRealMethod(): string
 	{
 		return strtoupper($this->serverBag->get('REQUEST_METHOD', 'GET'));
+	}
+
+	/**
+	 * Determines the requested format for the response.
+	 *
+	 * Prioritizes the explicitly set format, then the '_format' request
+	 * attribute, and finally the default format.
+	 */
+	public function getRequestFormat(string|null $default = 'html'): string|null
+	{
+		$this->format ??= $this->attributeBag->get('_format');
+
+		return $this->format ?? $default;
 	}
 
 	/**
@@ -1167,6 +1187,14 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 		$this->jsonBag = $json;
 
 		return $this;
+	}
+
+	/**
+	 * Sets the request format.
+	 */
+	public function setRequestFormat(string|null $format): void
+	{
+		$this->format = $format;
 	}
 
 	/**
