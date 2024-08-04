@@ -415,6 +415,19 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	}
 
 	/**
+	 * Retrieves the ETag values from the If-None-Match header.
+	 */
+	public function getETags(): array
+	{
+		return preg_split(
+			'/\s*,\s*/',
+			$this->headerBag->get('If-None-Match', ''),
+			-1,
+			PREG_SPLIT_NO_EMPTY
+		);
+	}
+
+	/**
 	 * Gets the format associated with the mime type.
 	 */
 	public function getFormat(string|null $mimeType = null): string|null
