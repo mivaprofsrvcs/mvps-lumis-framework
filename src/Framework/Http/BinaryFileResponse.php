@@ -4,12 +4,12 @@ namespace MVPS\Lumis\Framework\Http;
 
 use DateTimeImmutable;
 use LogicException;
+use MVPS\Lumis\Framework\Http\File;
 use MVPS\Lumis\Framework\Http\Request;
 use SplFileInfo;
 use SplFileObject;
 use SplTempFileObject;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 
 class BinaryFileResponse extends Response
@@ -31,7 +31,7 @@ class BinaryFileResponse extends Response
 	/**
 	 * The file instance representing the response content.
 	 *
-	 * @var \Symfony\Component\HttpFoundation\File\File
+	 * @var \MVPS\Lumis\Framework\Http\File
 	 */
 	protected File $file;
 
