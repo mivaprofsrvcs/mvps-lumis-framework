@@ -1,4 +1,5 @@
 <?php
+
 namespace MVPS\Lumis\Framework\Session;
 
 use Closure;
