@@ -143,7 +143,7 @@ class Response extends BaseResponse
 	/**
 	 * Gets the current response content.
 	 */
-	public function getContent(): string
+	public function getContent(): string|false
 	{
 		return $this->content;
 	}
@@ -178,6 +178,16 @@ class Response extends BaseResponse
 			// dates according to RFC 2616.
 			return DateTimeImmutable::createFromFormat('U', time() - 172800);
 		}
+	}
+
+	/**
+	 * Retrieves the Last-Modified header as a DateTimeImmutable instance.
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getLastModified(): DateTimeImmutable|null
+	{
+		return $this->headerBag->getDate('Last-Modified');
 	}
 
 	/**
