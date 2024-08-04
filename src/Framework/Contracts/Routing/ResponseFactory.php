@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Contracts\Routing;
 use MVPS\Lumis\Framework\Http\BinaryFileResponse;
 use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Http\StreamedResponse;
 use SplFileInfo;
 
 interface ResponseFactory
@@ -103,17 +104,17 @@ interface ResponseFactory
 	/**
 	 * Create a new streamed response instance.
 	 */
-	// public function stream(callable $callback, int $status = 200, array $headers = []): StreamedResponse;
+	public function stream(callable $callback, int $status = 200, array $headers = []): StreamedResponse;
 
 	/**
 	 * Create a new streamed response instance as a file download.
 	 */
-	// public function streamDownload(
-	// 	callable $callback,
-	// 	string|null $name = null,
-	// 	array $headers = [],
-	// 	string|null $disposition = 'attachment'
-	// ): StreamedResponse;
+	public function streamDownload(
+		callable $callback,
+		string|null $name = null,
+		array $headers = [],
+		string|null $disposition = 'attachment'
+	): StreamedResponse;
 
 	/**
 	 * Create a new response for a given view.

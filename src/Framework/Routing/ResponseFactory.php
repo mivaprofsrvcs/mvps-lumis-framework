@@ -8,8 +8,11 @@ use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Http\BinaryFileResponse;
 use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Http\StreamedResponse;
+use MVPS\Lumis\Framework\Routing\Exceptions\StreamedResponseException;
 use MVPS\Lumis\Framework\Support\Str;
 use SplFileInfo;
+use Throwable;
 
 class ResponseFactory implements ResponseFactoryContract
 {
@@ -97,6 +100,47 @@ class ResponseFactory implements ResponseFactoryContract
 	public function noContent(int $status = 204, array $headers = []): Response
 	{
 		return $this->make('', $status, $headers);
+	}
+
+	/**
+	 * Create a new streamed response instance.
+	 */
+	public function stream(callable $callback, int $status = 200, array $headers = []): StreamedResponse
+	{
+		return new StreamedResponse($callback, $status, $headers);
+	}
+
+	/**
+	 * Create a new streamed response instance as a file download.
+	 */
+	public function streamDownload(
+		callable $callback,
+		string|null $name = null,
+		array $headers = [],
+		string|null $disposition = 'attachment'
+	): StreamedResponse {
+		$withWrappedException = function () use ($callback) {
+			try {
+				$callback();
+			} catch (Throwable $e) {
+				throw new StreamedResponseException($e);
+			}
+		};
+
+		$response = new StreamedResponse($withWrappedException, 200, $headers);
+
+		if (! is_null($name)) {
+			$response->headerBag->set(
+				'Content-Disposition',
+				$response->headerBag->makeDisposition(
+					$disposition,
+					$name,
+					$this->fallbackName($name)
+				)
+			);
+		}
+
+		return $response;
 	}
 
 	/**
