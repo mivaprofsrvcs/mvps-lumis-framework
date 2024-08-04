@@ -4,6 +4,8 @@ namespace MVPS\Lumis\Framework\Http;
 
 use ArrayObject;
 use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Support\Traits\Macroable;
 use InvalidArgumentException;
 use JsonSerializable;
@@ -23,6 +25,30 @@ class Response extends BaseResponse
 	use Macroable {
 		Macroable::__call as macroCall;
 	}
+
+	/**
+	 * Mapping of cache control directives to whether they accept a value.
+	 *
+	 * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+	 *
+	 * @var array<string, bool>
+	 */
+	private const HTTP_RESPONSE_CACHE_CONTROL_DIRECTIVES = [
+		'etag' => true,
+		'immutable' => false,
+		'last_modified' => true,
+		'max_age' => true,
+		'must_revalidate' => false,
+		'no_cache' => false,
+		'no_store' => false,
+		'no_transform' => false,
+		'private' => false,
+		'proxy_revalidate' => false,
+		'public' => false,
+		's_maxage' => true,
+		'stale_if_error' => true, // RFC5861
+		'stale_while_revalidate' => true, // RFC5861
+	];
 
 	/**
 	 * The HTTP response charset.
@@ -93,61 +119,6 @@ class Response extends BaseResponse
 	}
 
 	/**
-	 * Determines if the response is cacheable by a shared (surrogate) cache.
-	 *
-	 * This method follows the guidelines outlined in RFC 7231 and RFC 7234 for
-	 * cacheability.
-	 *
-	 * A response is considered cacheable if it meets the following criteria:
-	 *
-	 * 1. Status code: The response status code is one of the commonly cacheable
-	 *    codes (e.g., 200, 301, 404).
-	 * 2. Cache-Control directives: The response does not have `no-store`
-	 *    directive or a private cache directive.
-	 * 3. Freshness or validation information: The response includes either a
-	 *    freshness lifetime (Expires, max-age) or a cache validator
-	 *    (Last-Modified, ETag).
-	 *
-	 * Note that RFC 7231 allows for more permissive implementations, but this
-	 * method prioritizes strict adherence to the standard.
-	 */
-	public function isCacheable(): bool
-	{
-		if (! in_array($this->getStatusCode(), [200, 203, 300, 301, 302, 404, 410])) {
-			return false;
-		}
-
-		if (
-			$this->headerBag->hasCacheControlDirective('no-store') ||
-			$this->headerBag->getCacheControlDirective('private')
-		) {
-			return false;
-		}
-
-		return $this->isValidateable() || $this->isFresh();
-	}
-
-	/**
-	 * Determines if the response is considered fresh.
-	 *
-	 * A fresh response can be served from cache without contacting the origin
-	 * server. This is based on the presence of Cache-Control/max-age or
-	 * Expires headers and their calculated age.
-	 */
-	public function isFresh(): bool
-	{
-		return $this->getTtl() > 0;
-	}
-
-	/**
-	 * Determines if the response is validatable.
-	 */
-	public function isValidateable(): bool
-	{
-		return $this->headerBag->has('Last-Modified') || $this->headerBag->has('ETag');
-	}
-
-	/**
 	 * Calculates the age of the response in seconds.
 	 */
 	public function getAge(): int
@@ -185,6 +156,14 @@ class Response extends BaseResponse
 	public function getDate(): DateTimeImmutable|null
 	{
 		return $this->headerBag->getDate('Date');
+	}
+
+	/**
+	 * Retrieves the value of the ETag header.
+	 */
+	public function getEtag(): string|null
+	{
+		return $this->headerBag->get('ETag');
 	}
 
 	/**
@@ -238,6 +217,205 @@ class Response extends BaseResponse
 		$maxAge = $this->getMaxAge();
 
 		return null !== $maxAge ? max($maxAge - $this->getAge(), 0) : null;
+	}
+
+	/**
+	 * Determines if the response is cacheable by a shared (surrogate) cache.
+	 *
+	 * This method follows the guidelines outlined in RFC 7231 and RFC 7234 for
+	 * cacheability.
+	 *
+	 * A response is considered cacheable if it meets the following criteria:
+	 *
+	 * 1. Status code: The response status code is one of the commonly cacheable
+	 *    codes (e.g., 200, 301, 404).
+	 * 2. Cache-Control directives: The response does not have `no-store`
+	 *    directive or a private cache directive.
+	 * 3. Freshness or validation information: The response includes either a
+	 *    freshness lifetime (Expires, max-age) or a cache validator
+	 *    (Last-Modified, ETag).
+	 *
+	 * Note that RFC 7231 allows for more permissive implementations, but this
+	 * method prioritizes strict adherence to the standard.
+	 */
+	public function isCacheable(): bool
+	{
+		if (! in_array($this->getStatusCode(), [200, 203, 300, 301, 302, 404, 410])) {
+			return false;
+		}
+
+		if (
+			$this->headerBag->hasCacheControlDirective('no-store') ||
+			$this->headerBag->getCacheControlDirective('private')
+		) {
+			return false;
+		}
+
+		return $this->isValidateable() || $this->isFresh();
+	}
+
+	/**
+	 * Determines if the response status code indicates an empty response.
+	 */
+	public function isEmpty(): bool
+	{
+		return in_array($this->getStatusCode(), [204, 304]);
+	}
+
+	/**
+	 * Determines if the response status code indicates a client error.
+	 */
+	public function isClientError(): bool
+	{
+		return $this->getStatusCode() >= 400 && $this->getStatusCode() < 500;
+	}
+
+	/**
+	 * Determines if the response status code is specifically 403 (Forbidden).
+	 */
+	public function isForbidden(): bool
+	{
+		return $this->getStatusCode() === 403;
+	}
+
+	/**
+	 * Determines if the response is considered fresh.
+	 *
+	 * A fresh response can be served from cache without contacting the origin
+	 * server. This is based on the presence of Cache-Control/max-age or
+	 * Expires headers and their calculated age.
+	 */
+	public function isFresh(): bool
+	{
+		return $this->getTtl() > 0;
+	}
+
+	/**
+	 * Determines if the response status code is informational.
+	 */
+	public function isInformational(): bool
+	{
+		return $this->getStatusCode() >= static::MIN_STATUS_CODE_VALUE &&
+			$this->getStatusCode() < 200;
+	}
+
+	/**
+	 * Determines if the response status code is invalid.
+	 *
+	 * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+	 */
+	public function isInvalid(): bool
+	{
+		return $this->getStatusCode() < static::MIN_STATUS_CODE_VALUE ||
+			$this->getStatusCode() > static::MAX_STATUS_CODE_VALUE;
+	}
+
+	/**
+	 * Determines if the response status code is specifically 404 (Not Found).
+	 */
+	public function isNotFound(): bool
+	{
+		return $this->getStatusCode() === 404;
+	}
+
+	/**
+	 * Determines if the response has been modified since the
+	 * client's last request.
+	 */
+	public function isNotModified(Request $request): bool
+	{
+		if (! $request->isMethodCacheable()) {
+			return false;
+		}
+
+		$notModified = false;
+		$lastModified = $this->headerBag->get('Last-Modified');
+		$modifiedSince = $request->headerBag->get('If-Modified-Since');
+
+		$ifNoneMatchEtags = $request->getETags();
+		$etag = $this->getEtag();
+
+		if ($ifNoneMatchEtags && ! is_null($etag)) {
+			if (strncmp($etag, 'W/', 2) === 0) {
+				$etag = substr($etag, 2);
+			}
+
+			// Use weak comparison for entity tag matching as recommended by
+			// RFC 7232 section 3.2.
+			foreach ($ifNoneMatchEtags as $ifNoneMatchEtag) {
+				if (strncmp($ifNoneMatchEtag, 'W/', 2) === 0) {
+					$ifNoneMatchEtag = substr($ifNoneMatchEtag, 2);
+				}
+
+				if ($ifNoneMatchEtag === $etag || $ifNoneMatchEtag === '*') {
+					$notModified = true;
+
+					break;
+				}
+			}
+		} elseif ($modifiedSince && $lastModified) {
+			// Only consider If-Modified-Since if If-None-Match is not present.
+			// As per RFC 7232 section 3.3, If-None-Match is a stronger validator
+			// and should be used over If-Modified-Since for cache validation.
+			$notModified = strtotime($modifiedSince) >= strtotime($lastModified);
+		}
+
+		if ($notModified) {
+			$this->setNotModified();
+		}
+
+		return $notModified;
+	}
+
+	/**
+	 * Determines if the response status code is specifically 200 (OK).
+	 */
+	public function isOk(): bool
+	{
+		return $this->getStatusCode() === 200;
+	}
+
+	/**
+	 * Determines if the response is a redirect and optionally validates
+	 * the location header.
+	 */
+	public function isRedirect(string|null $location = null): bool
+	{
+		return in_array($this->getStatusCode(), [201, 301, 302, 303, 307, 308]) &&
+			(is_null($location) ?: $location === $this->headerBag->get('Location'));
+	}
+
+	/**
+	 * Determines if the response status code indicates a redirection.
+	 */
+	public function isRedirection(): bool
+	{
+		return $this->getStatusCode() >= 300 && $this->getStatusCode() < 400;
+	}
+
+	/**
+	 * Determines if the response status code indicates a server error.
+	 */
+	public function isServerError(): bool
+	{
+		return $this->getStatusCode() >= 500 &&
+			$this->getStatusCode() <= static::MAX_STATUS_CODE_VALUE;
+	}
+
+	/**
+	 * Determines if the response status code indicates success.
+	 */
+	public function isSuccessful(): bool
+	{
+		return $this->getStatusCode() >= 200 && $this->getStatusCode() < 300;
+	}
+
+	/**
+	 * Determines if the response is validatable.
+	 */
+	public function isValidateable(): bool
+	{
+		return $this->headerBag->has('Last-Modified') || $this->headerBag->has('ETag');
 	}
 
 	/**
@@ -381,6 +559,88 @@ class Response extends BaseResponse
 	}
 
 	/**
+	 * Sets cache-related headers for the response.
+	 *
+	 * Available options are:
+	 *   - etag
+	 *   - immutable
+	 *   - last_modified
+	 *   - max_age
+	 *   - must_revalidate
+	 *   - no_cache
+	 *   - no_store
+	 *   - no_transform,
+	 *   - private
+	 *   - proxy_revalidate
+	 *   - public
+	 *   - s_maxage
+	 *
+	 * @throws \InvalidArgumentException
+	 */
+	public function setCache(array $options): static
+	{
+		$diff = array_diff(array_keys($options), array_keys(static::HTTP_RESPONSE_CACHE_CONTROL_DIRECTIVES));
+
+		if ($diff) {
+			throw new InvalidArgumentException(
+				sprintf('Response does not support the following options: "%s".', implode('", "', $diff))
+			);
+		}
+
+		if (isset($options['etag'])) {
+			$this->setEtag($options['etag']);
+		}
+
+		if (isset($options['last_modified'])) {
+			$this->setLastModified($options['last_modified']);
+		}
+
+		if (isset($options['max_age'])) {
+			$this->setMaxAge($options['max_age']);
+		}
+
+		if (isset($options['s_maxage'])) {
+			$this->setSharedMaxAge($options['s_maxage']);
+		}
+
+		if (isset($options['stale_while_revalidate'])) {
+			$this->setStaleWhileRevalidate($options['stale_while_revalidate']);
+		}
+
+		if (isset($options['stale_if_error'])) {
+			$this->setStaleIfError($options['stale_if_error']);
+		}
+
+		foreach (static::HTTP_RESPONSE_CACHE_CONTROL_DIRECTIVES as $directive => $hasValue) {
+			if (! $hasValue && isset($options[$directive])) {
+				if ($options[$directive]) {
+					$this->headerBag->addCacheControlDirective(str_replace('_', '-', $directive));
+				} else {
+					$this->headerBag->removeCacheControlDirective(str_replace('_', '-', $directive));
+				}
+			}
+		}
+
+		if (isset($options['public'])) {
+			if ($options['public']) {
+				$this->setPublic();
+			} else {
+				$this->setPrivate();
+			}
+		}
+
+		if (isset($options['private'])) {
+			if ($options['private']) {
+				$this->setPrivate();
+			} else {
+				$this->setPublic();
+			}
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Set the HTTP response charset.
 	 */
 	public function setCharset(string $charset): static
@@ -409,11 +669,125 @@ class Response extends BaseResponse
 			}
 		} elseif ($content instanceof Renderable) {
 			$content = $content->render();
-		} else {
-			$content = (string) $content;
 		}
 
-		$this->content = $content;
+		$this->content = $content ?? '';
+
+		return $this;
+	}
+
+	/**
+	 * Sets the ETag header value.
+	 */
+	public function setEtag(string|null $etag, bool $weak = false): static
+	{
+		if (is_null($etag)) {
+			$this->headerBag->remove('Etag');
+		} else {
+			if (! str_starts_with($etag, '"')) {
+				$etag = '"' . $etag . '"';
+			}
+
+			$this->headerBag->set('ETag', ($weak ? 'W/' : '') . $etag);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Sets the Last-Modified HTTP header.
+	 */
+	public function setLastModified(DateTimeInterface|null $date): static
+	{
+		if (is_null($date)) {
+			$this->headerBag->remove('Last-Modified');
+
+			return $this;
+		}
+
+		$date = (DateTimeImmutable::createFromInterface($date))->setTimezone(new DateTimeZone('UTC'));
+
+		$this->headerBag->set('Last-Modified', $date->format('D, d M Y H:i:s') . ' GMT');
+
+		return $this;
+	}
+
+	/**
+	 * Sets the maximum age of the response in seconds.
+	 *
+	 * Controls the freshness lifetime of the response.
+	 */
+	public function setMaxAge(int $value): static
+	{
+		$this->headerBag->addCacheControlDirective('max-age', $value);
+
+		return $this;
+	}
+
+	/**
+	 * Sets the "private" cache control directive.
+	 *
+	 * Prevents the response from being cached by intermediate proxies.
+	 */
+	public function setPrivate(): static
+	{
+		$this->headerBag->removeCacheControlDirective('public');
+
+		$this->headerBag->addCacheControlDirective('private');
+
+		return $this;
+	}
+
+	/**
+	 * Sets the "public" cache control directive.
+	 *
+	 * Indicates that the response is cacheable by any client.
+	 */
+	public function setPublic(): static
+	{
+		$this->headerBag->addCacheControlDirective('public');
+
+		$this->headerBag->removeCacheControlDirective('private');
+
+		return $this;
+	}
+
+	/**
+	 * Sets the shared maximum age for the response.
+	 *
+	 * Configures the Cache-Control "s-maxage" directive for shared caches.
+	 */
+	public function setSharedMaxAge(int $value): static
+	{
+		$this->setPublic();
+
+		$this->headerBag->addCacheControlDirective('s-maxage', $value);
+
+		return $this;
+	}
+
+	/**
+	 * Sets the `stale-if-error` cache control directive.
+	 *
+	 * Specifies the maximum age of a stale response that can be used
+	 * in case of backend errors.
+	 */
+	public function setStaleIfError(int $value): static
+	{
+		$this->headerBag->addCacheControlDirective('stale-if-error', $value);
+
+		return $this;
+	}
+
+	/**
+	 * Sets the stale-while-revalidate cache control directive
+	 *
+	 * Specifies the maximum age for which a stale response can be used
+	 * before a revalidation is required.
+	 */
+	public function setStaleWhileRevalidate(int $value): static
+	{
+		$this->headerBag->addCacheControlDirective('stale-while-revalidate', $value);
 
 		return $this;
 	}
@@ -429,6 +803,53 @@ class Response extends BaseResponse
 			$content instanceof JsonSerializable ||
 			$content instanceof stdClass ||
 			is_array($content);
+	}
+
+	/**
+	 * Prepares the response for a 304 Not Modified status code.
+	 *
+	 * @see https://tools.ietf.org/html/rfc2616#section-10.3.5
+	 */
+	public function setNotModified(): static
+	{
+		$this->setContent(null);
+
+		// Remove headers prohibited by RFC 2616 for 304 Not Modified responses.
+		foreach (
+			[
+				'Allow',
+				'Content-Encoding',
+				'Content-Language',
+				'Content-Length',
+				'Content-MD5',
+				'Content-Type',
+				'Last-Modified'
+			] as $header
+		) {
+			$this->headerBag->remove($header);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Creates a 304 Not Modified response.
+	 *
+	 * This response indicates that the requested resource has not been
+	 * modified since the version specified in the request's
+	 * If-Modified-Since header (if present). Clients with a cached copy can
+	 * continue using it instead of fetching a new version from the server.
+	 *
+	 * Follows guidelines from RFC 7232 section 3.3 for handling
+	 * 304 Not Modified responses.
+	 *
+	 * @see https://tools.ietf.org/html/rfc7232#section.3.3
+	 */
+	public function withNotModified(): Response
+	{
+		$this->setNotModified();
+
+		return new static($this->content, 304, $this->headerBag->all());
 	}
 
 	/**
