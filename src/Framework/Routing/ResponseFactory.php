@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Routing;
 use Illuminate\Support\Traits\Macroable;
 use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
+use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Response;
 
 class ResponseFactory implements ResponseFactoryContract
@@ -24,6 +25,24 @@ class ResponseFactory implements ResponseFactoryContract
 	public function __construct(ViewFactory $view)
 	{
 		$this->view = $view;
+	}
+
+	public function json(mixed $data = [], int $status = 200, array $headers = [], int $options = 0): JsonResponse
+	{
+		return new JsonResponse($data, $status, $headers, $options);
+	}
+
+	/**
+	 * Create a new JSONP response instance.
+	 */
+	public function jsonp(
+		string $callback,
+		mixed $data = [],
+		int $status = 200,
+		array $headers = [],
+		int $options = 0
+	): JsonResponse {
+		return $this->json($data, $status, $headers, $options)->setCallback($callback);
 	}
 
 	/**
