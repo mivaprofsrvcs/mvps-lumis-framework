@@ -5,8 +5,11 @@ namespace MVPS\Lumis\Framework\Routing;
 use Illuminate\Support\Traits\Macroable;
 use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
+use MVPS\Lumis\Framework\Http\BinaryFileResponse;
 use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Support\Str;
+use SplFileInfo;
 
 class ResponseFactory implements ResponseFactoryContract
 {
@@ -25,6 +28,41 @@ class ResponseFactory implements ResponseFactoryContract
 	public function __construct(ViewFactory $view)
 	{
 		$this->view = $view;
+	}
+
+	/**
+	 * Create a new file download response.
+	 */
+	public function download(
+		SplFileInfo|string $file,
+		string|null $name = null,
+		array $headers = [],
+		string|null $disposition = 'attachment'
+	): BinaryFileResponse {
+		$response = new BinaryFileResponse($file, 200, $headers, true, $disposition);
+
+		if (! is_null($name)) {
+			return $response->setContentDisposition($disposition, $name, $this->fallbackName($name));
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Converts a string to ASCII characters that are
+	 * equivalent to the given name.
+	 */
+	protected function fallbackName(string $name): string
+	{
+		return str_replace('%', '', Str::ascii($name));
+	}
+
+	/**
+	 * Return the raw contents of a binary file.
+	 */
+	public function file(SplFileInfo|string $file, array $headers = []): BinaryFileResponse
+	{
+		return new BinaryFileResponse($file, 200, $headers);
 	}
 
 	public function json(mixed $data = [], int $status = 200, array $headers = [], int $options = 0): JsonResponse

@@ -2,25 +2,27 @@
 
 namespace MVPS\Lumis\Framework\Contracts\Routing;
 
+use MVPS\Lumis\Framework\Http\BinaryFileResponse;
 use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Response;
+use SplFileInfo;
 
 interface ResponseFactory
 {
 	/**
 	 * Create a new file download response.
 	 */
-	// public function download(
-	// 	SplFileInfo|string $file,
-	// 	string|null $name = null,
-	// 	array $headers = [],
-	// 	string|null $disposition = 'attachment'
-	// ): BinaryFileResponse;
+	public function download(
+		SplFileInfo|string $file,
+		string|null $name = null,
+		array $headers = [],
+		string|null $disposition = 'attachment'
+	): BinaryFileResponse;
 
 	/**
 	 * Return the raw contents of a binary file.
 	 */
-	// public function file(SplFileInfo|string $file, array $headers = []): BinaryFileResponse;
+	public function file(SplFileInfo|string $file, array $headers = []): BinaryFileResponse;
 
 	/**
 	 * Create a new JSON response instance.
