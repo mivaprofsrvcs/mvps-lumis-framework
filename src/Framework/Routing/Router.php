@@ -1086,7 +1086,7 @@ class Router implements BindingRegistrar, RegistrarContract
 		// 	$response->setNotModified();
 		// }
 
-		return $response->prepare();
+		return $response->prepare($request);
 	}
 
 	/**

@@ -435,21 +435,74 @@ class Response extends BaseResponse
 	/**
 	 * Prepares the response before it is sent to the client.
 	 */
-	public function prepare(): static
+	public function prepare(Request $request): static
 	{
-		$response = $this;
+		$headers = $this->headerBag;
 
-		if ($response->hasHeader('Content-Type')) {
-			$contentType = $response->getHeaderLine('Content-Type');
+		if ($this->isInformational() || $this->isEmpty()) {
+			$this->setContent(null);
 
-			if (stripos($contentType, 'text/') === 0 && stripos($contentType, 'charset') === false) {
-				$response = $response->withHeader('Content-Type', $contentType . '; charset=' . $this->charset);
-			}
+			$headers->remove('Content-Type');
+			$headers->remove('Content-Length');
+
+			// Prevent PHP from automatically setting the Content-Type header
+			// based on the default MIME type.
+			ini_set('default_mimetype', '');
 		} else {
-			$response = $response->withHeader('Content-Type', 'text/html; charset=' . $this->charset);
+			if (! $headers->has('Content-Type')) {
+				$format = $request->getRequestFormat(null);
+
+				if (! is_null($format) && $mimeType = $request->getMimeType($format)) {
+					$headers->set('Content-Type', $mimeType);
+				}
+			}
+
+			// Ensure correct Content-Type header is set based on response content.
+			$charset = $this->charset ?: 'UTF-8';
+
+			if (! $headers->has('Content-Type')) {
+				$headers->set('Content-Type', 'text/html; charset=' . $charset);
+			} elseif (
+				stripos($headers->get('Content-Type') ?? '', 'text/') === 0 &&
+				stripos($headers->get('Content-Type') ?? '', 'charset') === false
+			) {
+				$headers->set('Content-Type', $headers->get('Content-Type') . '; charset=' . $charset);
+			}
+
+			// Remove Content-Length header if Transfer-Encoding is present.
+			// Transfer-Encoding takes precedence over Content-Length.
+			if ($headers->has('Transfer-Encoding')) {
+				$headers->remove('Content-Length');
+			}
+
+			// As per RFC 2616 section 14.13, remove the content body for HEAD
+			// requests while preserving the Content-Length header if present.
+			if ($request->isMethod('HEAD')) {
+				$length = $headers->get('Content-Length');
+
+				$this->setContent(null);
+
+				if ($length) {
+					$headers->set('Content-Length', $length);
+				}
+			}
 		}
 
-		return $response;
+		// For HTTP/1.0, add 'Pragma: no-cache' and 'Expires: -1' headers if
+		// 'Cache-Control: no-cache' is present. This ensures compatibility
+		// with older clients
+		if ($this->getProtocolVersion() === '1.0' && str_contains($headers->get('Cache-Control', ''), 'no-cache')) {
+			$headers->set('pragma', 'no-cache');
+			$headers->set('expires', -1);
+		}
+
+		if ($request->isSecure()) {
+			foreach ($headers->getCookies() as $cookie) {
+				$cookie->setSecureDefault(true);
+			}
+		}
+
+		return $this;
 	}
 
 	/**
