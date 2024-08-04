@@ -872,6 +872,23 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	}
 
 	/**
+	 * Determines if the request method is considered "safe" according to RFC 7231.
+	 *
+	 * Safe methods are those that retrieve information or perform checks on a
+	 * resource without modifying its state. This method checks if the current
+	 * request method is one of the following: GET, HEAD, OPTIONS, or TRACE.
+	 *
+	 * @see https://tools.ietf.org/html/rfc7231#section-4.2.1
+	 */
+	public function isMethodSafe(): bool
+	{
+		return in_array(
+			strtoupper($this->getMethod()),
+			['GET', 'HEAD', 'OPTIONS', 'TRACE']
+		);
+	}
+
+	/**
 	 * Determine if the current request is secure (https).
 	 */
 	public function isSecure(): bool
