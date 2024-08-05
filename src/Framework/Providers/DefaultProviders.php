@@ -3,6 +3,7 @@
 namespace MVPS\Lumis\Framework\Providers;
 
 use MVPS\Lumis\Framework\Console\ConsoleSupportServiceProvider;
+use MVPS\Lumis\Framework\Cookie\CookieServiceProvider;
 use MVPS\Lumis\Framework\Database\DatabaseServiceProvider;
 use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
 use MVPS\Lumis\Framework\Pipeline\PipelineServiceProvider;
@@ -25,6 +26,7 @@ class DefaultProviders
 		$this->providers = $providers ?: [
 			// CacheServiceProvider::class,
 			ConsoleSupportServiceProvider::class,
+			CookieServiceProvider::class,
 			DatabaseServiceProvider::class,
 			// EncryptionServiceProvider::class,
 			FilesystemServiceProvider::class,

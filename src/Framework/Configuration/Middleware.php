@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Configuration;
 use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
 use MVPS\Lumis\Framework\Http\Middleware\HandlePrecognitiveRequests;
+use MVPS\Lumis\Framework\Http\Middleware\SetCacheHeaders;
 use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
 use MVPS\Lumis\Framework\Http\Middleware\TrustHosts;
 use MVPS\Lumis\Framework\Http\Middleware\TrustProxies;
@@ -206,7 +207,7 @@ class Middleware
 			// 'auth' => Authenticate::class,
 			// 'auth.basic' => AuthenticateWithBasicAuth::class,
 			// 'auth.session' => AuthenticateSession::class,
-			// 'cache.headers' => SetCacheHeaders::class,
+			'cache.headers' => SetCacheHeaders::class,
 			// 'can' => Authorize::class,
 			// 'guest' => RedirectIfAuthenticated::class,
 			// 'password.confirm' => RequirePassword::class,

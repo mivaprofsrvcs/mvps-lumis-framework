@@ -5,12 +5,13 @@ namespace MVPS\Lumis\Framework\Routing;
 use Closure;
 use MVPS\Lumis\Framework\Contracts\Routing\CallableDispatcher as CallableDispatcherContract;
 use MVPS\Lumis\Framework\Contracts\Routing\ControllerDispatcher as ControllerDispatcherContract;
+use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactoryContract;
-use MVPS\Lumis\Framework\Http\ResponseFactory;
 use MVPS\Lumis\Framework\Providers\ServiceProvider;
 use MVPS\Lumis\Framework\Routing\CallableDispatcher;
 use MVPS\Lumis\Framework\Routing\ControllerDispatcher;
+use MVPS\Lumis\Framework\Routing\ResponseFactory;
 
 class RoutingServiceProvider extends ServiceProvider
 {
@@ -21,6 +22,7 @@ class RoutingServiceProvider extends ServiceProvider
 	{
 		$this->registerRouter();
 		$this->registerUrlGenerator();
+		$this->registerRedirector();
 		$this->registerResponseFactory();
 		$this->registerCallableDispatcher();
 		$this->registerControllerDispatcher();
@@ -47,12 +49,30 @@ class RoutingServiceProvider extends ServiceProvider
 	}
 
 	/**
+	 * Register the redirector service.
+	 */
+	protected function registerRedirector(): void
+	{
+		$this->app->singleton('redirect', function ($app) {
+			$redirector = new Redirector($app['url']);
+
+			// Inject the session instance into the redirector if available,
+			// enabling the use of flash data for redirects (ie "with" methods).
+			if (isset($app['session.store'])) {
+				$redirector->setSession($app['session.store']);
+			}
+
+			return $redirector;
+		});
+	}
+
+	/**
 	 * Register the response factory implementation.
 	 */
 	protected function registerResponseFactory(): void
 	{
-		$this->app->singleton(ResponseFactory::class, function ($app) {
-			return new ResponseFactory($app[ViewFactoryContract::class]);
+		$this->app->singleton(ResponseFactoryContract::class, function ($app) {
+			return new ResponseFactory($app[ViewFactoryContract::class], $app['redirect']);
 		});
 	}
 
@@ -110,8 +130,6 @@ class RoutingServiceProvider extends ServiceProvider
 	 */
 	protected function requestRebinder(): Closure
 	{
-		return function ($app, $request) {
-			$app['url']->setRequest($request);
-		};
+		return fn ($app, $request) => $app['url']->setRequest($request);
 	}
 }

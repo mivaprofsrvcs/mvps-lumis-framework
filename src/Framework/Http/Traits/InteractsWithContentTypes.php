@@ -59,21 +59,6 @@ trait InteractsWithContentTypes
 	}
 
 	/**
-	 * Determine if the given content types match.
-	 */
-	public static function matchesType(string $actual, string $type): bool
-	{
-		if ($actual === $type) {
-			return true;
-		}
-
-		$split = explode('/', $actual);
-
-		return isset($split[1]) &&
-			preg_match('#' . preg_quote($split[0], '#') . '/.+\+' . preg_quote($split[1], '#') . '#', $type);
-	}
-
-	/**
 	 * Determines whether a request accepts JSON.
 	 */
 	public function acceptsJson(): bool
@@ -111,6 +96,21 @@ trait InteractsWithContentTypes
 	public function isJson(): bool
 	{
 		return Str::contains($this->header('Content-Type', ''), ['/json', '+json']);
+	}
+
+	/**
+	 * Determine if the given content types match.
+	 */
+	public static function matchesType(string $actual, string $type): bool
+	{
+		if ($actual === $type) {
+			return true;
+		}
+
+		$split = explode('/', $actual);
+
+		return isset($split[1]) &&
+			preg_match('#' . preg_quote($split[0], '#') . '/.+\+' . preg_quote($split[1], '#') . '#', $type);
 	}
 
 	/**

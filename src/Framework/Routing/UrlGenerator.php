@@ -14,6 +14,7 @@ use InvalidArgumentException;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator as UrlGeneratorContract;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Routing\Exceptions\RouteNotFoundException;
+use MVPS\Lumis\Framework\Session\Store as SessionStore;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 
@@ -370,6 +371,14 @@ class UrlGenerator implements UrlGeneratorContract
 	}
 
 	/**
+	 * Get the previous URL from the session if possible.
+	 */
+	protected function getPreviousUrlFromSession(): string|null
+	{
+		return $this->getSession()?->previousUrl();
+	}
+
+	/**
 	 * Get the request instance.
 	 */
 	public function getRequest(): Request
@@ -383,6 +392,18 @@ class UrlGenerator implements UrlGeneratorContract
 	public function getRootControllerNamespace(): string
 	{
 		return $this->rootNamespace;
+	}
+
+	/**
+	 * Get the session implementation from the resolver.
+	 */
+	protected function getSession(): SessionStore|null
+	{
+		if ($this->sessionResolver) {
+			return call_user_func($this->sessionResolver);
+		}
+
+		return null;
 	}
 
 	/**
@@ -449,6 +470,26 @@ class UrlGenerator implements UrlGeneratorContract
 		return $this->formatPathUsing ?: function ($path) {
 			return $path;
 		};
+	}
+
+	/**
+	 * Get the URL for the previous request.
+	 */
+	public function previous(mixed $fallback = false): string
+	{
+		$referrer = $this->request->headerBag->get('referer');
+
+		$url = $referrer ? $this->to($referrer) : $this->getPreviousUrlFromSession();
+
+		if ($url) {
+			return $url;
+		}
+
+		if ($fallback) {
+			return $this->to($fallback);
+		}
+
+		return $this->to('/');
 	}
 
 	/**
@@ -598,6 +639,16 @@ class UrlGenerator implements UrlGeneratorContract
 	public function setRoutes(RouteCollection $routes): static
 	{
 		$this->routes = $routes;
+
+		return $this;
+	}
+
+	/**
+	 * Set the session resolver for the generator.
+	 */
+	public function setSessionResolver(callable $sessionResolver): static
+	{
+		$this->sessionResolver = $sessionResolver;
 
 		return $this;
 	}

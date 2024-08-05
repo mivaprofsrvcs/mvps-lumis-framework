@@ -7,7 +7,6 @@ use Closure;
 use Laminas\Diactoros\ServerRequest;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Http\Traits\CanBePrecognitive;
-use MVPS\Lumis\Framework\Http\Traits\InteractsWithContent;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithContentTypes;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
 use MVPS\Lumis\Framework\Routing\Route;
@@ -30,7 +29,6 @@ use Symfony\Component\HttpFoundation\ServerBag;
 class Request extends ServerRequest implements Arrayable, ArrayAccess
 {
 	use CanBePrecognitive;
-	use InteractsWithContent;
 	use InteractsWithContentTypes;
 	use InteractsWithRequestInput;
 
@@ -147,6 +145,13 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	 * @var \Symfony\Component\HttpFoundation\FileBag
 	 */
 	public FileBag $fileBag;
+
+	/**
+	 * The requested format for the response.
+	 *
+	 * @var string|null
+	 */
+	protected string|null $format = null;
 
 	/**
 	 * The request format MIME types.
@@ -417,6 +422,19 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	}
 
 	/**
+	 * Retrieves the ETag values from the If-None-Match header.
+	 */
+	public function getETags(): array
+	{
+		return preg_split(
+			'/\s*,\s*/',
+			$this->headerBag->get('If-None-Match', ''),
+			-1,
+			PREG_SPLIT_NO_EMPTY
+		);
+	}
+
+	/**
 	 * Gets the format associated with the mime type.
 	 */
 	public function getFormat(string|null $mimeType = null): string|null
@@ -593,6 +611,19 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	public function getRealMethod(): string
 	{
 		return strtoupper($this->serverBag->get('REQUEST_METHOD', 'GET'));
+	}
+
+	/**
+	 * Determines the requested format for the response.
+	 *
+	 * Prioritizes the explicitly set format, then the '_format' request
+	 * attribute, and finally the default format.
+	 */
+	public function getRequestFormat(string|null $default = 'html'): string|null
+	{
+		$this->format ??= $this->attributeBag->get('_format');
+
+		return $this->format ?? $default;
 	}
 
 	/**
@@ -802,6 +833,17 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	}
 
 	/**
+	 * Determine if the current request URI matches a pattern.
+	 */
+	public function is(mixed ...$patterns): bool
+	{
+		$path = $this->decodedPath();
+
+		return collection($patterns)
+			->contains(fn ($pattern) => Str::is($pattern, $path));
+	}
+
+	/**
 	 * Indicates whether this request originated from a trusted proxy.
 	 *
 	 * This can be useful to determine whether or not to trust the
@@ -814,22 +856,36 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	}
 
 	/**
-	 * Determine if the current request URI matches a pattern.
-	 */
-	public function is(mixed ...$patterns): bool
-	{
-		$path = $this->decodedPath();
-
-		return collection($patterns)
-			->contains(fn ($pattern) => Str::is($pattern, $path));
-	}
-
-	/**
 	 * Checks if the request method matches the given type.
 	 */
 	public function isMethod(string $method): bool
 	{
 		return $this->getMethod() === strtoupper($method);
+	}
+
+	/**
+	 * Determines if the HTTP method is cacheable.
+	 */
+	public function isMethodCacheable(): bool
+	{
+		return in_array($this->getMethod(), ['GET', 'HEAD']);
+	}
+
+	/**
+	 * Determines if the request method is considered "safe" according to RFC 7231.
+	 *
+	 * Safe methods are those that retrieve information or perform checks on a
+	 * resource without modifying its state. This method checks if the current
+	 * request method is one of the following: GET, HEAD, OPTIONS, or TRACE.
+	 *
+	 * @see https://tools.ietf.org/html/rfc7231#section-4.2.1
+	 */
+	public function isMethodSafe(): bool
+	{
+		return in_array(
+			strtoupper($this->getMethod()),
+			['GET', 'HEAD', 'OPTIONS', 'TRACE']
+		);
 	}
 
 	/**
@@ -1148,6 +1204,14 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 		$this->jsonBag = $json;
 
 		return $this;
+	}
+
+	/**
+	 * Sets the request format.
+	 */
+	public function setRequestFormat(string|null $format): void
+	{
+		$this->format = $format;
 	}
 
 	/**

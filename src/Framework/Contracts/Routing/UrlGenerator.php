@@ -28,6 +28,11 @@ interface UrlGenerator
 	public function getRootControllerNamespace(): string;
 
 	/**
+	 * Get the URL for the previous request.
+	 */
+	public function previous(mixed $fallback = false): string;
+
+	/**
 	 * Get the URL to a named route.
 	 *
 	 * @throws \InvalidArgumentException

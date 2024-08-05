@@ -803,25 +803,25 @@ class PendingRequest
 			return [];
 		}
 
-		$laravelData = $options[$this->bodyFormat] ?? $options['query'] ?? [];
+		$lumisData = $options[$this->bodyFormat] ?? $options['query'] ?? [];
 
 		$urlString = Str::of($url);
 
-		if (empty($laravelData) && $method === 'GET' && $urlString->contains('?')) {
-			$laravelData = (string) $urlString->after('?');
+		if (empty($lumisData) && $method === 'GET' && $urlString->contains('?')) {
+			$lumisData = (string) $urlString->after('?');
 		}
 
-		if (is_string($laravelData)) {
-			parse_str($laravelData, $parsedData);
+		if (is_string($lumisData)) {
+			parse_str($lumisData, $parsedData);
 
-			$laravelData = is_array($parsedData) ? $parsedData : [];
+			$lumisData = is_array($parsedData) ? $parsedData : [];
 		}
 
-		if ($laravelData instanceof JsonSerializable) {
-			$laravelData = $laravelData->jsonSerialize();
+		if ($lumisData instanceof JsonSerializable) {
+			$lumisData = $lumisData->jsonSerialize();
 		}
 
-		return is_array($laravelData) ? $laravelData : [];
+		return is_array($lumisData) ? $lumisData : [];
 	}
 
 	/**
@@ -1066,7 +1066,7 @@ class PendingRequest
 	{
 		$clientMethod = $this->async ? 'requestAsync' : 'request';
 
-		$laravelData = $this->parseRequestData($method, $url, $options);
+		$lumisData = $this->parseRequestData($method, $url, $options);
 
 		$onStats = function ($transferStats) {
 			$callback = $this->options['on_stats'] ?? false;
@@ -1079,7 +1079,7 @@ class PendingRequest
 		};
 
 		$mergedOptions = $this->normalizeRequestOptions($this->mergeOptions([
-			'lumis_data' => $laravelData,
+			'lumis_data' => $lumisData,
 			'on_stats' => $onStats,
 		], $options));
 

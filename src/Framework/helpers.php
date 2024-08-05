@@ -6,18 +6,18 @@ use Faker\Generator as FakerGenerator;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
+use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
-use MVPS\Lumis\Framework\Http\Client\Cookies\CookieJar;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
+use MVPS\Lumis\Framework\Http\RedirectResponse;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
-use MVPS\Lumis\Framework\Http\ResponseFactory;
+use MVPS\Lumis\Framework\Routing\Redirector;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
-use Symfony\Component\HttpFoundation\Cookie;
 
 if (! function_exists('abort')) {
 	/**
@@ -72,6 +72,16 @@ if (! function_exists('app_path')) {
 	function app_path(string $path = ''): string
 	{
 		return app()->path($path);
+	}
+}
+
+if (! function_exists('back')) {
+	/**
+	 * Create a new redirect response to the previous location.
+	 */
+	function back(int $status = 302, array $headers = [], mixed $fallback = false): RedirectResponse
+	{
+		return app('redirect')->back($status, $headers, $fallback);
 	}
 }
 
@@ -249,6 +259,27 @@ if (! function_exists('public_path')) {
 	}
 }
 
+if (! function_exists('redirect')) {
+	/**
+	 * Creates a redirect response or retrieves the redirector instance.
+	 *
+	 * If a target URL is provided, a RedirectResponse instance is returned.
+	 * Otherwise, the redirector instance is returned for building redirects.
+	 */
+	function redirect(
+		string|null $to = null,
+		int $status = 302,
+		array $headers = [],
+		bool|null $secure = null
+	): Redirector|RedirectResponse {
+		if (is_null($to)) {
+			return app('redirect');
+		}
+
+		return app('redirect')->to($to, $status, $headers, $secure);
+	}
+}
+
 if (! function_exists('report')) {
 	/**
 	 * Report an exception.
@@ -351,8 +382,16 @@ if (! function_exists('response')) {
 	/**
 	 * Create and return a new response from the application.
 	 */
-	function response(mixed $content = '', $status = 200, array $headers = []): Response
+	function response(mixed $content = '', $status = 200, array $headers = []): ResponseFactory|Response
 	{
+		$factory = app(ResponseFactory::class);
+
+		if (func_num_args() === 0) {
+			return $factory;
+		}
+
+		return $factory->make($content ?? '', $status, $headers);
+
 		return app(ResponseFactory::class)->make($content, $status, $headers);
 	}
 }
@@ -409,6 +448,16 @@ if (! function_exists('task_path')) {
 	function task_path(string $path = ''): string
 	{
 		return app()->taskPath($path);
+	}
+}
+
+if (! function_exists('to_route')) {
+	/**
+	 * Create a new redirect response to a named route.
+	 */
+	function to_route(string $route, mixed $parameters = [], int $status = 302, array $headers = []): RedirectResponse
+	{
+		return redirect()->route($route, $parameters, $status, $headers);
 	}
 }
 

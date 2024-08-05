@@ -914,6 +914,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
 			],
+			'cookie' => [
+				\MVPS\Lumis\Framework\Cookie\CookieJar::class,
+				\MVPS\Lumis\Framework\Contracts\Cookie\Factory::class,
+				\MVPS\Lumis\Framework\Contracts\Cookie\QueueingFactory::class,
+			],
 			'db' => [
 				\MVPS\Lumis\Framework\Database\DatabaseManager::class,
 				\Illuminate\Database\ConnectionResolverInterface::class,
@@ -923,6 +928,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\Illuminate\Database\ConnectionInterface::class,
 			],
 			'db.schema' => [\Illuminate\Database\Schema\Builder::class],
+			// 'encrypter' => [Encrypter::class],
 			'events' => [
 				\MVPS\Lumis\Framework\Events\Dispatcher::class,
 				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
@@ -938,6 +944,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Log\LogService::class,
 				\Psr\Log\LoggerInterface::class,
 			],
+			'redirect' => [\MVPS\Lumis\Framework\Routing\Redirector::class],
 			'request' => [
 				Request::class,
 				\Psr\Http\Message\ServerRequestInterface::class,
@@ -947,12 +954,15 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Contracts\Routing\Registrar::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\BindingRegistrar::class,
 			],
+			'session.store' => [
+				\MVPS\Lumis\Framework\Session\Store::class,
+				\MVPS\Lumis\Framework\Contracts\Session\Session::class,
+			],
 			'url' => [
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
 			],
-			// TODO: Implement these
-			// 'encrypter' => [Encrypter::class],
+			// 'validator' => [Validation\Factory::class, Contracts\Validation\Factory::class],
 			'view' => [
 				\MVPS\Lumis\Framework\View\Factory::class,
 				\MVPS\Lumis\Framework\Contracts\View\Factory::class,
