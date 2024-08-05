@@ -26,6 +26,8 @@ use MVPS\Lumis\Framework\Http\Exceptions\BadRequestException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
+use MVPS\Lumis\Framework\Http\JsonResponse;
+use MVPS\Lumis\Framework\Http\RedirectResponse;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Exceptions\BackedEnumCaseNotFoundException;
@@ -352,27 +354,25 @@ class Handler implements ExceptionHandler
 
 	/**
 	 * Convert a validation exception into a response.
-	 *
-	 * TODO: Update this when implementing redirect functionality.
 	 */
-	protected function invalid(Request $request, ValidationException $exception): Response
+	protected function invalid(Request $request, ValidationException $exception): Response|JsonResponse|RedirectResponse
 	{
-		return new Response('Bad Request', 400);
+		return redirect($exception->redirectTo ?? url()->previous())
+			->withInput(Arr::except($request->input(), $this->dontFlash))
+			->withErrors($exception->errors(), $request->input('_error_bag', $exception->errorBag));
 	}
 
 	/**
 	 * Convert a validation exception into a JSON response.
-	 *
-	 * TODO: Update this when implementing JSONResponse
 	 */
-	protected function invalidJson(Request $request, ValidationException $exception): Response
+	protected function invalidJson(Request $request, ValidationException $exception): JsonResponse
 	{
 		$data = [
 			'message' => $exception->getMessage(),
 			'errors' => $exception->errors()
 		];
 
-		return new Response($data, $exception->status);
+		return new JsonResponse($data, $exception->status);
 	}
 
 	/**
@@ -460,7 +460,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * Prepare a JSON response for the given exception.
 	 */
-	protected function prepareJsonResponse(Request $request, Throwable $e): Response
+	protected function prepareJsonResponse(Request $request, Throwable $e): JsonResponse
 	{
 		$statusCode = 500;
 		$headers = [];
@@ -470,13 +470,18 @@ class Handler implements ExceptionHandler
 			$headers = $e->getHeaders();
 		}
 
-		return new Response($this->convertExceptionToArray($e), $statusCode, $headers);
+		return new JsonResponse(
+			$this->convertExceptionToArray($e),
+			$statusCode,
+			$headers,
+			JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+		);
 	}
 
 	/**
 	 * Prepare a response for the given exception.
 	 */
-	protected function prepareResponse(Request $request, Throwable $e): Response
+	protected function prepareResponse(Request $request, Throwable $e): Response|JsonResponse|RedirectResponse
 	{
 		if (! $this->isHttpException($e)) {
 			if (config('app.debug')) {
@@ -578,7 +583,7 @@ class Handler implements ExceptionHandler
 	/**
 	 * Render a default exception response if any.
 	 */
-	protected function renderExceptionResponse(Request $request, Throwable $e): Response
+	protected function renderExceptionResponse(Request $request, Throwable $e): Response|JsonResponse|RedirectResponse
 	{
 		return $this->shouldReturnJson($request, $e)
 			? $this->prepareJsonResponse($request, $e)
@@ -899,6 +904,34 @@ class Handler implements ExceptionHandler
 	 */
 	protected function toResponse(Response $response, Throwable $e): Response
 	{
+		if ($response instanceof RedirectResponse) {
+			$response = new RedirectResponse(
+				$response->getTargetUrl(),
+				$response->getStatusCode(),
+				$response->headerBag->all()
+			);
+		} else {
+			$response = new Response(
+				$response->getContent(),
+				$response->getStatusCode(),
+				$response->headerBag->all()
+			);
+		}
+
 		return $response->withException($e);
 	}
+
+	/**
+	 * Convert an authentication exception into a response.
+	 *
+	 * TODO: Implement this with authentication
+	 */
+	// protected function unauthenticated(
+	// 	Request $request,
+	// 	AuthenticationException $exception
+	// ): Response|JsonResponse|RedirectResponse {
+	// 	return $this->shouldReturnJson($request, $exception)
+	// 		? response()->json(['message' => $exception->getMessage()], 401)
+	// 		: redirect()->guest($exception->redirectTo($request) ?? route('login'));
+	// }
 }
