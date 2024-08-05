@@ -7,6 +7,7 @@ use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory as ResponseFactoryCon
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Http\BinaryFileResponse;
 use MVPS\Lumis\Framework\Http\JsonResponse;
+use MVPS\Lumis\Framework\Http\RedirectResponse;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Http\StreamedResponse;
 use MVPS\Lumis\Framework\Routing\Exceptions\StreamedResponseException;
@@ -19,6 +20,13 @@ class ResponseFactory implements ResponseFactoryContract
 	use Macroable;
 
 	/**
+	 * The redirector instance.
+	 *
+	 * @var \MVPS\Lumis\Framework\Routing\Redirector
+	 */
+	protected Redirector $redirector;
+
+	/**
 	 * The view factory instance.
 	 *
 	 * @var \MVPS\Lumis\Framework\Contracts\View\Factory
@@ -28,9 +36,10 @@ class ResponseFactory implements ResponseFactoryContract
 	/**
 	 * Create a new response factory instance.
 	 */
-	public function __construct(ViewFactory $view)
+	public function __construct(ViewFactory $view, Redirector $redirector)
 	{
 		$this->view = $view;
+		$this->redirector = $redirector;
 	}
 
 	/**
@@ -100,6 +109,67 @@ class ResponseFactory implements ResponseFactoryContract
 	public function noContent(int $status = 204, array $headers = []): Response
 	{
 		return $this->make('', $status, $headers);
+	}
+
+	/**
+	 * Create a new redirect response, while putting the
+	 * current URLin the session.
+	 */
+	public function redirectGuest(
+		string $path,
+		int $status = 302,
+		array $headers = [],
+		bool|null $secure = null
+	): RedirectResponse {
+		return $this->redirector->guest($path, $status, $headers, $secure);
+	}
+
+	/**
+	 * Create a new redirect response to the given path.
+	 */
+	public function redirectTo(
+		string $path,
+		int $status = 302,
+		array $headers = [],
+		bool|null $secure = null
+	): RedirectResponse {
+		return $this->redirector->to($path, $status, $headers, $secure);
+	}
+
+	/**
+	 * Create a new redirect response to a controller action.
+	 */
+	public function redirectToAction(
+		array|string $action,
+		mixed $parameters = [],
+		int $status = 302,
+		array $headers = []
+	): RedirectResponse {
+		return $this->redirector->action($action, $parameters, $status, $headers);
+	}
+
+	/**
+	 * Create a new redirect response to the previously intended location.
+	 */
+	public function redirectToIntended(
+		string $default = '/',
+		int $status = 302,
+		array $headers = [],
+		bool|null $secure = null
+	): RedirectResponse {
+		return $this->redirector->intended($default, $status, $headers, $secure);
+	}
+
+	/**
+	 * Create a new redirect response to a named route.
+	 */
+	public function redirectToRoute(
+		string $route,
+		mixed $parameters = [],
+		int $status = 302,
+		array $headers = []
+	): RedirectResponse {
+		return $this->redirector->route($route, $parameters, $status, $headers);
 	}
 
 	/**
