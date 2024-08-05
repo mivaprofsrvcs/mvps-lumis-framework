@@ -943,6 +943,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Log\LogService::class,
 				\Psr\Log\LoggerInterface::class,
 			],
+			'redirect' => [\MVPS\Lumis\Framework\Routing\Redirector::class],
 			'request' => [
 				Request::class,
 				\Psr\Http\Message\ServerRequestInterface::class,
