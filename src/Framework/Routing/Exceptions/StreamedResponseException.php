@@ -27,10 +27,8 @@ class StreamedResponseException extends RuntimeException
 
 	/**
 	 * Get the actual exception thrown during the stream.
-	 *
-	 * @return \Throwable
 	 */
-	public function getInnerException()
+	public function getInnerException(): Throwable
 	{
 		return $this->originalException;
 	}

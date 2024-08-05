@@ -6,8 +6,6 @@ trait InteractsWithHeaders
 {
 	/**
 	 * Inject the provided Content-Type, if none is already present.
-	 *
-	 * @return array Headers with injected Content-Type
 	 */
 	public function injectContentType(string $contentType, array $headers): array
 	{

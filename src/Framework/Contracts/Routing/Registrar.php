@@ -59,8 +59,6 @@ interface Registrar
 
 	/**
 	 * Substitute the implicit Eloquent model bindings for the route.
-	 *
-	 * @return mixed|void
 	 */
-	public function substituteImplicitBindings(Route $route);
+	public function substituteImplicitBindings(Route $route): mixed;
 }
