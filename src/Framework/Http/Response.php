@@ -13,6 +13,7 @@ use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use MVPS\Lumis\Framework\Contracts\Support\Renderable;
 use MVPS\Lumis\Framework\Http\Traits\ResponseTrait;
+use MVPS\Lumis\Framework\Http\Traits\StatusCodes;
 use pdeans\Http\Factories\StreamFactory;
 use pdeans\Http\Response as BaseResponse;
 use RuntimeException;
@@ -21,6 +22,7 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class Response extends BaseResponse
 {
+	use StatusCodes;
 	use ResponseTrait;
 	use Macroable {
 		Macroable::__call as macroCall;
