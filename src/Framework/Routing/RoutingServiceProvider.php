@@ -22,6 +22,7 @@ class RoutingServiceProvider extends ServiceProvider
 	{
 		$this->registerRouter();
 		$this->registerUrlGenerator();
+		$this->registerRedirector();
 		$this->registerResponseFactory();
 		$this->registerCallableDispatcher();
 		$this->registerControllerDispatcher();
@@ -48,12 +49,30 @@ class RoutingServiceProvider extends ServiceProvider
 	}
 
 	/**
+	 * Register the redirector service.
+	 */
+	protected function registerRedirector(): void
+	{
+		$this->app->singleton('redirect', function ($app) {
+			$redirector = new Redirector($app['url']);
+
+			// Inject the session instance into the redirector if available,
+			// enabling the use of flash data for redirects (ie "with" methods).
+			if (isset($app['session.store'])) {
+				$redirector->setSession($app['session.store']);
+			}
+
+			return $redirector;
+		});
+	}
+
+	/**
 	 * Register the response factory implementation.
 	 */
 	protected function registerResponseFactory(): void
 	{
 		$this->app->singleton(ResponseFactoryContract::class, function ($app) {
-			return new ResponseFactory($app[ViewFactoryContract::class]);
+			return new ResponseFactory($app[ViewFactoryContract::class], $app['redirect']);
 		});
 	}
 
