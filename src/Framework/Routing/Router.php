@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Routing;
 
 use ArrayObject;
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Traits\Macroable;
 use JsonSerializable;
 use MVPS\Lumis\Framework\Collections\Collection;
@@ -14,6 +15,7 @@ use MVPS\Lumis\Framework\Contracts\Routing\BindingRegistrar;
 use MVPS\Lumis\Framework\Contracts\Routing\Registrar as RegistrarContract;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
+use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
 use MVPS\Lumis\Framework\Routing\Events\RouteMatched;
@@ -690,6 +692,14 @@ class Router implements BindingRegistrar, RegistrarContract
 	}
 
 	/**
+	 * Create a permanent redirect from one URI to another.
+	 */
+	public function permanentRedirect(string $uri, string $destination): Route
+	{
+		return $this->redirect($uri, $destination, 301);
+	}
+
+	/**
 	 * Add a new POST route to the router.
 	 */
 	public function post(string $uri, array|callable|string|null $action = null): Route
@@ -787,6 +797,16 @@ class Router implements BindingRegistrar, RegistrarContract
 	public function put(string $uri, array|callable|string|null $action = null): Route
 	{
 		return $this->addRoute('PUT', $uri, $action);
+	}
+
+	/**
+	 * Create a redirect from one URI to another.
+	 */
+	public function redirect(string $uri, string $destination, int $status = 302): Route
+	{
+		return $this->any($uri, '\MVPS\Lumis\Framework\Routing\RedirectController')
+			->defaults('destination', $destination)
+			->defaults('status', $status);
 	}
 
 	/**
@@ -1053,14 +1073,12 @@ class Router implements BindingRegistrar, RegistrarContract
 	{
 		if ($response instanceof Responsable) {
 			$response = $response->toResponse($request);
+		} elseif ($response instanceof Model && $response->wasRecentlyCreated) {
+			$response = new JsonResponse($response, 201);
+		} elseif ($response instanceof Stringable) {
+			$response = new Response($response->__toString(), 200, ['Content-Type' => 'text/html']);
 		} elseif (! $response instanceof Response) {
-			$content = $response;
-			$status = 200;
-			$contentType = 'text/html';
-
-			if ($response instanceof Stringable) {
-				$content = $response->__toString();
-			} elseif (
+			if (
 				$response instanceof Arrayable ||
 				$response instanceof Jsonable ||
 				$response instanceof ArrayObject ||
@@ -1068,23 +1086,28 @@ class Router implements BindingRegistrar, RegistrarContract
 				$response instanceof stdClass ||
 				is_array($response)
 			) {
-				$contentType = 'application/json';
-			} elseif ($response instanceof ResponseInterface) {
-				$content = (string) $response->getBody();
-				$status = $response->getStatusCode();
+				$response = new JsonResponse($response);
+			} else {
+				$content = $response;
+				$status = 200;
+				$contentType = 'text/html';
 
-				if ($response->hasHeader('Content-Type')) {
-					$contentType = $response->getHeaderLine('Content-Type');
+				if ($response instanceof ResponseInterface) {
+					$content = (string) $response->getBody();
+					$status = $response->getStatusCode();
+
+					if ($response->hasHeader('Content-Type')) {
+						$contentType = $response->getHeaderLine('Content-Type');
+					}
 				}
-			}
 
-			$response = new Response($content, $status, ['Content-Type' => $contentType]);
+				$response = new Response($content, $status, ['Content-Type' => $contentType]);
+			}
 		}
 
-		// TODO: Implement not modified response
-		// if ($response->getStatusCode() === Response::HTTP_NOT_MODIFIED) {
-		// 	$response->setNotModified();
-		// }
+		if ($response->getStatusCode() === Response::HTTP_NOT_MODIFIED) {
+			$response = $response->withNotModified();
+		}
 
 		return $response->prepare($request);
 	}
@@ -1156,8 +1179,12 @@ class Router implements BindingRegistrar, RegistrarContract
 
 	/**
 	 * Dynamically handle calls into the router instance.
+	 *
+	 * @param  string  $method
+	 * @param  array   $parameters
+	 * @return mixed
 	 */
-	public function __call(string $method, array $parameters): mixed
+	public function __call($method, $parameters)
 	{
 		if (static::hasMacro($method)) {
 			return $this->macroCall($method, $parameters);
