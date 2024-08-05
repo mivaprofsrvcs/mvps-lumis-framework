@@ -928,6 +928,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\Illuminate\Database\ConnectionInterface::class,
 			],
 			'db.schema' => [\Illuminate\Database\Schema\Builder::class],
+			// 'encrypter' => [Encrypter::class],
 			'events' => [
 				\MVPS\Lumis\Framework\Events\Dispatcher::class,
 				\MVPS\Lumis\Framework\Contracts\Events\Dispatcher::class,
@@ -961,8 +962,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
 			],
-			// TODO: Implement these
-			// 'encrypter' => [Encrypter::class],
+			// 'validator' => [Validation\Factory::class, Contracts\Validation\Factory::class],
 			'view' => [
 				\MVPS\Lumis\Framework\View\Factory::class,
 				\MVPS\Lumis\Framework\Contracts\View\Factory::class,
