@@ -12,8 +12,10 @@ use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
+use MVPS\Lumis\Framework\Http\RedirectResponse;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Routing\Redirector;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
 
@@ -70,6 +72,16 @@ if (! function_exists('app_path')) {
 	function app_path(string $path = ''): string
 	{
 		return app()->path($path);
+	}
+}
+
+if (! function_exists('back')) {
+	/**
+	 * Create a new redirect response to the previous location.
+	 */
+	function back(int $status = 302, array $headers = [], mixed $fallback = false): RedirectResponse
+	{
+		return app('redirect')->back($status, $headers, $fallback);
 	}
 }
 
@@ -244,6 +256,27 @@ if (! function_exists('public_path')) {
 	function public_path(string $path = ''): string
 	{
 		return app()->publicPath($path);
+	}
+}
+
+if (! function_exists('redirect')) {
+	/**
+	 * Creates a redirect response or retrieves the redirector instance.
+	 *
+	 * If a target URL is provided, a RedirectResponse instance is returned.
+	 * Otherwise, the redirector instance is returned for building redirects.
+	 */
+	function redirect(
+		string|null $to = null,
+		int $status = 302,
+		array $headers = [],
+		bool|null $secure = null
+	): Redirector|RedirectResponse {
+		if (is_null($to)) {
+			return app('redirect');
+		}
+
+		return app('redirect')->to($to, $status, $headers, $secure);
 	}
 }
 
