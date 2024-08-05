@@ -451,6 +451,16 @@ if (! function_exists('task_path')) {
 	}
 }
 
+if (! function_exists('to_route')) {
+	/**
+	 * Create a new redirect response to a named route.
+	 */
+	function to_route(string $route, mixed $parameters = [], int $status = 302, array $headers = []): RedirectResponse
+	{
+		return redirect()->route($route, $parameters, $status, $headers);
+	}
+}
+
 if (! function_exists('url')) {
 	/**
 	 * Generate a url for the application.
