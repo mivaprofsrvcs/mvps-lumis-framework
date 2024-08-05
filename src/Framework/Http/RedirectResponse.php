@@ -63,10 +63,8 @@ class RedirectResponse extends Response
 
 	/**
 	 * Get the original response content.
-	 *
-	 * @return null
 	 */
-	public function getOriginalContent()
+	public function getOriginalContent(): mixed
 	{
 		//
 	}
@@ -266,9 +264,13 @@ class RedirectResponse extends Response
 	/**
 	 * Dynamically bind flash data in the session.
 	 *
+	 * @param  string  $method
+	 * @param  array   $parameters
+	 * @return mixed
+	 *
 	 * @throws \BadMethodCallException
 	 */
-	public function __call(string $method, array $parameters): mixed
+	public function __call($method, $parameters)
 	{
 		if (static::hasMacro($method)) {
 			return $this->macroCall($method, $parameters);
