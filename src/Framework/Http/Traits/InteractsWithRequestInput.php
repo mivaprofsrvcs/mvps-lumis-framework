@@ -69,15 +69,19 @@ trait InteractsWithRequestInput
 	{
 		$header = $this->header('Authorization', '');
 
-		$position = strrpos($header, 'Bearer ');
+		$positionVal = 'Bearer ';
 
-		if ($position !== false) {
-			$header = substr($header, $position + 7);
+		$position = strrpos($header, $positionVal);
 
-			return str_contains($header, ',')
-				? strstr($header, ',', true)
-				: $header;
+		if ($position === false) {
+			return null;
 		}
+
+		$header = substr($header, $position + strlen($positionVal));
+
+		return str_contains($header, ',')
+			? strstr($header, ',', true)
+			: $header;
 	}
 
 	/**
