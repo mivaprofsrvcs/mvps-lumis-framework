@@ -70,6 +70,8 @@ class SortedMiddleware extends Collection
 				return $priorityIndex;
 			}
 		}
+
+		return null;
 	}
 
 	/**
