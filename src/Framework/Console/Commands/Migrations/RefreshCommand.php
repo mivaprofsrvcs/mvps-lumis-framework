@@ -88,7 +88,7 @@ class RefreshCommand extends Command
 
 		// Gather the options needed to run the command, including the database
 		// to use and the migration path. Then, execute the command.
-		$database = $this->input->getOption('database');
+		$database = $this->input->getOption('database') ?? '';
 
 		$path = $this->input->getOption('path');
 
@@ -138,7 +138,7 @@ class RefreshCommand extends Command
 	/**
 	 * Run the reset command.
 	 */
-	protected function runReset(string|null $database = null, string|array $path): void
+	protected function runReset(string $database, string|array $path): void
 	{
 		$this->call('migrate:reset', array_filter([
 			'--database' => $database,
@@ -151,7 +151,7 @@ class RefreshCommand extends Command
 	/**
 	 * Run the rollback command.
 	 */
-	protected function runRollback(string|null $database = null, string|array $path, int $step): void
+	protected function runRollback(string $database, string|array $path, int $step): void
 	{
 		$this->call('migrate:rollback', array_filter([
 			'--database' => $database,
