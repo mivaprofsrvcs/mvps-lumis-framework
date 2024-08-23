@@ -14,6 +14,7 @@ use MVPS\Lumis\Framework\Console\Commands\DbShowCommand;
 use MVPS\Lumis\Framework\Console\Commands\DbTableCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\MiddlewareMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelPruneCommand;
 use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
@@ -76,6 +77,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'ControllerMake' => ControllerMakeCommand::class,
 		'FactoryMake' => FactoryMakeCommand::class,
 		'ModelMake' => ModelMakeCommand::class,
+		'MiddlewareMake' => MiddlewareMakeCommand::class,
 		'ProviderMake' => ProviderMakeCommand::class,
 		'TaskMake' => TaskMakeCommand::class,
 		'SeederMake' => SeederMakeCommand::class,
@@ -155,7 +157,17 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	}
 
 	/**
-	 * Register the command.
+	* Register the middleware make command.
+	*/
+	protected function registerMiddlewareMakeCommand(): void
+	{
+		$this->app->singleton(MiddlewareMakeCommand::class, function ($app) {
+			return new MiddlewareMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the model make command.
 	 */
 	protected function registerModelMakeCommand(): void
 	{
