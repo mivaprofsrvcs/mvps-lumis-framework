@@ -35,7 +35,7 @@ class {{ class }} extends Task
 	protected $signature = '{{ command }}';
 
 	/**
-	 * The task's log directory path.
+	 * The task's name.
 	 *
 	 * @var string
 	 */

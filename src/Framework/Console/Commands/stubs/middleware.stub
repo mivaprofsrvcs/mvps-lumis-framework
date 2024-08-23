@@ -4,15 +4,12 @@ namespace {{ namespace }};
 
 use Closure;
 use MVPS\Lumis\Framework\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use MVPS\Lumis\Framework\Http\Response;
 
 class {{ class }}
 {
 	/**
 	 * Handle an incoming request.
-	 * TODO: Update the Response type when implementing middleware.
-	 *
-	 * @param  \Closure(\MVPS\Lumis\Framework\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
 	 */
 	public function handle(Request $request, Closure $next): Response
 	{

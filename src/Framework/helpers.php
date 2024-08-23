@@ -11,6 +11,7 @@ use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
+use MVPS\Lumis\Framework\Database\DatabaseManager;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\RedirectResponse;
 use MVPS\Lumis\Framework\Http\Request;
@@ -157,6 +158,16 @@ if (! function_exists('database_path')) {
 	function database_path(string $path = ''): string
 	{
 		return app()->databasePath($path);
+	}
+}
+
+if (! function_exists('db')) {
+	/**
+	 * Get the database manager instance.
+	 */
+	function db(): DatabaseManager
+	{
+		return app('db');
 	}
 }
 
