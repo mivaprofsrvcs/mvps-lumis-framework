@@ -18,7 +18,7 @@ class TaskMakeCommand extends GeneratorCommand
 	/**
 	 * {@inheritdoc}
 	 */
-	protected $description = 'Create a new Task class';
+	protected $description = 'Create a new task class';
 
 	/**
 	 * {@inheritdoc}
