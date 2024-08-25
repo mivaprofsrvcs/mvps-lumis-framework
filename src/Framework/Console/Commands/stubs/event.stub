@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use MVPS\Lumis\Framework\Events\Traits\Dispatchable;
+
+class {{ class }}
+{
+	use Dispatchable;
+
+	/**
+	 * Create a new event instance.
+	 */
+	public function __construct()
+	{
+		//
+	}
+}
