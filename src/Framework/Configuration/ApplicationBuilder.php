@@ -9,9 +9,10 @@ use MVPS\Lumis\Framework\Console\Kernel as ConsoleKernel;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
+use MVPS\Lumis\Framework\Events\EventServiceProvider;
 use MVPS\Lumis\Framework\Exceptions\Handler;
 use MVPS\Lumis\Framework\Http\Kernel as HttpKernel;
-use MVPS\Lumis\Framework\Routing\RouteServiceProvider as AppRouteServiceProvider;
+use MVPS\Lumis\Framework\Routing\RouteServiceProvider;
 
 class ApplicationBuilder
 {
@@ -149,6 +150,28 @@ class ApplicationBuilder
 	}
 
 	/**
+	 * Register the core event service provider for the application.
+	 */
+	public function withEvents(array|bool $discover = []): static
+	{
+		if (is_array($discover) && count($discover) > 0) {
+			EventServiceProvider::setEventDiscoveryPaths($discover);
+		} elseif ($discover === false) {
+			EventServiceProvider::disableEventDiscovery();
+		}
+
+		if (! isset($this->pendingProviders[EventServiceProvider::class])) {
+			$this->app->booting(function () {
+				$this->app->register(EventServiceProvider::class);
+			});
+		}
+
+		$this->pendingProviders[EventServiceProvider::class] = true;
+
+		return $this;
+	}
+
+	/**
 	 * Register and configure the application's exception handler.
 	 */
 	public function withExceptions(callable|null $using = null): static
@@ -234,10 +257,10 @@ class ApplicationBuilder
 			$using = $this->buildRoutingCallback($web, $then);
 		}
 
-		AppRouteServiceProvider::loadRoutesUsing($using);
+		RouteServiceProvider::loadRoutesUsing($using);
 
 		$this->app->booting(function () {
-			$this->app->register(AppRouteServiceProvider::class, force: true);
+			$this->app->register(RouteServiceProvider::class, force: true);
 		});
 
 		if (is_string($commands) && realpath($commands) !== false) {

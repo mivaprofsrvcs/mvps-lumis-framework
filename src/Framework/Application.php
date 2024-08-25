@@ -10,7 +10,7 @@ use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
-use MVPS\Lumis\Framework\Events\EventServiceProvider;
+use MVPS\Lumis\Framework\Events\EventDispatcherServiceProvider;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
@@ -45,7 +45,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.8.0';
+	public const VERSION = '2.9.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -257,11 +257,27 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	}
 
 	/**
+	 * Register a callback to run after a bootstrapper.
+	 */
+	public function afterBootstrapping(string $bootstrapper, Closure $callback): void
+	{
+		$this['events']->listen('bootstrapped: ' . $bootstrapper, $callback);
+	}
+
+	/**
 	 * Get the base path of the application.
 	 */
 	public function basePath($path = ''): string
 	{
 		return $this->joinPaths($this->basePath, $path);
+	}
+
+	/**
+	 * Register a callback to run before a bootstrapper.
+	 */
+	public function beforeBootstrapping(string $bootstrapper, Closure $callback): void
+	{
+		$this['events']->listen('bootstrapping: ' . $bootstrapper, $callback);
 	}
 
 	/**
@@ -357,7 +373,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 		$this->hasBeenBootstrapped = true;
 
 		foreach ($bootstrappers as $bootstrapper) {
+			$this['events']->dispatch('bootstrapping: ' . $bootstrapper, [$this]);
+
 			$this->make($bootstrapper)->bootstrap($this);
+
+			$this['events']->dispatch('bootstrapped: ' . $bootstrapper, [$this]);
 		}
 	}
 
@@ -397,6 +417,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
 		return (new ApplicationBuilder(new static($basePath)))
 			->withKernels()
+			->withEvents()
 			->withCommands()
 			->withProviders();
 	}
@@ -455,6 +476,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	public function environmentPath(): string
 	{
 		return $this->environmentPath ?: $this->basePath;
+	}
+
+	/**
+	 * Determine if the application events are cached.
+	 */
+	public function eventsAreCached(): bool
+	{
+		return $this['files']->exists($this->getCachedEventsPath());
 	}
 
 	/**
@@ -518,6 +547,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	public function getCachedConfigPath(): string
 	{
 		return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
+	}
+
+	/**
+	 * Get the path to the events cache file.
+	 */
+	public function getCachedEventsPath(): string
+	{
+		return $this->normalizeCachePath('APP_EVENTS_CACHE', 'cache/events.php');
 	}
 
 	/**
@@ -875,7 +912,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 */
 	protected function registerBaseServiceProviders(): void
 	{
-		$this->register(new EventServiceProvider($this));
+		$this->register(new EventDispatcherServiceProvider($this));
 		$this->register(new LogServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
 	}

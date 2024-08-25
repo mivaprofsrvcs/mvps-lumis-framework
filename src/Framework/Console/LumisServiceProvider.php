@@ -13,7 +13,11 @@ use MVPS\Lumis\Framework\Console\Commands\DbMonitorCommand;
 use MVPS\Lumis\Framework\Console\Commands\DbShowCommand;
 use MVPS\Lumis\Framework\Console\Commands\DbTableCommand;
 use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
+use MVPS\Lumis\Framework\Console\Commands\EventGenerateCommand;
+use MVPS\Lumis\Framework\Console\Commands\EventListCommand;
+use MVPS\Lumis\Framework\Console\Commands\EventMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\ListenerMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\MiddlewareMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelPruneCommand;
@@ -52,6 +56,9 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'Environment' => EnvironmentCommand::class,
 		// 'EnvironmentDecrypt' => EnvironmentDecryptCommand::class,
 		// 'EnvironmentEncrypt' => EnvironmentEncryptCommand::class,
+		// 'EventCache' => EventCacheCommand::class,
+		// 'EventClear' => EventClearCommand::class,
+		'EventList' => EventListCommand::class,
 		// 'KeyGenerate' => KeyGenerateCommand::class,
 		'ModelPrune' => ModelPruneCommand::class,
 		// 'Optimize' => OptimizeCommand::class,
@@ -75,7 +82,10 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		// 'ConfigPublish' => ConfigPublishCommand::class,
 		'ConsoleMake' => ConsoleMakeCommand::class,
 		'ControllerMake' => ControllerMakeCommand::class,
+		'EventGenerate' => EventGenerateCommand::class,
+		'EventMake' => EventMakeCommand::class,
 		'FactoryMake' => FactoryMakeCommand::class,
+		'ListenerMake' => ListenerMakeCommand::class,
 		'ModelMake' => ModelMakeCommand::class,
 		'MiddlewareMake' => MiddlewareMakeCommand::class,
 		'ProviderMake' => ProviderMakeCommand::class,
@@ -153,6 +163,26 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	{
 		$this->app->singleton(ControllerMakeCommand::class, function ($app) {
 			return new ControllerMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the event make command.
+	 */
+	protected function registerEventMakeCommand(): void
+	{
+		$this->app->singleton(EventMakeCommand::class, function ($app) {
+			return new EventMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the listener make command.
+	 */
+	protected function registerListenerMakeCommand(): void
+	{
+		$this->app->singleton(ListenerMakeCommand::class, function ($app) {
+			return new ListenerMakeCommand($app['files']);
 		});
 	}
 

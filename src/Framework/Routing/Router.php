@@ -18,6 +18,8 @@ use MVPS\Lumis\Framework\Contracts\Support\Jsonable;
 use MVPS\Lumis\Framework\Http\JsonResponse;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Routing\Events\PreparingResponse;
+use MVPS\Lumis\Framework\Routing\Events\ResponsePrepared;
 use MVPS\Lumis\Framework\Routing\Events\RouteMatched;
 use MVPS\Lumis\Framework\Routing\Events\Routing;
 use MVPS\Lumis\Framework\Routing\Middleware\MiddlewareNameResolver;
@@ -720,7 +722,12 @@ class Router implements BindingRegistrar, RegistrarContract
 	 */
 	public function prepareResponse(Request $request, mixed $response): Response
 	{
-		return static::toResponse($request, $response);
+		$this->events->dispatch(new PreparingResponse($request, $response));
+
+		return tap(
+			static::toResponse($request, $response),
+			fn ($response) => $this->events->dispatch(new ResponsePrepared($request, $response))
+		);
 	}
 
 	/**
