@@ -140,11 +140,7 @@ class LogService implements LoggerInterface
 	 */
 	protected function fireLogEvent(string $level, string $message, array $context = []): void
 	{
-		if (is_null($this->dispatcher)) {
-			return;
-		}
-
-		$this->dispatcher->dispatch(new MessageLogged($level, $message, $context));
+		$this->dispatcher?->dispatch(new MessageLogged($level, $message, $context));
 	}
 
 	/**
