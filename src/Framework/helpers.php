@@ -171,6 +171,17 @@ if (! function_exists('db')) {
 	}
 }
 
+if (! function_exists('event')) {
+	/**
+	 * Dispatches an event with the given arguments and
+	 * invokes the corresponding listeners.
+	 */
+	function event(...$args): array|null
+	{
+		return app('events')->dispatch(...$args);
+	}
+}
+
 if (! function_exists('fake') && class_exists(FakerFactory::class)) {
 	/**
 	 * Get a faker instance.
