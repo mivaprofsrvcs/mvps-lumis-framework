@@ -20,6 +20,7 @@ use MVPS\Lumis\Framework\Contracts\Console\Kernel as KernelContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
+use MVPS\Lumis\Framework\Events\Terminating;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionClass;
@@ -483,6 +484,8 @@ class Kernel implements KernelContract
 	 */
 	public function terminate(InputInterface $input, int $status): void
 	{
+		$this->events->dispatch(new Terminating);
+
 		$this->app->terminate();
 
 		if (is_null($this->commandStartedAt)) {
