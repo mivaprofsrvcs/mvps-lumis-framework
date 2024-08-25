@@ -10,7 +10,7 @@ use MVPS\Lumis\Framework\Contracts\Configuration\CachesConfiguration;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
-use MVPS\Lumis\Framework\Events\EventServiceProvider;
+use MVPS\Lumis\Framework\Events\EventDispatcherServiceProvider;
 use MVPS\Lumis\Framework\Http\Exceptions\HttpException;
 use MVPS\Lumis\Framework\Http\Exceptions\NotFoundException;
 use MVPS\Lumis\Framework\Http\Request;
@@ -912,7 +912,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 */
 	protected function registerBaseServiceProviders(): void
 	{
-		$this->register(new EventServiceProvider($this));
+		$this->register(new EventDispatcherServiceProvider($this));
 		$this->register(new LogServiceProvider($this));
 		$this->register(new RoutingServiceProvider($this));
 	}

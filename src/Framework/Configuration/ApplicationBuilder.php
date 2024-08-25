@@ -9,7 +9,7 @@ use MVPS\Lumis\Framework\Console\Kernel as ConsoleKernel;
 use MVPS\Lumis\Framework\Contracts\Console\Kernel as ConsoleKernelContract;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as HttpKernelContract;
-use MVPS\Lumis\Framework\Events\EventListenerServiceProvider;
+use MVPS\Lumis\Framework\Events\EventServiceProvider;
 use MVPS\Lumis\Framework\Exceptions\Handler;
 use MVPS\Lumis\Framework\Http\Kernel as HttpKernel;
 use MVPS\Lumis\Framework\Routing\RouteServiceProvider;
@@ -155,18 +155,18 @@ class ApplicationBuilder
 	public function withEvents(array|bool $discover = []): static
 	{
 		if (is_array($discover) && count($discover) > 0) {
-			EventListenerServiceProvider::setEventDiscoveryPaths($discover);
+			EventServiceProvider::setEventDiscoveryPaths($discover);
 		} elseif ($discover === false) {
-			EventListenerServiceProvider::disableEventDiscovery();
+			EventServiceProvider::disableEventDiscovery();
 		}
 
-		if (! isset($this->pendingProviders[EventListenerServiceProvider::class])) {
+		if (! isset($this->pendingProviders[EventServiceProvider::class])) {
 			$this->app->booting(function () {
-				$this->app->register(EventListenerServiceProvider::class);
+				$this->app->register(EventServiceProvider::class);
 			});
 		}
 
-		$this->pendingProviders[EventListenerServiceProvider::class] = true;
+		$this->pendingProviders[EventServiceProvider::class] = true;
 
 		return $this;
 	}
