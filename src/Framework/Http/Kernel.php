@@ -16,6 +16,7 @@ use MVPS\Lumis\Framework\Bootstrap\RegisterProviders;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Contracts\Http\Kernel as KernelContract;
+use MVPS\Lumis\Framework\Events\Terminating;
 use MVPS\Lumis\Framework\Http\Events\RequestHandled;
 use MVPS\Lumis\Framework\Http\Middleware\HandlePrecognitiveRequests;
 use MVPS\Lumis\Framework\Http\Response;
@@ -461,6 +462,8 @@ class Kernel implements KernelContract
 	 */
 	public function terminate(Request $request, Response $response): void
 	{
+		$this->app['events']->dispatch(new Terminating);
+
 		$this->terminateMiddleware($request, $response);
 
 		$this->app->terminate();
