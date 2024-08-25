@@ -397,6 +397,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
 		return (new ApplicationBuilder(new static($basePath)))
 			->withKernels()
+			->withEvents()
 			->withCommands()
 			->withProviders();
 	}
