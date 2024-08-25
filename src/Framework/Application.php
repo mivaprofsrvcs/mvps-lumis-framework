@@ -458,6 +458,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	}
 
 	/**
+	 * Determine if the application events are cached.
+	 */
+	public function eventsAreCached(): bool
+	{
+		return $this['files']->exists($this->getCachedEventsPath());
+	}
+
+	/**
 	 * Call the booting callbacks for the application.
 	 */
 	protected function fireAppCallbacks(array &$callbacks): void
@@ -518,6 +526,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	public function getCachedConfigPath(): string
 	{
 		return $this->normalizeCachePath('APP_CONFIG_CACHE', 'cache/config.php');
+	}
+
+	/**
+	 * Get the path to the events cache file.
+	 */
+	public function getCachedEventsPath(): string
+	{
+		return $this->normalizeCachePath('APP_EVENTS_CACHE', 'cache/events.php');
 	}
 
 	/**
