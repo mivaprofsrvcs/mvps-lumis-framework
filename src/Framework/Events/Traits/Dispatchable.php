@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Contracts\Events\Traits;
+namespace MVPS\Lumis\Framework\Events\Traits;
 
 trait Dispatchable
 {

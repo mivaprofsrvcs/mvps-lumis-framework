@@ -1,8 +1,8 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Contracts\Events;
+namespace MVPS\Lumis\Framework\Events;
 
-use MVPS\Lumis\Framework\Contracts\Events\Traits\Dispatchable;
+use MVPS\Lumis\Framework\Events\Traits\Dispatchable;
 
 class PublishingStubs
 {

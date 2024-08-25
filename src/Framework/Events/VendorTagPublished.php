@@ -1,6 +1,6 @@
 <?php
 
-namespace MVPS\Lumis\Framework\Contracts\Events;
+namespace MVPS\Lumis\Framework\Events;
 
 class VendorTagPublished
 {
