@@ -257,11 +257,27 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	}
 
 	/**
+	 * Register a callback to run after a bootstrapper.
+	 */
+	public function afterBootstrapping(string $bootstrapper, Closure $callback): void
+	{
+		$this['events']->listen('bootstrapped: ' . $bootstrapper, $callback);
+	}
+
+	/**
 	 * Get the base path of the application.
 	 */
 	public function basePath($path = ''): string
 	{
 		return $this->joinPaths($this->basePath, $path);
+	}
+
+	/**
+	 * Register a callback to run before a bootstrapper.
+	 */
+	public function beforeBootstrapping(string $bootstrapper, Closure $callback): void
+	{
+		$this['events']->listen('bootstrapping: ' . $bootstrapper, $callback);
 	}
 
 	/**
@@ -357,7 +373,11 @@ class Application extends Container implements ApplicationContract, CachesConfig
 		$this->hasBeenBootstrapped = true;
 
 		foreach ($bootstrappers as $bootstrapper) {
+			$this['events']->dispatch('bootstrapping: ' . $bootstrapper, [$this]);
+
 			$this->make($bootstrapper)->bootstrap($this);
+
+			$this['events']->dispatch('bootstrapped: ' . $bootstrapper, [$this]);
 		}
 	}
 
