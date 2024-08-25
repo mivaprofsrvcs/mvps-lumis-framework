@@ -19,7 +19,7 @@ class EventGenerateCommand extends Command
 	 *
 	 * @var bool
 	 */
-	protected bool $hidden = true;
+	protected $hidden = true;
 
 	/**
 	 * {@inheritdoc}
