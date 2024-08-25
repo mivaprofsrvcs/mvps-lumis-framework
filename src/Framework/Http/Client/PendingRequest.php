@@ -498,6 +498,16 @@ class PendingRequest
 	}
 
 	/**
+	 * Dispatch the RequestSending event if a dispatcher is available.
+	 */
+	protected function dispatchRequestSendingEvent(): void
+	{
+		if ($dispatcher = $this->factory?->getDispatcher()) {
+			$dispatcher->dispatch(new RequestSending($this->request));
+		}
+	}
+
+	/**
 	 * Dispatch the ResponseReceived event if a dispatcher is available.
 	 */
 	protected function dispatchResponseReceivedEvent(Response $response): void
@@ -507,16 +517,6 @@ class PendingRequest
 		}
 
 		$dispatcher->dispatch(new ResponseReceived($this->request, $response));
-	}
-
-	/**
-	 * Dispatch the RequestSending event if a dispatcher is available.
-	 */
-	protected function dispatchRequestSendingEvent(): void
-	{
-		if ($dispatcher = $this->factory?->getDispatcher()) {
-			$dispatcher->dispatch(new RequestSending($this->request));
-		}
 	}
 
 	/**
