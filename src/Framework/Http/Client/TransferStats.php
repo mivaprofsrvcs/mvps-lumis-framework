@@ -121,6 +121,6 @@ class TransferStats
 	 */
 	public function hasResponse(): bool
 	{
-		return $this->response !== null;
+		return ! is_null($this->response);
 	}
 }

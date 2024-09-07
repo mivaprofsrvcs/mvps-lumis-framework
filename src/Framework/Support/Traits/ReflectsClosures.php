@@ -41,7 +41,7 @@ trait ReflectsClosures
 			throw new RuntimeException('The given Closure has no parameters.');
 		}
 
-		if ($types[0] === null) {
+		if (is_null($types[0])) {
 			throw new RuntimeException('The first parameter of the given Closure is missing a type hint.');
 		}
 

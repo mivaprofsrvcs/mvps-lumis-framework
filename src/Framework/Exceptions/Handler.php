@@ -796,7 +796,7 @@ class Handler implements ExceptionHandler
 		}
 
 		return rescue(fn () => with($this->throttle($e), function ($throttle) use ($e) {
-			if ($throttle instanceof Unlimited || $throttle === null) {
+			if ($throttle instanceof Unlimited || is_null($throttle)) {
 				return false;
 			}
 

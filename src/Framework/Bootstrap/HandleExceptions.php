@@ -83,7 +83,7 @@ class HandleExceptions
 
 			restore_exception_handler();
 
-			if ($previousHandler === null) {
+			if (is_null($previousHandler)) {
 				break;
 			}
 
@@ -95,7 +95,7 @@ class HandleExceptions
 
 			restore_error_handler();
 
-			if ($previousHandler === null) {
+			if (is_null($previousHandler)) {
 				break;
 			}
 
