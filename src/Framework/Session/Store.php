@@ -172,7 +172,7 @@ class Store implements Session
 	 */
 	public function get(string $key, mixed $default = null): mixed
 	{
-		Arr::get($this->attributes, $key, $default);
+		return Arr::get($this->attributes, $key, $default);
 	}
 
 	/**
