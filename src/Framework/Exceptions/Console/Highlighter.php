@@ -390,7 +390,7 @@ class Highlighter
 				$newType = $token === '"' ? self::TOKEN_STRING : self::TOKEN_KEYWORD;
 			}
 
-			if ($currentType === null) {
+			if (is_null($currentType)) {
 				$currentType = $newType;
 			}
 

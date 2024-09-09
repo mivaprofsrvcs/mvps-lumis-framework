@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Providers;
 
+use MVPS\Lumis\Framework\Cache\CacheServiceProvider;
 use MVPS\Lumis\Framework\Console\ConsoleSupportServiceProvider;
 use MVPS\Lumis\Framework\Cookie\CookieServiceProvider;
 use MVPS\Lumis\Framework\Database\DatabaseServiceProvider;
@@ -24,7 +25,7 @@ class DefaultProviders
 	public function __construct(array|null $providers = null)
 	{
 		$this->providers = $providers ?: [
-			// CacheServiceProvider::class,
+			CacheServiceProvider::class,
 			ConsoleSupportServiceProvider::class,
 			CookieServiceProvider::class,
 			DatabaseServiceProvider::class,

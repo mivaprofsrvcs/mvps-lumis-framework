@@ -16,6 +16,7 @@ use MVPS\Lumis\Framework\Console\Commands\EnvironmentCommand;
 use MVPS\Lumis\Framework\Console\Commands\EventGenerateCommand;
 use MVPS\Lumis\Framework\Console\Commands\EventListCommand;
 use MVPS\Lumis\Framework\Console\Commands\EventMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\ExceptionMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\FactoryMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ListenerMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\MiddlewareMakeCommand;
@@ -84,6 +85,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'ControllerMake' => ControllerMakeCommand::class,
 		'EventGenerate' => EventGenerateCommand::class,
 		'EventMake' => EventMakeCommand::class,
+		'ExceptionMake' => ExceptionMakeCommand::class,
 		'FactoryMake' => FactoryMakeCommand::class,
 		'ListenerMake' => ListenerMakeCommand::class,
 		'ModelMake' => ModelMakeCommand::class,
@@ -173,6 +175,16 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	{
 		$this->app->singleton(EventMakeCommand::class, function ($app) {
 			return new EventMakeCommand($app['files']);
+		});
+	}
+
+	/**
+	 * Register the exception make command.
+	 */
+	protected function registerExceptionMakeCommand(): void
+	{
+		$this->app->singleton(ExceptionMakeCommand::class, function ($app) {
+			return new ExceptionMakeCommand($app['files']);
 		});
 	}
 

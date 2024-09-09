@@ -75,7 +75,7 @@ class AboutCommand extends Command
 			foreach ($data as $key => $value) {
 				self::$data[$section][] = [$key, $value];
 			}
-		} elseif (is_callable($data) || ($value === null && class_exists($data))) {
+		} elseif (is_callable($data) || (is_null($value) && class_exists($data))) {
 			self::$data[$section][] = $data;
 		} else {
 			self::$data[$section][] = [$data, $value];

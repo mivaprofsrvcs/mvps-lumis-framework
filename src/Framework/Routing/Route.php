@@ -3,6 +3,7 @@
 namespace MVPS\Lumis\Framework\Routing;
 
 use Closure;
+use Illuminate\Support\Traits\Macroable;
 use Laravel\SerializableClosure\SerializableClosure;
 use LogicException;
 use MVPS\Lumis\Framework\Container\Container;
@@ -27,6 +28,7 @@ class Route
 {
 	use CreatesRegularExpressionRouteConstraints;
 	use FiltersControllerMiddleware;
+	use Macroable;
 	use ResolvesRouteDependencies;
 
 	/**
@@ -235,7 +237,8 @@ class Route
 	}
 
 	/**
-	 * Specify that the route should not allow concurrent requests from the same session.
+	 * Specify that the route should not allow concurrent requests from the
+	 * same session.
 	 */
 	public function block(int|null $lockSeconds = 10, int|null $waitSeconds = 10): static
 	{
@@ -243,6 +246,17 @@ class Route
 		$this->waitSeconds = $waitSeconds;
 
 		return $this;
+	}
+
+	/**
+	 * Specify that the "Authorize" / "can" middleware should be applied to
+	 * the route with the given options.
+	 */
+	public function can(string $ability, array|string $models = []): static|array
+	{
+		return empty($models)
+			? $this->middleware(['can:' . $ability])
+			: $this->middleware(['can:' . $ability . ',' . implode(',', Arr::wrap($models))]);
 	}
 
 	/**
@@ -1093,5 +1107,16 @@ class Route
 		$this->withTrashedBindings = $withTrashed;
 
 		return $this;
+	}
+
+	/**
+	 * Dynamically access route parameters.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function __get($key)
+	{
+		return $this->parameter($key);
 	}
 }

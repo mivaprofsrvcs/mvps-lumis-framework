@@ -45,7 +45,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.9.0';
+	public const VERSION = '2.10.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -947,6 +947,15 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\Psr\Container\ContainerInterface::class,
 			],
 			'blade.compiler' => [\MVPS\Lumis\Framework\View\Compilers\BladeCompiler::class],
+			'cache' => [
+				\MVPS\Lumis\Framework\Cache\CacheManager::class,
+				\Illuminate\Contracts\Cache\Factory::class,
+			],
+			'cache.store' => [
+				\MVPS\Lumis\Framework\Cache\Repository::class,
+				\Illuminate\Contracts\Cache\Repository::class,
+				\Psr\SimpleCache\CacheInterface::class,
+			],
 			'config' => [
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
@@ -1081,7 +1090,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 */
 	public function runningInConsole(): bool
 	{
-		if ($this->isRunningInConsole === null) {
+		if (is_null($this->isRunningInConsole)) {
 			$this->isRunningInConsole = Env::get('APP_RUNNING_IN_CONSOLE') ??
 				(PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg');
 		}

@@ -193,7 +193,7 @@ class CookieJar implements CookieJarContract
 	 */
 	public function unqueue(string $name, string|null $path = null): void
 	{
-		if ($path === null) {
+		if (is_null($path)) {
 			unset($this->queued[$name]);
 
 			return;
