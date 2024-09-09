@@ -96,6 +96,35 @@ if (! function_exists('base_path')) {
 	}
 }
 
+if (! function_exists('cache')) {
+	/**
+	 * Retrieve or store a cache value.
+	 *
+	 * If an array is provided, the function assumes you want to store the value
+	 * in the cache. Otherwise, it will retrieve the specified cache value.
+	 *
+	 * @throws \InvalidArgumentException If the provided argument is invalid.
+	 */
+	function cache(string|array|null $key = null, mixed $default = null): mixed
+	{
+		if (is_null($key)) {
+			return app('cache');
+		}
+
+		if (is_string($key)) {
+			return app('cache')->get($key, $default);
+		}
+
+		if (! is_array($key)) {
+			throw new InvalidArgumentException(
+				'An array of key-value pairs is required for cache storage.'
+			);
+		}
+
+		return app('cache')->put(key($key), reset($key), ttl: $default);
+	}
+}
+
 if (! function_exists('config')) {
 	/**
 	 * Get / set the specified configuration value.
