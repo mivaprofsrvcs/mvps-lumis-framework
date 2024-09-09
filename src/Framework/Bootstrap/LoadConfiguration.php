@@ -173,7 +173,7 @@ class LoadConfiguration implements Bootstrapper
 			// 'broadcasting' => ['connections'],
 			'cache' => ['stores'],
 			'database' => ['connections'],
-			// 'filesystems' => ['disks'],
+			'filesystems' => ['disks'],
 			// 'logging' => ['channels'],
 			// 'mail' => ['mailers'],
 			// 'queue' => ['connections'],
