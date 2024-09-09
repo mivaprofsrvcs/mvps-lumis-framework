@@ -947,6 +947,15 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\Psr\Container\ContainerInterface::class,
 			],
 			'blade.compiler' => [\MVPS\Lumis\Framework\View\Compilers\BladeCompiler::class],
+			'cache' => [
+				\MVPS\Lumis\Framework\Cache\CacheManager::class,
+				\Illuminate\Contracts\Cache\Factory::class,
+			],
+			'cache.store' => [
+				\MVPS\Lumis\Framework\Cache\Repository::class,
+				\Illuminate\Contracts\Cache\Repository::class,
+				\Psr\SimpleCache\CacheInterface::class,
+			],
 			'config' => [
 				\MVPS\Lumis\Framework\Configuration\Repository::class,
 				\MVPS\Lumis\Framework\Contracts\Configuration\Repository::class,
