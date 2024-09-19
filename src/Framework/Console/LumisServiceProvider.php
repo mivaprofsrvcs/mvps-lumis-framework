@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Console;
 
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
+use MVPS\Lumis\Framework\Console\Commands\Cache\CacheTableCommand;
 use MVPS\Lumis\Framework\Console\Commands\ComponentMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConfigShowCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConsoleMakeCommand;
@@ -79,6 +80,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	 * @var array
 	 */
 	protected array $devCommands = [
+		'CacheTable' => CacheTableCommand::class,
 		'ComponentMake' => ComponentMakeCommand::class,
 		// 'ConfigPublish' => ConfigPublishCommand::class,
 		'ConsoleMake' => ConsoleMakeCommand::class,
@@ -136,6 +138,16 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		}
 
 		$this->commands(array_values($commands));
+	}
+
+	/**
+	 * Register the cache table make command.
+	 */
+	protected function registerCacheTableCommand(): void
+	{
+		$this->app->singleton(CacheTableCommand::class, function ($app) {
+			return new CacheTableCommand($app['files']);
+		});
 	}
 
 	/**
