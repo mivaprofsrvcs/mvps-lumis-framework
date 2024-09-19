@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Http;
 
 use ArrayAccess;
 use Closure;
+use Illuminate\Support\Traits\Macroable;
 use Laminas\Diactoros\ServerRequest;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
 use MVPS\Lumis\Framework\Http\Traits\CanBePrecognitive;
@@ -31,6 +32,7 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	use CanBePrecognitive;
 	use InteractsWithContentTypes;
 	use InteractsWithRequestInput;
+	use Macroable;
 
 	/**
 	 * Bitmask for the `FORWARDED` header (RFC 7239 standard).
