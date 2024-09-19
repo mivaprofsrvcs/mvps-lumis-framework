@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Validation;
 use Closure;
 use Illuminate\Validation\Validator as IlluminateValidator;
 use MVPS\Lumis\Framework\Contracts\Validation\Validator as ValidatorContract;
+use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Support\Traits\ReflectsClosures;
 use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
@@ -54,6 +55,99 @@ class Validator extends IlluminateValidator implements ValidatorContract
 		$this->validationMessages = (new ValidationMessages)();
 
 		$this->setRules($rules);
+	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @see \Illuminate\Validation\Concerns\FormatsMessages::getAttributeFromTranslations()
+	 */
+	#[\Override]
+	protected function getAttributeFromTranslations($name)
+	{
+		return null;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @see \Illuminate\Validation\Concerns\FormatsMessages::getDisplayableValue()
+	 */
+	#[\Override]
+	public function getDisplayableValue($attribute, $value)
+	{
+		if (isset($this->customValues[$attribute][$value])) {
+			return $this->customValues[$attribute][$value];
+		}
+
+		if (is_array($value)) {
+			return 'array';
+		}
+
+		if (is_bool($value)) {
+			return $value ? 'true' : 'false';
+		}
+
+		if (is_null($value)) {
+			return 'empty';
+		}
+
+		return (string) $value;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @see \Illuminate\Validation\Concerns\FormatsMessages::getMessage()
+	 */
+	#[\Override]
+	protected function getMessage($attribute, $rule)
+	{
+		$attributeWithPlaceholders = $attribute;
+
+		$attribute = $this->replacePlaceholderInString($attribute);
+
+		$inlineMessage = $this->getInlineMessage($attribute, $rule);
+
+		if (! is_null($inlineMessage)) {
+			return $inlineMessage;
+		}
+
+		// For "size" validation rules, we need to retrieve the specific error
+		// message based on the attribute type being validated. Attributes like
+		// numbers, files, and strings each require different error messages.
+		if (in_array($rule, $this->sizeRules)) {
+			return $this->getSizeMessage($attributeWithPlaceholders, $rule);
+		}
+
+		// If no special messages apply for this rule, we will just pull the
+		// default messages out of the validation messages list.
+		$lowerRule = Str::snake($rule);
+
+		$key = $lowerRule;
+
+		$value = $this->validationMessages[$key] ?? $key;
+
+		if ($value !== $key) {
+			return $value;
+		}
+
+		return $this->getFromLocalArray($attribute, $lowerRule, $this->fallbackMessages) ?: $key;
+	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @see \Illuminate\Validation\Concerns\FormatsMessages::getSizeMessage()
+	 */
+	#[\Override]
+	protected function getSizeMessage($attribute, $rule)
+	{
+		$lowerRule = Str::snake($rule);
+
+		$type = $this->getAttributeType($attribute);
+
+		return $this->validationMessages[$lowerRule][$type] ?? '';
 	}
 
 	/**
