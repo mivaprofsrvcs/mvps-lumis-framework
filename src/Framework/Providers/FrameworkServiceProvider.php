@@ -13,8 +13,10 @@ use MVPS\Lumis\Framework\Exceptions\Renderer\Listener;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Mappers\BladeMapper;
 use MVPS\Lumis\Framework\Exceptions\Renderer\Renderer;
 use MVPS\Lumis\Framework\Http\Client\Factory as HttpFactory;
+use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Log\Events\MessageLogged;
 use MVPS\Lumis\Framework\Testing\LoggedExceptionCollection;
+use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 use MVPS\Lumis\Framework\View\Factory as ViewFactory;
 use Symfony\Component\ErrorHandler\ErrorRenderer\HtmlErrorRenderer;
 use Symfony\Component\VarDumper\Caster\StubCaster;
@@ -57,6 +59,8 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 		parent::register();
 
 		$this->registerDumper();
+		$this->registerRequestValidation();
+		$this->registerRequestSignatureValidation();
 		$this->registerExceptionTracking();
 		$this->registerExceptionRenderer();
 	}
@@ -129,6 +133,59 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 			if (isset($event->context['exception'])) {
 				$this->app->make(LoggedExceptionCollection::class)
 					->push($event->context['exception']);
+			}
+		});
+	}
+
+	/**
+	 * Register the "hasValidSignature" macro on the request.
+	 */
+	public function registerRequestSignatureValidation(): void
+	{
+		Request::macro('hasValidSignature', function ($absolute = true) {
+			return url()->hasValidSignature($this, $absolute);
+		});
+
+		Request::macro('hasValidRelativeSignature', function () {
+			return url()->hasValidSignature($this, $absolute = false);
+		});
+
+		Request::macro('hasValidSignatureWhileIgnoring', function ($ignoreQuery = [], $absolute = true) {
+			return url()->hasValidSignature($this, $absolute, $ignoreQuery);
+		});
+
+		Request::macro('hasValidRelativeSignatureWhileIgnoring', function ($ignoreQuery = []) {
+			return url()->hasValidSignature($this, $absolute = false, $ignoreQuery);
+		});
+	}
+
+	/**
+	 * Register the "validate" macro on the request.
+	 */
+	public function registerRequestValidation(): void
+	{
+		Request::macro('validate', function (array $rules, ...$params) {
+			return tap(
+				validator($this->all(), $rules, ...$params),
+				function ($validator) {
+					// TODO: Implement this with Precognitive implementation
+					// if ($this->isPrecognitive()) {
+					// 	$validator->after(Precognition::afterValidationHook($this))
+					// 		->setRules(
+					// 			$this->filterPrecognitiveRules($validator->getRulesWithoutPlaceholders())
+					// 		);
+					// }
+				}
+			)->validate();
+		});
+
+		Request::macro('validateWithBag', function (string $errorBag, array $rules, ...$params) {
+			try {
+				return $this->validate($rules, ...$params);
+			} catch (ValidationException $e) {
+				$e->errorBag = $errorBag;
+
+				throw $e;
 			}
 		});
 	}

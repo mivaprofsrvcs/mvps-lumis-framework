@@ -8,6 +8,7 @@ use MVPS\Lumis\Framework\Cookie\CookieServiceProvider;
 use MVPS\Lumis\Framework\Database\DatabaseServiceProvider;
 use MVPS\Lumis\Framework\Filesystem\FilesystemServiceProvider;
 use MVPS\Lumis\Framework\Pipeline\PipelineServiceProvider;
+use MVPS\Lumis\Framework\Validation\ValidationServiceProvider;
 use MVPS\Lumis\Framework\View\ViewServiceProvider;
 
 class DefaultProviders
@@ -33,6 +34,7 @@ class DefaultProviders
 			FilesystemServiceProvider::class,
 			FrameworkServiceProvider::class,
 			PipelineServiceProvider::class,
+			ValidationServiceProvider::class,
 			ViewServiceProvider::class,
 		];
 	}

@@ -3,12 +3,14 @@
 use Carbon\Carbon;
 use Faker\Factory as FakerFactory;
 use Faker\Generator as FakerGenerator;
+use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Contracts\Validation\Validator as ValidatorContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
 use MVPS\Lumis\Framework\Database\DatabaseManager;
@@ -523,6 +525,26 @@ if (! function_exists('url')) {
 		}
 
 		return app(UrlGenerator::class)->to($path, $parameters, $secure);
+	}
+}
+
+if (! function_exists('validator')) {
+	/**
+	 * Create a new validator instance.
+	 */
+	function validator(
+		array|null $data = null,
+		array $rules = [],
+		array $messages = [],
+		array $attributes = []
+	): ValidationFactory|ValidatorContract {
+		$factory = app(ValidationFactory::class);
+
+		if (func_num_args() === 0) {
+			return $factory;
+		}
+
+		return $factory->make($data ?? [], $rules, $messages, $attributes);
 	}
 }
 

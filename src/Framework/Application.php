@@ -45,7 +45,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.10.0';
+	public const VERSION = '2.11.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -1008,7 +1008,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
 			],
-			// 'validator' => [Validation\Factory::class, Contracts\Validation\Factory::class],
+			'validator' => [
+				\MVPS\Lumis\Framework\Validation\Factory::class,
+				\Illuminate\Contracts\Validation\Factory::class,
+			],
 			'view' => [
 				\MVPS\Lumis\Framework\View\Factory::class,
 				\MVPS\Lumis\Framework\Contracts\View\Factory::class,

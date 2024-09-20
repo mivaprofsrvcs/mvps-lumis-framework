@@ -4,6 +4,7 @@ namespace MVPS\Lumis\Framework\Console;
 
 use Illuminate\Console\Signals;
 use MVPS\Lumis\Framework\Console\Commands\AboutCommand;
+use MVPS\Lumis\Framework\Console\Commands\Cache\CacheTableCommand;
 use MVPS\Lumis\Framework\Console\Commands\ComponentMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConfigShowCommand;
 use MVPS\Lumis\Framework\Console\Commands\ConsoleMakeCommand;
@@ -24,6 +25,7 @@ use MVPS\Lumis\Framework\Console\Commands\ModelMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ModelPruneCommand;
 use MVPS\Lumis\Framework\Console\Commands\ProviderMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\RouteListCommand;
+use MVPS\Lumis\Framework\Console\Commands\RuleMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\SchemaDumpCommand;
 use MVPS\Lumis\Framework\Console\Commands\Seeds\SeedCommand;
 use MVPS\Lumis\Framework\Console\Commands\Seeds\SeederMakeCommand;
@@ -79,6 +81,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	 * @var array
 	 */
 	protected array $devCommands = [
+		'CacheTable' => CacheTableCommand::class,
 		'ComponentMake' => ComponentMakeCommand::class,
 		// 'ConfigPublish' => ConfigPublishCommand::class,
 		'ConsoleMake' => ConsoleMakeCommand::class,
@@ -91,9 +94,10 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'ModelMake' => ModelMakeCommand::class,
 		'MiddlewareMake' => MiddlewareMakeCommand::class,
 		'ProviderMake' => ProviderMakeCommand::class,
-		'TaskMake' => TaskMakeCommand::class,
+		'RuleMake' => RuleMakeCommand::class,
 		'SeederMake' => SeederMakeCommand::class,
 		'Serve' => ServeCommand::class,
+		'TaskMake' => TaskMakeCommand::class,
 		'ViewMake' => ViewMakeCommand::class,
 	];
 
@@ -136,6 +140,16 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		}
 
 		$this->commands(array_values($commands));
+	}
+
+	/**
+	 * Register the cache table make command.
+	 */
+	protected function registerCacheTableCommand(): void
+	{
+		$this->app->singleton(CacheTableCommand::class, function ($app) {
+			return new CacheTableCommand($app['files']);
+		});
 	}
 
 	/**
@@ -235,6 +249,16 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 	{
 		$this->app->singleton(RouteListCommand::class, function ($app) {
 			return new RouteListCommand($app['router']);
+		});
+	}
+
+	/**
+	 * Register the rule make command.
+	 */
+	protected function registerRuleMakeCommand()
+	{
+		$this->app->singleton(RuleMakeCommand::class, function ($app) {
+			return new RuleMakeCommand($app['files']);
 		});
 	}
 

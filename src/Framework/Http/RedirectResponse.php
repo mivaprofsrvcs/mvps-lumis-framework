@@ -26,9 +26,9 @@ class RedirectResponse extends Response
 	/**
 	 * The session store instance.
 	 *
-	 * @var \MVPS\Lumis\Framework\Session\Store
+	 * @var \MVPS\Lumis\Framework\Session\Store|null
 	 */
-	protected SessionStore $session;
+	protected SessionStore|null $session = null;
 
 	/**
 	 * The target URL for the redirection.
@@ -66,7 +66,7 @@ class RedirectResponse extends Response
 	 */
 	public function getOriginalContent(): mixed
 	{
-		//
+		return null;
 	}
 
 	/**
