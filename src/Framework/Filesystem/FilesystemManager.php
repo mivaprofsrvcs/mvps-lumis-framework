@@ -109,7 +109,7 @@ class FilesystemManager implements FactoryContract
 	 * @param  array  $config
 	 * @return \Illuminate\Contracts\Filesystem\Filesystem
 	 */
-	// public function createLocalDriver(array $config): Filesystem
+	// public function createLocalDriver(array $config, string $name = 'local'): Filesystem
 	// {
 	// 	$visibility = PortableVisibilityConverter::fromArray(
 	// 		$config['permissions'] ?? [],
@@ -124,7 +124,14 @@ class FilesystemManager implements FactoryContract
 	// 		$config['root'], $visibility, $config['lock'] ?? LOCK_EX, $links
 	// 	);
 
-	// 	return new FilesystemAdapter($this->createFlysystem($adapter, $config), $adapter, $config);
+	// 	return (new LocalFilesystemAdapter(
+	// 		$this->createFlysystem($adapter, $config), $adapter, $config
+	// 	))->diskName(
+	// 		$name
+	// 	)->shouldServeSignedUrls(
+	// 		$config['serve'] ?? false,
+	// 		fn () => $this->app['url'],
+	// 	);
 	// }
 
 	/**
@@ -258,19 +265,19 @@ class FilesystemManager implements FactoryContract
 			throw new InvalidArgumentException("Disk [{$name}] does not have a configured driver.");
 		}
 
-		$name = $config['driver'];
+		$driver = $config['driver'];
 
-		if (isset($this->customCreators[$name])) {
+		if (isset($this->customCreators[$driver])) {
 			return $this->callCustomCreator($config);
 		}
 
-		$driverMethod = 'create' . ucfirst($name) . 'Driver';
+		$driverMethod = 'create' . ucfirst($driver) . 'Driver';
 
 		if (! method_exists($this, $driverMethod)) {
-			throw new InvalidArgumentException("Driver [{$name}] is not supported.");
+			throw new InvalidArgumentException("Driver [{$driver}] is not supported.");
 		}
 
-		return $this->{$driverMethod}($config);
+		return $this->{$driverMethod}($config, $name);
 	}
 
 	/**
