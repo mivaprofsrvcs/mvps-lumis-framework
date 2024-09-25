@@ -17,6 +17,14 @@ use MVPS\Lumis\Framework\Routing\RouteServiceProvider;
 class ApplicationBuilder
 {
 	/**
+	 * Any additional routing callbacks that should be invoked while
+	 * registering routes.
+	 *
+	 * @var array
+	 */
+	protected array $additionalRoutingCallbacks = [];
+
+	/**
 	 * The framework application instance.
 	 *
 	 * @var \MVPS\Lumis\Framework\Application
@@ -85,6 +93,10 @@ class ApplicationBuilder
 						->middleware('web')
 						->group($web);
 				}
+			}
+
+			foreach ($this->additionalRoutingCallbacks as $callback) {
+				$callback();
 			}
 
 			if (is_callable($then)) {
