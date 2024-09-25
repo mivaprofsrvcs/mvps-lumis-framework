@@ -5,7 +5,7 @@ namespace MVPS\Lumis\Framework\Cache;
 use Illuminate\Contracts\Cache\Lock as LockContract;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\InteractsWithTime;
-use MVPS\Lumis\Framework\Support\Sleep;
+use Illuminate\Support\Sleep;
 use MVPS\Lumis\Framework\Support\Str;
 
 abstract class Lock implements LockContract
