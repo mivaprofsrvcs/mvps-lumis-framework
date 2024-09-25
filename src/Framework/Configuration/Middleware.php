@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Configuration;
 use Closure;
 use MVPS\Lumis\Framework\Http\Middleware\ConvertEmptyStringsToNull;
 use MVPS\Lumis\Framework\Http\Middleware\HandlePrecognitiveRequests;
+use MVPS\Lumis\Framework\Http\Middleware\InvokeDeferredCallbacks;
 use MVPS\Lumis\Framework\Http\Middleware\SetCacheHeaders;
 use MVPS\Lumis\Framework\Http\Middleware\TrimStrings;
 use MVPS\Lumis\Framework\Http\Middleware\TrustHosts;
@@ -238,6 +239,7 @@ class Middleware
 	public function getGlobalMiddleware(): array
 	{
 		$middleware = $this->global ?: array_values(array_filter([
+			InvokeDeferredCallbacks::class,
 			$this->trustHosts ? TrustHosts::class : null,
 			TrustProxies::class,
 			// HandleCors::class,
