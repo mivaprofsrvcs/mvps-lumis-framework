@@ -532,7 +532,7 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 	 */
 	public static function getMethodFromRequest(ServerRequestInterface $request): string
 	{
-		$method = $request->getMethod();
+		$method = strtoupper($request->getMethod());
 
 		if ($method !== 'POST') {
 			return $method;
@@ -557,10 +557,10 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 			'TRACE',
 		];
 
-		$bodyMethod = strtoupper($body['_method']);
+		$method = strtoupper($body['_method']);
 
-		if (in_array($bodyMethod, $validMethods, true)) {
-			$method = $bodyMethod;
+		if (in_array($method, $validMethods, true)) {
+			return $method;
 		}
 
 		if (! preg_match('/^[A-Z]++$/D', $method)) {
