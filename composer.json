@@ -11,7 +11,6 @@
     ],
 	"require": {
 		"php": "^8.2",
-		"fakerphp/faker": "^1.23",
 		"filp/whoops": "^2.15",
 		"illuminate/console": "^11.12",
 		"illuminate/database": "^11.17",
@@ -34,6 +33,11 @@
 		"symfony/var-dumper": "^6.3",
 		"vlucas/phpdotenv": "^5.5"
 	},
+	"require-dev": {
+		"fakerphp/faker": "^1.23",
+		"league/flysystem-ftp": "^3.0",
+		"league/flysystem-sftp-v3": "^3.0"
+	},
 	"autoload": {
 		"files": [
 			"src/Framework/helpers.php",
@@ -43,6 +47,15 @@
 		"psr-4": {
 			"MVPS\\Lumis\\Framework\\": "src/Framework/"
 		}
+	},
+	"suggest": {
+		"ext-apcu": "Required to use the APC cache driver.",
+		"ext-fileinfo": "Required to use the Filesystem class.",
+		"ext-ftp": "Required to use the Flysystem FTP driver.",
+		"ext-pdo": "Required to use all database features.",
+		"fakerphp/faker": "Required to use the eloquent factory builder (^1.9.1).",
+		"league/flysystem-ftp": "Required to use the Flysystem FTP driver (^3.0).",
+		"league/flysystem-sftp-v3": "Required to use the Flysystem SFTP driver (^3.0)."
 	},
 	"config": {
         "sort-packages": true,
