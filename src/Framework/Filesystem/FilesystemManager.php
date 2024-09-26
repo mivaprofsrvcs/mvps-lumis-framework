@@ -4,6 +4,9 @@ namespace MVPS\Lumis\Framework\Filesystem;
 
 use Closure;
 use InvalidArgumentException;
+use League\Flysystem\Local\LocalFilesystemAdapter as LocalAdapter;
+use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
+use League\Flysystem\Visibility;
 use MVPS\Lumis\Framework\Contracts\Filesystem\Factory as FactoryContract;
 use MVPS\Lumis\Framework\Contracts\Filesystem\Filesystem;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
@@ -104,35 +107,29 @@ class FilesystemManager implements FactoryContract
 
 	/**
 	 * Create an instance of the local driver.
-	 * TODO: Implement this
-	 *
-	 * @param  array  $config
-	 * @return \Illuminate\Contracts\Filesystem\Filesystem
 	 */
-	// public function createLocalDriver(array $config, string $name = 'local'): Filesystem
-	// {
-	// 	$visibility = PortableVisibilityConverter::fromArray(
-	// 		$config['permissions'] ?? [],
-	// 		$config['directory_visibility'] ?? $config['visibility'] ?? Visibility::PRIVATE
-	// 	);
+	public function createLocalDriver(array $config, string $name = 'local'): Filesystem
+	{
+		$visibility = PortableVisibilityConverter::fromArray(
+			$config['permissions'] ?? [],
+			$config['directory_visibility'] ?? $config['visibility'] ?? Visibility::PRIVATE
+		);
 
-	// 	$links = ($config['links'] ?? null) === 'skip'
-	// 		? LocalAdapter::SKIP_LINKS
-	// 		: LocalAdapter::DISALLOW_LINKS;
+		$links = ($config['links'] ?? null) === 'skip'
+			? LocalAdapter::SKIP_LINKS
+			: LocalAdapter::DISALLOW_LINKS;
 
-	// 	$adapter = new LocalAdapter(
-	// 		$config['root'], $visibility, $config['lock'] ?? LOCK_EX, $links
-	// 	);
+		$adapter = new LocalAdapter(
+			$config['root'],
+			$visibility,
+			$config['lock'] ?? LOCK_EX,
+			$links
+		);
 
-	// 	return (new LocalFilesystemAdapter(
-	// 		$this->createFlysystem($adapter, $config), $adapter, $config
-	// 	))->diskName(
-	// 		$name
-	// 	)->shouldServeSignedUrls(
-	// 		$config['serve'] ?? false,
-	// 		fn () => $this->app['url'],
-	// 	);
-	// }
+		return (new LocalFilesystemAdapter($this->createFlysystem($adapter, $config), $adapter, $config))
+			->diskName($name)
+			->shouldServeSignedUrls($config['serve'] ?? false, fn () => $this->app['url']);
+	}
 
 	/**
 	 * Create a scoped driver.
