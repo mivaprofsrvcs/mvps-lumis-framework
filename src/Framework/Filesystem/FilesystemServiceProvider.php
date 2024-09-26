@@ -30,7 +30,6 @@ class FilesystemServiceProvider extends ServiceProvider
 	public function register(): void
 	{
 		$this->registerNativeFilesystem();
-
 		$this->registerDrivers();
 	}
 
