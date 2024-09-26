@@ -36,6 +36,8 @@
 	"require-dev": {
 		"fakerphp/faker": "^1.23",
 		"league/flysystem-ftp": "^3.0",
+		"league/flysystem-path-prefixing": "^3.3",
+        "league/flysystem-read-only": "^3.3",
 		"league/flysystem-sftp-v3": "^3.0"
 	},
 	"autoload": {
@@ -55,6 +57,8 @@
 		"ext-pdo": "Required to use all database features.",
 		"fakerphp/faker": "Required to use the eloquent factory builder (^1.9.1).",
 		"league/flysystem-ftp": "Required to use the Flysystem FTP driver (^3.0).",
+		"league/flysystem-path-prefixing": "Required to use the scoped driver (^3.3).",
+        "league/flysystem-read-only": "Required to use read-only disks (^3.3)",
 		"league/flysystem-sftp-v3": "Required to use the Flysystem SFTP driver (^3.0)."
 	},
 	"config": {
