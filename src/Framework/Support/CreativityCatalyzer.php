@@ -46,12 +46,6 @@ class CreativityCatalyzer
 	 */
 	protected static function formatForConsole(string $quote): string
 	{
-		[$text, $author] = str($quote)->explode('-');
-
-		return sprintf(
-			"\n  <options=bold>“ %s ”</>\n  <fg=gray>— %s</>\n",
-			trim($text),
-			trim($author),
-		);
+		return sprintf("\n  <options=bold>“ %s ”</>\n", trim($quote));
 	}
 }
