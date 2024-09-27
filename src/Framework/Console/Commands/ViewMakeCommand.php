@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Console\Commands;
 
 use MVPS\Lumis\Framework\Console\GeneratorCommand;
-use MVPS\Lumis\Framework\Support\CreativityCatalyzer;
+use MVPS\Lumis\Framework\Support\Stimulate;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -36,7 +36,7 @@ class ViewMakeCommand extends GeneratorCommand
 
 		return str_replace(
 			'{{ quote }}',
-			CreativityCatalyzer::catalyzers()->random(),
+			Stimulate::stimulants()->random(),
 			$contents,
 		);
 	}

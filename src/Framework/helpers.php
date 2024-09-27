@@ -44,6 +44,48 @@ if (! function_exists('abort')) {
 	}
 }
 
+if (! function_exists('abort_if')) {
+	/**
+	 * Throw an Http exception with the given data if the given condition
+	 * is true.
+	 *
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException
+	 */
+	function abort_if(
+		bool $boolean,
+		Response|Responsable|int $code,
+		string $message = '',
+		array $headers = []
+	): void {
+		if ($boolean) {
+			abort($code, $message, $headers);
+		}
+	}
+}
+
+if (! function_exists('abort_unless')) {
+	/**
+	 * Throw an Http exception with the given data unless the given condition
+	 * is true.
+	 *
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\NotFoundException
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException
+	 */
+	function abort_unless(
+		bool $boolean,
+		Response|Responsable|int $code,
+		string $message = '',
+		array $headers = []
+	): void {
+		if (! $boolean) {
+			abort($code, $message, $headers);
+		}
+	}
+}
+
 if (! function_exists('action')) {
 	/**
 	 * Generate the URL to a controller action.
@@ -75,6 +117,16 @@ if (! function_exists('app_path')) {
 	function app_path(string $path = ''): string
 	{
 		return app()->path($path);
+	}
+}
+
+if (! function_exists('asset')) {
+	/**
+	 * Generate an asset path for the application.
+	 */
+	function asset(string $path, bool|null $secure = null): string
+	{
+		return app('url')->asset($path, $secure);
 	}
 }
 

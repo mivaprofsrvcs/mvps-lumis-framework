@@ -87,9 +87,13 @@ class ClosureCommand extends Command
 	/**
 	 * Dynamically proxy calls to a new scheduled event.
 	 *
+	 * @param  string  $method
+	 * @param  array  $parameters
+	 * @return mixed
+	 *
 	 * @throws \BadMethodCallException
 	 */
-	public function __call(string $method, array $parameters): mixed
+	public function __call($method, $parameters)
 	{
 		return $this->forwardCallTo($this->schedule(), $method, $parameters);
 	}

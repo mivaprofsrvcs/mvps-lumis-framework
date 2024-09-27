@@ -51,6 +51,16 @@ class CacheManager implements FactoryContract
 	}
 
 	/**
+	 * Create an instance of the APC cache driver.
+	 */
+	protected function createApcDriver(array $config): Repository
+	{
+		$prefix = $this->getPrefix($config);
+
+		return $this->repository(new ApcStore(new ApcWrapper, $prefix), $config);
+	}
+
+	/**
 	 * Create an instance of the array cache driver.
 	 */
 	protected function createArrayDriver(array $config): Repository

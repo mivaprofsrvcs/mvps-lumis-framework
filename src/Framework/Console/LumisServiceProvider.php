@@ -30,6 +30,7 @@ use MVPS\Lumis\Framework\Console\Commands\SchemaDumpCommand;
 use MVPS\Lumis\Framework\Console\Commands\Seeds\SeedCommand;
 use MVPS\Lumis\Framework\Console\Commands\Seeds\SeederMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
+use MVPS\Lumis\Framework\Console\Commands\StorageLinkCommand;
 use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ViewMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\WipeCommand;
@@ -71,6 +72,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'RouteList' => RouteListCommand::class,
 		'Seed' => SeedCommand::class,
 		'SchemaDump' => SchemaDumpCommand::class,
+		'StorageLink' => StorageLinkCommand::class,
 		// 'ViewCache' => ViewCacheCommand::class,
 		// 'ViewClear' => ViewClearCommand::class,
 	];

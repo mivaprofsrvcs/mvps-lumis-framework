@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Console\Commands;
 
 use MVPS\Lumis\Framework\Console\GeneratorCommand;
-use MVPS\Lumis\Framework\Support\CreativityCatalyzer;
+use MVPS\Lumis\Framework\Support\Stimulate;
 use MVPS\Lumis\Framework\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
@@ -37,7 +37,7 @@ class ComponentMakeCommand extends GeneratorCommand
 				implode("\n", [
 					"<<<'blade'",
 					'<div>',
-					"\t<!-- " . CreativityCatalyzer::catalyzers()->random() . ' -->',
+					"\t<!-- " . Stimulate::stimulants()->random() . ' -->',
 					'</div>',
 					'blade',
 				]),
@@ -164,7 +164,7 @@ class ComponentMakeCommand extends GeneratorCommand
 			$path,
 			implode("\n", [
 				"<div>",
-				"\t<!-- " . CreativityCatalyzer::catalyzers()->random() . " -->",
+				"\t<!-- " . Stimulate::stimulants()->random() . " -->",
 				'</div>',
 			])
 		);

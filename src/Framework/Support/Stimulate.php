@@ -4,13 +4,13 @@ namespace MVPS\Lumis\Framework\Support;
 
 use MVPS\Lumis\Framework\Collections\Collection;
 
-class CreativityCatalyzer
+class Stimulate
 {
 	/**
 	 * Returns a collection of inspiring quotes for the Lumis application.
 	 * These quotes can be used to motivate and inspire users or team members.
 	 */
-	public static function catalyzers(): Collection
+	public static function stimulants(): Collection
 	{
 		return Collection::make([
 			'Lumis: Illuminate your ideas.',
@@ -32,26 +32,20 @@ class CreativityCatalyzer
 	}
 
 	/**
-	 * Randomly selects and formats a catalyzing quote for output.
+	 * Randomly selects and formats a stimulating quote for output.
 	 */
 	public static function dispense(): string
 	{
-		return static::catalyzers()
+		return static::stimulants()
 			->map(fn ($quote) => static::formatForConsole($quote))
 			->random();
 	}
 
 	/**
-	 * Formats the given catalyzing quote for a pretty console output.
+	 * Formats the given stimulating quote for a pretty console output.
 	 */
 	protected static function formatForConsole(string $quote): string
 	{
-		[$text, $author] = str($quote)->explode('-');
-
-		return sprintf(
-			"\n  <options=bold>“ %s ”</>\n  <fg=gray>— %s</>\n",
-			trim($text),
-			trim($author),
-		);
+		return sprintf("\n  <options=bold>“ %s ”</>\n", trim($quote));
 	}
 }

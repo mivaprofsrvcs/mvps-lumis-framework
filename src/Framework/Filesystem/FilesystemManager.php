@@ -4,9 +4,22 @@ namespace MVPS\Lumis\Framework\Filesystem;
 
 use Closure;
 use InvalidArgumentException;
+use League\Flysystem\Filesystem as Flysystem;
+use League\Flysystem\FilesystemAdapter as FlysystemAdapter;
+use League\Flysystem\FilesystemOperator;
+use League\Flysystem\Ftp\FtpAdapter;
+use League\Flysystem\Ftp\FtpConnectionOptions;
+use League\Flysystem\Local\LocalFilesystemAdapter as LocalAdapter;
+use League\Flysystem\PathPrefixing\PathPrefixedAdapter;
+use League\Flysystem\PhpseclibV3\SftpAdapter;
+use League\Flysystem\PhpseclibV3\SftpConnectionProvider;
+use League\Flysystem\ReadOnly\ReadOnlyFilesystemAdapter;
+use League\Flysystem\UnixVisibility\PortableVisibilityConverter;
+use League\Flysystem\Visibility;
 use MVPS\Lumis\Framework\Contracts\Filesystem\Factory as FactoryContract;
 use MVPS\Lumis\Framework\Contracts\Filesystem\Filesystem;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
+use MVPS\Lumis\Framework\Support\Arr;
 
 class FilesystemManager implements FactoryContract
 {
@@ -60,72 +73,70 @@ class FilesystemManager implements FactoryContract
 
 	/**
 	 * Create a Flysystem instance with the given adapter.
-	 * TODO: Implement this
-	 * @param  \League\Flysystem\FilesystemAdapter  $adapter
-	 * @param  array  $config
-	 * @return \League\Flysystem\FilesystemOperator
 	 */
-	// protected function createFlysystem(FlysystemAdapter $adapter, array $config)
-	// {
-	// 	if ($config['read-only'] ?? false === true) {
-	// 		$adapter = new ReadOnlyFilesystemAdapter($adapter);
-	// 	}
+	protected function createFlysystem(FlysystemAdapter $adapter, array $config): FilesystemOperator
+	{
+		if ($config['read-only'] ?? false === true) {
+			$adapter = new ReadOnlyFilesystemAdapter($adapter);
+		}
 
-	// 	if (! empty($config['prefix'])) {
-	// 		$adapter = new PathPrefixedAdapter($adapter, $config['prefix']);
-	// 	}
+		if (! empty($config['prefix'])) {
+			$adapter = new PathPrefixedAdapter($adapter, $config['prefix']);
+		}
 
-	// 	return new Flysystem($adapter, Arr::only($config, [
-	// 		'directory_visibility',
-	// 		'disable_asserts',
-	// 		'retain_visibility',
-	// 		'temporary_url',
-	// 		'url',
-	// 		'visibility',
-	// 	]));
-	// }
+		return new Flysystem($adapter, Arr::only($config, [
+			'directory_visibility',
+			'disable_asserts',
+			'retain_visibility',
+			'temporary_url',
+			'url',
+			'visibility',
+		]));
+	}
 
 	/**
-	 * Create an instance of the ftp driver.
-	 * TODO: Implement this
-	 * @param  array  $config
-	 * @return \Illuminate\Contracts\Filesystem\Filesystem
+	 * Create an instance of the FTP driver.
 	 */
-	// public function createFtpDriver(array $config)
-	// {
-	// 	if (! isset($config['root'])) {
-	// 		$config['root'] = '';
-	// 	}
+	public function createFtpDriver(array $config): Filesystem
+	{
+		if (! isset($config['root'])) {
+			$config['root'] = '';
+		}
 
-	// 	$adapter = new FtpAdapter(FtpConnectionOptions::fromArray($config));
+		$adapter = new FtpAdapter(FtpConnectionOptions::fromArray($config));
 
-	// 	return new FilesystemAdapter($this->createFlysystem($adapter, $config), $adapter, $config);
-	// }
+		return new FilesystemAdapter(
+			$this->createFlysystem($adapter, $config),
+			$adapter,
+			$config
+		);
+	}
 
 	/**
 	 * Create an instance of the local driver.
-	 * TODO: Implement this
-	 *
-	 * @param  array  $config
-	 * @return \Illuminate\Contracts\Filesystem\Filesystem
 	 */
-	// public function createLocalDriver(array $config): Filesystem
-	// {
-	// 	$visibility = PortableVisibilityConverter::fromArray(
-	// 		$config['permissions'] ?? [],
-	// 		$config['directory_visibility'] ?? $config['visibility'] ?? Visibility::PRIVATE
-	// 	);
+	public function createLocalDriver(array $config, string $name = 'local'): Filesystem
+	{
+		$visibility = PortableVisibilityConverter::fromArray(
+			$config['permissions'] ?? [],
+			$config['directory_visibility'] ?? $config['visibility'] ?? Visibility::PRIVATE
+		);
 
-	// 	$links = ($config['links'] ?? null) === 'skip'
-	// 		? LocalAdapter::SKIP_LINKS
-	// 		: LocalAdapter::DISALLOW_LINKS;
+		$links = ($config['links'] ?? null) === 'skip'
+			? LocalAdapter::SKIP_LINKS
+			: LocalAdapter::DISALLOW_LINKS;
 
-	// 	$adapter = new LocalAdapter(
-	// 		$config['root'], $visibility, $config['lock'] ?? LOCK_EX, $links
-	// 	);
+		$adapter = new LocalAdapter(
+			$config['root'],
+			$visibility,
+			$config['lock'] ?? LOCK_EX,
+			$links
+		);
 
-	// 	return new FilesystemAdapter($this->createFlysystem($adapter, $config), $adapter, $config);
-	// }
+		return (new LocalFilesystemAdapter($this->createFlysystem($adapter, $config), $adapter, $config))
+			->diskName($name)
+			->shouldServeSignedUrls($config['serve'] ?? false, fn () => $this->app['url']);
+	}
 
 	/**
 	 * Create a scoped driver.
@@ -151,25 +162,26 @@ class FilesystemManager implements FactoryContract
 	}
 
 	/**
-	 * Create an instance of the sftp driver.
-	 * TODO: Implement this
-	 * @param  array  $config
-	 * @return \Illuminate\Contracts\Filesystem\Filesystem
+	 * Create an instance of the SFTP driver.
 	 */
-	// public function createSftpDriver(array $config)
-	// {
-	// 	$provider = SftpConnectionProvider::fromArray($config);
+	public function createSftpDriver(array $config): Filesystem
+	{
+		$provider = SftpConnectionProvider::fromArray($config);
 
-	// 	$root = $config['root'] ?? '';
+		$root = $config['root'] ?? '';
 
-	// 	$visibility = PortableVisibilityConverter::fromArray(
-	// 		$config['permissions'] ?? []
-	// 	);
+		$visibility = PortableVisibilityConverter::fromArray(
+			$config['permissions'] ?? []
+		);
 
-	// 	$adapter = new SftpAdapter($provider, $root, $visibility);
+		$adapter = new SftpAdapter($provider, $root, $visibility);
 
-	// 	return new FilesystemAdapter($this->createFlysystem($adapter, $config), $adapter, $config);
-	// }
+		return new FilesystemAdapter(
+			$this->createFlysystem($adapter, $config),
+			$adapter,
+			$config
+		);
+	}
 
 	/**
 	 * {@inheritdoc}
@@ -258,19 +270,19 @@ class FilesystemManager implements FactoryContract
 			throw new InvalidArgumentException("Disk [{$name}] does not have a configured driver.");
 		}
 
-		$name = $config['driver'];
+		$driver = $config['driver'];
 
-		if (isset($this->customCreators[$name])) {
+		if (isset($this->customCreators[$driver])) {
 			return $this->callCustomCreator($config);
 		}
 
-		$driverMethod = 'create' . ucfirst($name) . 'Driver';
+		$driverMethod = 'create' . ucfirst($driver) . 'Driver';
 
 		if (! method_exists($this, $driverMethod)) {
-			throw new InvalidArgumentException("Driver [{$name}] is not supported.");
+			throw new InvalidArgumentException("Driver [{$driver}] is not supported.");
 		}
 
-		return $this->{$driverMethod}($config);
+		return $this->{$driverMethod}($config, $name);
 	}
 
 	/**

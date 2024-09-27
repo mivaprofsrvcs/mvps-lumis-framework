@@ -2,7 +2,10 @@
 
 namespace MVPS\Lumis\Framework\Providers;
 
+use Illuminate\Support\Defer\DeferredCallbackCollection;
 use MVPS\Lumis\Framework\Application;
+use MVPS\Lumis\Framework\Console\Command;
+use MVPS\Lumis\Framework\Console\Events\CommandFinished;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 use MVPS\Lumis\Framework\Contracts\Framework\Application as ApplicationContract;
@@ -61,8 +64,25 @@ class FrameworkServiceProvider extends AggregateServiceProvider
 		$this->registerDumper();
 		$this->registerRequestValidation();
 		$this->registerRequestSignatureValidation();
+		$this->registerDeferHandler();
 		$this->registerExceptionTracking();
 		$this->registerExceptionRenderer();
+	}
+
+	/**
+	 * Register the "defer" function termination handler.
+	 */
+	protected function registerDeferHandler(): void
+	{
+		$this->app->scoped(DeferredCallbackCollection::class);
+
+		$this->app['events']->listen(function (CommandFinished $event) {
+			app(DeferredCallbackCollection::class)->invokeWhen(
+				fn ($callback) => app()->runningInConsole() && (
+					$event->exitCode === Command::SUCCESS || $callback->always
+				)
+			);
+		});
 	}
 
 	/**

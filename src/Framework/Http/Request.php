@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Support\Traits\Macroable;
 use Laminas\Diactoros\ServerRequest;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Http\Exceptions\SuspiciousOperationException;
 use MVPS\Lumis\Framework\Http\Traits\CanBePrecognitive;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithContentTypes;
 use MVPS\Lumis\Framework\Http\Traits\InteractsWithRequestInput;
@@ -526,10 +527,12 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 
 	/**
 	 * Get the intended server request method.
+	 *
+	 * @throws \MVPS\Lumis\Framework\Http\Exceptions\SuspiciousOperationException
 	 */
 	public static function getMethodFromRequest(ServerRequestInterface $request): string
 	{
-		$method = $request->getMethod();
+		$method = strtoupper($request->getMethod());
 
 		if ($method !== 'POST') {
 			return $method;
@@ -537,7 +540,7 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 
 		$body = $request->getParsedBody();
 
-		if (empty($body['_method']) || ! is_string(($body['_method']))) {
+		if (empty($body['_method']) || ! is_string($body['_method'])) {
 			return $method;
 		}
 
@@ -554,10 +557,14 @@ class Request extends ServerRequest implements Arrayable, ArrayAccess
 			'TRACE',
 		];
 
-		$bodyMethod = strtoupper($body['_method']);
+		$method = strtoupper($body['_method']);
 
-		if (in_array($bodyMethod, $validMethods, true)) {
-			$method = $bodyMethod;
+		if (in_array($method, $validMethods, true)) {
+			return $method;
+		}
+
+		if (! preg_match('/^[A-Z]++$/D', $method)) {
+			throw new SuspiciousOperationException("Invalid method override [$method].");
 		}
 
 		return $method;

@@ -25,6 +25,8 @@ use MVPS\Lumis\Framework\Cache\Events\WritingManyKeys;
 use MVPS\Lumis\Framework\Contracts\Cache\Repository as CacheContract;
 use MVPS\Lumis\Framework\Contracts\Events\Dispatcher;
 
+use function Illuminate\Support\defer;
+
 class Repository implements ArrayAccess, CacheContract
 {
 	use InteractsWithTime;
@@ -162,15 +164,20 @@ class Repository implements ArrayAccess, CacheContract
 	 */
 	public function flexible(string $key, array $ttl, callable $callback, array|null $lock = null): mixed
 	{
-		[$key => $value, "{$key}:created" => $created] = $this->many([$key, "{$key}:created"]);
+		$keyPrefix = 'lumis:cache:flexible';
 
-		if (is_null($created)) {
+		[
+			$key => $value,
+			"$keyPrefix:created:{$key}" => $created,
+		] = $this->many([$key, "$keyPrefix:created:{$key}"]);
+
+		if (in_array(null, [$value, $created], true)) {
 			return tap(
 				value($callback),
 				fn ($value) => $this->putMany(
 					[
 						$key => $value,
-						"{$key}:created" => Carbon::now()->getTimestamp(),
+						"$keyPrefix:created:{$key}" => Carbon::now()->getTimestamp(),
 					],
 					$ttl[1]
 				)
@@ -181,33 +188,22 @@ class Repository implements ArrayAccess, CacheContract
 			return $value;
 		}
 
-		$refresh = function () use ($key, $ttl, $callback, $lock, $created) {
-			$this->store
-				->lock(
-					"lumis:cache:refresh:lock:{$key}",
-					$lock['seconds'] ?? 0,
-					$lock['owner'] ?? null
-				)
-				->get(function () use ($key, $callback, $created, $ttl) {
-					if ($created !== $this->get("{$key}:created")) {
-						return;
-					}
+		$refresh = fn () => $this->store->lock("$keyPrefix:lock:{$key}", $lock['seconds'] ?? 0, $lock['owner'] ?? null)
+			->get(function () use ($key, $callback, $created, $ttl, $keyPrefix) {
+				if ($created !== $this->get("$keyPrefix:created:{$key}")) {
+					return;
+				}
 
-					$this->putMany(
-						[
-							$key => value($callback),
-							"{$key}:created" => Carbon::now()->getTimestamp(),
-						],
-						$ttl[1]
-					);
-				});
-		};
+				$this->putMany(
+					[
+						$key => value($callback),
+						"$keyPrefix:created:{$key}" => Carbon::now()->getTimestamp(),
+					],
+					$ttl[1]
+				);
+			});
 
-		if (function_exists('defer')) {
-			defer($refresh, "lumis:cache:refresh:{$key}");
-		} else {
-			$refresh();
-		}
+		defer($refresh, "$keyPrefix:{$key}");
 
 		return $value;
 	}

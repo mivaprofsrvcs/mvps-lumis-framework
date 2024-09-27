@@ -17,6 +17,14 @@ use MVPS\Lumis\Framework\Routing\RouteServiceProvider;
 class ApplicationBuilder
 {
 	/**
+	 * Any additional routing callbacks that should be invoked while
+	 * registering routes.
+	 *
+	 * @var array
+	 */
+	protected array $additionalRoutingCallbacks = [];
+
+	/**
 	 * The framework application instance.
 	 *
 	 * @var \MVPS\Lumis\Framework\Application
@@ -87,6 +95,10 @@ class ApplicationBuilder
 				}
 			}
 
+			foreach ($this->additionalRoutingCallbacks as $callback) {
+				$callback();
+			}
+
 			if (is_callable($then)) {
 				$then($this->app);
 			}
@@ -129,10 +141,21 @@ class ApplicationBuilder
 	public function withCommands(array $commands = []): static
 	{
 		if (empty($commands)) {
-			$commands = [
-				$this->app->path('Console/Commands'),
-				$this->app->path('Tasks'),
-			];
+			$consoleRoutesFile = 'routes/console.php';
+
+			if (is_file($this->app->basePath($consoleRoutesFile))) {
+				$commands = [$this->app->basePath($consoleRoutesFile)];
+			}
+
+			foreach (['Console/Commands', 'Tasks'] as $commandPath) {
+				$path = $this->app->path($commandPath);
+
+				if (! is_dir($path)) {
+					continue;
+				}
+
+				$commands = [...$commands, $path];
+			}
 		}
 
 		$this->app->afterResolving(ConsoleKernel::class, function ($kernel) use ($commands) {
@@ -144,6 +167,18 @@ class ApplicationBuilder
 				$kernel->addCommandPaths($paths->all());
 				$kernel->addCommandRoutePaths($routes->all());
 			});
+		});
+
+		return $this;
+	}
+
+	/**
+	 * Register additional Lumis command route paths.
+	 */
+	protected function withCommandRouting(array $paths): static
+	{
+		$this->app->afterResolving(ConsoleKernel::class, function ($kernel) use ($paths) {
+			$this->app->booted(fn () => $kernel->addCommandRoutePaths($paths));
 		});
 
 		return $this;
