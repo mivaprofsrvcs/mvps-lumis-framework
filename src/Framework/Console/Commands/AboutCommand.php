@@ -174,6 +174,7 @@ class AboutCommand extends Command
 			'Environment' => $this->lumis->environment(),
 			'Debug Mode' => static::format(config('app.debug'), console: $formatEnabledStatus),
 			'URL' => Str::of(config('app.url'))->replace(['http://', 'https://'], ''),
+			'Timezone' => config('app.timezone'),
 		]);
 
 		// TODO: Implement this when adding caching support
@@ -188,8 +189,9 @@ class AboutCommand extends Command
 
 		// TODO: Implement this when adding caching support
 		static::addToSection('Drivers', fn () => array_filter([
-			// 'Cache' => config('cache.default'),
+			'Cache' => config('cache.default'),
 			'Database' => config('database.default'),
+			'Log Level' => config('logging.level'),
 		]));
 
 		collection(static::$customDataResolvers)
