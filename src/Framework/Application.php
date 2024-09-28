@@ -304,6 +304,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 		$this->useBootstrapPath($this->basePath('bootstrap'));
 
 		$this->useTranslationPath($this->basePath('translations'));
+
+		$this->useLangPath(value(function () {
+			$directory = $this->resourcePath('lang');
+
+			return is_dir($directory)
+				? $directory
+				: $this->basePath('lang');
+		}));
 	}
 
 	/**
