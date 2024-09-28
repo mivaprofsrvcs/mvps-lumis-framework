@@ -216,6 +216,13 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	protected $terminatingCallbacks = [];
 
 	/**
+	 * The custom translation file path defined by the developer.
+	 *
+	 * @var string
+	 */
+	protected string $translationPath = '';
+
+	/**
 	 * Create a new Lumis application instance.
 	 */
 	public function __construct(string|null $basePath = null)
@@ -296,11 +303,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
 		$this->useBootstrapPath($this->basePath('bootstrap'));
 
-		$this->useLangPath(value(function () {
-			return is_dir($directory = $this->resourcePath('lang'))
-				? $directory
-				: $this->basePath('lang');
-		}));
+		$this->useTranslationPath($this->basePath('translations'));
 	}
 
 	/**
@@ -729,6 +732,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	public function joinPaths(string $basePath, string $path = ''): string
 	{
 		return $basePath . ($path !== '' ? DIRECTORY_SEPARATOR . ltrim($path, DIRECTORY_SEPARATOR) : '');
+	}
+
+	/**
+	 * Get the path to the translation files.
+	 */
+	public function translationPath($path = ''): string
+	{
+		return $this->joinPaths($this->translationPath, $path);
 	}
 
 	/**
@@ -1212,11 +1223,23 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	/**
 	 * Set the language file directory.
 	 */
-	public function useLangPath($path): static
+	public function useLangPath(string $path): static
 	{
 		$this->langPath = $path;
 
 		$this->instance('path.lang', $path);
+
+		return $this;
+	}
+
+	/**
+	 * Set the translations file directory.
+	 */
+	public function useTranslationPath(string $path): static
+	{
+		$this->translationPath = $path;
+
+		$this->instance('path.translations', $path);
 
 		return $this;
 	}
