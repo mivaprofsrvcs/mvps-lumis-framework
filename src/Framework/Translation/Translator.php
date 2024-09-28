@@ -170,6 +170,8 @@ class Translator extends NamespacedItemResolver implements TranslatorContract
 
 			return $line;
 		}
+
+		return null;
 	}
 
 	/**
