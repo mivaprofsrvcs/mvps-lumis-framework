@@ -2,7 +2,6 @@
 
 namespace MVPS\Lumis\Framework\Validation;
 
-use Closure;
 use Illuminate\Support\Traits\ReflectsClosures;
 use Illuminate\Validation\Validator as IlluminateValidator;
 use MVPS\Lumis\Framework\Contracts\Translation\Translator;
