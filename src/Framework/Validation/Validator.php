@@ -7,7 +7,6 @@ use Illuminate\Support\Traits\ReflectsClosures;
 use Illuminate\Validation\Validator as IlluminateValidator;
 use MVPS\Lumis\Framework\Contracts\Translation\Translator;
 use MVPS\Lumis\Framework\Contracts\Validation\Validator as ValidatorContract;
-use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
 use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 
@@ -19,13 +18,6 @@ class Validator extends IlluminateValidator implements ValidatorContract
 	 * {@inheritdoc}
 	 */
 	protected $exception = ValidationException::class;
-
-	/**
-	 * The custom rendering callbacks for stringable objects.
-	 *
-	 * @var array
-	 */
-	protected array $stringableHandlers = [];
 
 	/**
 	 * {@inheritdoc}
@@ -44,7 +36,15 @@ class Validator extends IlluminateValidator implements ValidatorContract
 		array $messages = [],
 		array $attributes = []
 	) {
-		parent::__construct($translator, $data, $rules, $messages, $attributes);
+		$this->dotPlaceholder = Str::random();
+
+		$this->initialRules = $rules;
+		$this->translator = $translator;
+		$this->customMessages = $messages;
+		$this->customAttributes = $attributes;
+		$this->data = $this->parseData($data);
+
+		$this->setRules($rules);
 	}
 
 	/**
