@@ -31,6 +31,13 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
+	public const FRAMEWORK_PATH = __DIR__;
+
+	/**
+	 * The base configuration directory path.
+	 *
+	 * @var string
+	 */
 	public const FRAMEWORK_CONFIG_PATH = __DIR__ . '/config';
 
 	/**
