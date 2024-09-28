@@ -10,6 +10,7 @@ use MVPS\Lumis\Framework\Contracts\Http\Responsable;
 use MVPS\Lumis\Framework\Contracts\Routing\ResponseFactory;
 use MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator;
 use MVPS\Lumis\Framework\Contracts\Support\Arrayable;
+use MVPS\Lumis\Framework\Contracts\Translation\Translator;
 use MVPS\Lumis\Framework\Contracts\Validation\Validator as ValidatorContract;
 use MVPS\Lumis\Framework\Contracts\View\Factory as ViewFactory;
 use MVPS\Lumis\Framework\Contracts\View\View;
@@ -563,6 +564,20 @@ if (! function_exists('to_route')) {
 	function to_route(string $route, mixed $parameters = [], int $status = 302, array $headers = []): RedirectResponse
 	{
 		return redirect()->route($route, $parameters, $status, $headers);
+	}
+}
+
+if (! function_exists('trans')) {
+	/**
+	 * Translate the given message.
+	 */
+	function trans(string|null $key = null, array $replace = []): Translator|array|string
+	{
+		if (is_null($key)) {
+			return app('translator');
+		}
+
+		return app('translator')->get($key, $replace);
 	}
 }
 
