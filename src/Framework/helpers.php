@@ -581,6 +581,30 @@ if (! function_exists('trans')) {
 	}
 }
 
+if (! function_exists('trans_choice')) {
+	/**
+	 * Translates the given message based on a count.
+	 */
+	function trans_choice(string $key, \Countable|int|float|array $number, array $replace = []): string
+	{
+		return app('translator')->choice($key, $number, $replace);
+	}
+}
+
+if (! function_exists('__')) {
+	/**
+	 * Translate the given message.
+	 */
+	function __(string|null $key = null, array $replace = []): string|array|null
+	{
+		if (is_null($key)) {
+			return $key;
+		}
+
+		return trans($key, $replace);
+	}
+}
+
 if (! function_exists('url')) {
 	/**
 	 * Generate a url for the application.
