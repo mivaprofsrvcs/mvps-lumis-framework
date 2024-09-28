@@ -2,9 +2,9 @@
 
 namespace MVPS\Lumis\Framework\Routing;
 
+use Illuminate\Support\Reflector;
 use LogicException;
 use MVPS\Lumis\Framework\Support\Arr;
-use MVPS\Lumis\Framework\Support\Reflector;
 use MVPS\Lumis\Framework\Support\Str;
 use UnexpectedValueException;
 

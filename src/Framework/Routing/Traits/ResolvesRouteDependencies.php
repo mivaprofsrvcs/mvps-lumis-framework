@@ -2,8 +2,8 @@
 
 namespace MVPS\Lumis\Framework\Routing\Traits;
 
+use Illuminate\Support\Reflector;
 use MVPS\Lumis\Framework\Support\Arr;
-use MVPS\Lumis\Framework\Support\Reflector;
 use ReflectionClass;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;

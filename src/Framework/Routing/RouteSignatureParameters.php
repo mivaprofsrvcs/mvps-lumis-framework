@@ -2,7 +2,7 @@
 
 namespace MVPS\Lumis\Framework\Routing;
 
-use MVPS\Lumis\Framework\Support\Reflector;
+use Illuminate\Support\Reflector;
 use MVPS\Lumis\Framework\Support\Str;
 use ReflectionFunction;
 use ReflectionMethod;

@@ -3,10 +3,10 @@
 namespace MVPS\Lumis\Framework\View\Exceptions;
 
 use ErrorException;
+use Illuminate\Support\Reflector;
 use MVPS\Lumis\Framework\Container\Container;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
-use MVPS\Lumis\Framework\Support\Reflector;
 
 class ViewException extends ErrorException
 {

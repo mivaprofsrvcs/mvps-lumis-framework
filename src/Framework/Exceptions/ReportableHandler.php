@@ -3,7 +3,7 @@
 namespace MVPS\Lumis\Framework\Exceptions;
 
 use Closure;
-use MVPS\Lumis\Framework\Support\Traits\ReflectsClosures;
+use Illuminate\Support\Traits\ReflectsClosures;
 use Throwable;
 
 class ReportableHandler

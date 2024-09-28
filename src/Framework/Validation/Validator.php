@@ -3,11 +3,11 @@
 namespace MVPS\Lumis\Framework\Validation;
 
 use Closure;
+use Illuminate\Support\Traits\ReflectsClosures;
 use Illuminate\Validation\Validator as IlluminateValidator;
 use MVPS\Lumis\Framework\Contracts\Validation\Validator as ValidatorContract;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
-use MVPS\Lumis\Framework\Support\Traits\ReflectsClosures;
 use MVPS\Lumis\Framework\Validation\Exceptions\ValidationException;
 
 class Validator extends IlluminateValidator implements ValidatorContract
