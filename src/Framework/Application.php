@@ -1023,6 +1023,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Session\Store::class,
 				\MVPS\Lumis\Framework\Contracts\Session\Session::class,
 			],
+			'translator' => [
+				\MVPS\Lumis\Framework\Translation\Translator::class,
+				\MVPS\Lumis\Framework\Contracts\Translation\Translator::class
+			],
 			'url' => [
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
