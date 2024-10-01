@@ -5,6 +5,7 @@ namespace MVPS\Lumis\Framework\Providers;
 use Closure;
 use MVPS\Lumis\Framework\Console\Application as ConsoleApplication;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
+use MVPS\Lumis\Framework\View\Compilers\BladeCompiler;
 
 abstract class ServiceProvider
 {
@@ -181,6 +182,50 @@ abstract class ServiceProvider
 		if (! array_key_exists($class, static::$publishes)) {
 			static::$publishes[$class] = [];
 		}
+	}
+
+	/**
+	 * Register a JSON translation file path.
+	 */
+	protected function loadJsonTranslationsFrom(string $path): void
+	{
+		$this->callAfterResolving('translator', function ($translator) use ($path) {
+			$translator->addJsonPath($path);
+		});
+	}
+
+	/**
+	 * Register database migration paths.
+	 */
+	protected function loadMigrationsFrom(array|string $paths): void
+	{
+		$this->callAfterResolving('migrator', function ($migrator) use ($paths) {
+			foreach ((array) $paths as $path) {
+				$migrator->path($path);
+			}
+		});
+	}
+
+	/**
+	 * Register a translation file namespace.
+	 */
+	protected function loadTranslationsFrom(string $path, string $namespace): void
+	{
+		$this->callAfterResolving('translator', function ($translator) use ($path, $namespace) {
+			$translator->addNamespace($namespace, $path);
+		});
+	}
+
+	/**
+	 * Register the given view components with a custom prefix.
+	 */
+	protected function loadViewComponentsAs(string $prefix, array $components): void
+	{
+		$this->callAfterResolving(BladeCompiler::class, function ($blade) use ($prefix, $components) {
+			foreach ($components as $alias => $component) {
+				$blade->component($component, is_string($alias) ? $alias : null, $prefix);
+			}
+		});
 	}
 
 	/**

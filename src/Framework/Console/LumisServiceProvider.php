@@ -32,6 +32,7 @@ use MVPS\Lumis\Framework\Console\Commands\Seeds\SeederMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\ServeCommand;
 use MVPS\Lumis\Framework\Console\Commands\StorageLinkCommand;
 use MVPS\Lumis\Framework\Console\Commands\TaskMakeCommand;
+use MVPS\Lumis\Framework\Console\Commands\TransPublishCommand;
 use MVPS\Lumis\Framework\Console\Commands\ViewMakeCommand;
 use MVPS\Lumis\Framework\Console\Commands\WipeCommand;
 use MVPS\Lumis\Framework\Contracts\Support\DeferrableProvider;
@@ -100,6 +101,7 @@ class LumisServiceProvider extends ServiceProvider implements DeferrableProvider
 		'SeederMake' => SeederMakeCommand::class,
 		'Serve' => ServeCommand::class,
 		'TaskMake' => TaskMakeCommand::class,
+		'TransPublish' => TransPublishCommand::class,
 		'ViewMake' => ViewMakeCommand::class,
 	];
 

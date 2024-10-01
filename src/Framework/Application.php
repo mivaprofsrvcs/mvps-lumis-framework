@@ -31,6 +31,13 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
+	public const FRAMEWORK_PATH = __DIR__;
+
+	/**
+	 * The base configuration directory path.
+	 *
+	 * @var string
+	 */
 	public const FRAMEWORK_CONFIG_PATH = __DIR__ . '/config';
 
 	/**
@@ -45,7 +52,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.12.0';
+	public const VERSION = '2.13.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -216,6 +223,13 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	protected $terminatingCallbacks = [];
 
 	/**
+	 * The custom translation file path defined by the developer.
+	 *
+	 * @var string
+	 */
+	protected string $translationPath = '';
+
+	/**
 	 * Create a new Lumis application instance.
 	 */
 	public function __construct(string|null $basePath = null)
@@ -296,8 +310,12 @@ class Application extends Container implements ApplicationContract, CachesConfig
 
 		$this->useBootstrapPath($this->basePath('bootstrap'));
 
+		$this->useTranslationPath($this->basePath('translations'));
+
 		$this->useLangPath(value(function () {
-			return is_dir($directory = $this->resourcePath('lang'))
+			$directory = $this->resourcePath('lang');
+
+			return is_dir($directory)
 				? $directory
 				: $this->basePath('lang');
 		}));
@@ -732,6 +750,14 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	}
 
 	/**
+	 * Get the path to the translation files.
+	 */
+	public function translationPath($path = ''): string
+	{
+		return $this->joinPaths($this->translationPath, $path);
+	}
+
+	/**
 	 * Get the path to the language files.
 	 */
 	public function langPath($path = ''): string
@@ -1004,6 +1030,10 @@ class Application extends Container implements ApplicationContract, CachesConfig
 				\MVPS\Lumis\Framework\Session\Store::class,
 				\MVPS\Lumis\Framework\Contracts\Session\Session::class,
 			],
+			'translator' => [
+				\MVPS\Lumis\Framework\Translation\Translator::class,
+				\MVPS\Lumis\Framework\Contracts\Translation\Translator::class
+			],
 			'url' => [
 				\MVPS\Lumis\Framework\Routing\UrlGenerator::class,
 				\MVPS\Lumis\Framework\Contracts\Routing\UrlGenerator::class,
@@ -1212,11 +1242,23 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	/**
 	 * Set the language file directory.
 	 */
-	public function useLangPath($path): static
+	public function useLangPath(string $path): static
 	{
 		$this->langPath = $path;
 
 		$this->instance('path.lang', $path);
+
+		return $this;
+	}
+
+	/**
+	 * Set the translations file directory.
+	 */
+	public function useTranslationPath(string $path): static
+	{
+		$this->translationPath = $path;
+
+		$this->instance('path.translations', $path);
 
 		return $this;
 	}

@@ -2,6 +2,7 @@
 
 namespace MVPS\Lumis\Framework\View\Compilers;
 
+use Illuminate\Support\Traits\ReflectsClosures;
 use InvalidArgumentException;
 use MVPS\Lumis\Framework\Collections\Collection;
 use MVPS\Lumis\Framework\Container\Container;
@@ -11,7 +12,6 @@ use MVPS\Lumis\Framework\Contracts\View\Factory as FactoryContract;
 use MVPS\Lumis\Framework\Contracts\View\View;
 use MVPS\Lumis\Framework\Support\Arr;
 use MVPS\Lumis\Framework\Support\Str;
-use MVPS\Lumis\Framework\Support\Traits\ReflectsClosures;
 use MVPS\Lumis\Framework\View\Component;
 
 class BladeCompiler extends Compiler implements CompilerContract

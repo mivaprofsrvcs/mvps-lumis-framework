@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Validation\PresenceVerifierInterface;
 use MVPS\Lumis\Framework\Contracts\Container\Container;
+use MVPS\Lumis\Framework\Contracts\Translation\Translator;
 use MVPS\Lumis\Framework\Support\Str;
 
 class Factory implements ValidationFactory
@@ -68,6 +69,13 @@ class Factory implements ValidationFactory
 	protected $resolver = null;
 
 	/**
+	 * The Translator implementation.
+	 *
+	 * @var \MVPS\Lumis\Framework\Contracts\Translation\Translator
+	 */
+	protected Translator $translator;
+
+	/**
 	 * The Presence Verifier implementation.
 	 *
 	 * @var \Illuminate\Validation\PresenceVerifierInterface|null
@@ -77,9 +85,10 @@ class Factory implements ValidationFactory
 	/**
 	 * Create a new validator factory instance.
 	 */
-	public function __construct(Container|null $container = null)
+	public function __construct(Translator $translator, Container|null $container = null)
 	{
 		$this->container = $container;
+		$this->translator = $translator;
 	}
 
 	/**
@@ -160,6 +169,14 @@ class Factory implements ValidationFactory
 	}
 
 	/**
+	 * Get the Translator implementation.
+	 */
+	public function getTranslator(): Translator
+	{
+		return $this->translator;
+	}
+
+	/**
 	 * Indicate that un-validated array keys should be included
 	 * in validated data when the parent array is validated.
 	 */
@@ -204,10 +221,10 @@ class Factory implements ValidationFactory
 	protected function resolve(array $data, array $rules, array $messages, array $attributes): Validator
 	{
 		if (is_null($this->resolver)) {
-			return new Validator($data, $rules, $messages, $attributes);
+			return new Validator($this->translator, $data, $rules, $messages, $attributes);
 		}
 
-		return call_user_func($this->resolver, $data, $rules, $messages, $attributes);
+		return call_user_func($this->resolver, $this->translator, $data, $rules, $messages, $attributes);
 	}
 
 	/**
