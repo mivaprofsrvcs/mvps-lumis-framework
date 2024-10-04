@@ -27,7 +27,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 class Application extends Container implements ApplicationContract, CachesConfiguration
 {
 	/**
-	 * The base configuration directory path.
+	 * The base framework directory path.
 	 *
 	 * @var string
 	 */

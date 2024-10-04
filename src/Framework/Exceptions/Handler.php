@@ -436,6 +436,18 @@ class Handler implements ExceptionHandler
 	}
 
 	/**
+	 * Map the exception to a log level.
+	 */
+	protected function mapLogLevel(Throwable $e): string
+	{
+		return Arr::first(
+			$this->levels,
+			fn ($level, $type) => $e instanceof $type,
+			LogLevel::ERROR
+		);
+	}
+
+	/**
 	 * Create a new logger instance.
 	 */
 	protected function newLogger(): LoggerInterface
@@ -757,11 +769,7 @@ class Handler implements ExceptionHandler
 			throw $e;
 		}
 
-		$level = Arr::first(
-			$this->levels,
-			fn ($level, $type) => $e instanceof $type,
-			LogLevel::ERROR
-		);
+		$level = $this->mapLogLevel($e);
 
 		$context = $this->buildExceptionContext($e);
 
