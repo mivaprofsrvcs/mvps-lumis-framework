@@ -16,6 +16,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use RuntimeException;
 use Stringable;
+use Throwable;
 use UnexpectedValueException;
 use UnitEnum;
 
@@ -144,20 +145,31 @@ class LogService implements LoggerInterface
 	}
 
 	/**
-	 * Formats a log message with timestamp (optional), level, and message content.
+	 * Formats a log message with timestamp (optional), level, and message
+	 * content.
 	 *
 	 * This method constructs a formatted log message string by combining:
-	 *  - A timestamp prepended to the message, based on the `$dateFormat` property.
-	 *  - The log message level converted to uppercase (e.g., "INFO", "WARNING").
+	 *  - A timestamp prepended to the message, based on the `$dateFormat`
+	 *    property.
+	 *  - The log message level converted to uppercase
+	 *    (e.g., "INFO", "WARNING").
 	 *  - The actual message content with a trailing newline character.
 	 */
-	protected function formatLogMessage(string $level, string $message): string
+	protected function formatLogMessage(string $level, string $message, array $context = []): string
 	{
+		$logMessage = $message;
+
+		if (! empty($context)) {
+			foreach ($context as $key => $val) {
+				$logMessage .= ' ' . json_encode([$key, $this->stringify($val)]);
+			}
+		}
+
 		return sprintf(
 			'%s%s:%s',
 			$this->dateFormat !== '' ? date($this->dateFormat) . ' ' : '',
 			Str::upper($level),
-			$message . PHP_EOL
+			$logMessage . PHP_EOL
 		);
 	}
 
@@ -267,6 +279,118 @@ class LogService implements LoggerInterface
 	}
 
 	/**
+	 * Converts a given value to a string representation.
+	 */
+	protected function convertToString(mixed $data): string
+	{
+		if (is_null($data) || is_bool($data)) {
+			return var_export($data, true);
+		}
+
+		if (is_scalar($data)) {
+			return (string) $data;
+		}
+
+		if (is_object($data)) {
+			if ($data instanceof Throwable) {
+				return $this->normalizeException($data);
+			}
+
+			if ($data instanceof Stringable) {
+				return $data->__toString();
+			}
+		}
+
+		return $this->toJson($data);
+	}
+
+	/**
+	 * Converts a given value to a JSON string.
+	 */
+	protected function toJson(mixed $data, int|null $encodeFlags = null): string
+	{
+		if (is_null($encodeFlags)) {
+			$encodeFlags = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION |
+						   JSON_INVALID_UTF8_SUBSTITUTE | JSON_PARTIAL_OUTPUT_ON_ERROR;
+		}
+
+		$json = @json_encode($data, $encodeFlags);
+
+		if ($json === false) {
+			return 'null';
+		}
+
+		return $json;
+	}
+
+	/**
+	 * Replaces newline characters in a string with a single space.
+	 */
+	protected function replaceNewlines(string $str): string
+	{
+		return str_replace(["\r\n", "\r", "\n"], ' ', $str);
+	}
+
+	/**
+	 * Converts a value to a string and ensures it contains no newlines.
+	 */
+	public function stringify(mixed $value): string
+	{
+		return $this->replaceNewlines($this->convertToString($value));
+	}
+
+	/**
+	 * Normalizes a Throwable exception to a string representation, including
+	 * any previous exceptions.
+	 */
+	protected function normalizeException(Throwable $e, int $depth = 0, int $maxNormalizeDepth = 9): string
+	{
+		$str = $this->formatException($e);
+
+		if (($previous = $e->getPrevious()) instanceof Throwable) {
+			do {
+				$depth++;
+				if ($depth > $maxNormalizeDepth) {
+					$str .= "\n[previous exception] Over $maxNormalizeDepth levels deep, aborting normalization";
+					break;
+				}
+
+				$str .= "\n[previous exception] " . $this->formatException($previous);
+			} while ($previous = $previous->getPrevious());
+		}
+
+		return $str;
+	}
+
+	protected function formatException(Throwable $e): string
+	{
+		$str = '[object] (' . $e::class . '(code: ' . $e->getCode();
+
+		if ($e instanceof \SoapFault) {
+			if (isset($e->faultcode)) {
+				$str .= ' faultcode: ' . $e->faultcode;
+			}
+
+			if (isset($e->faultactor)) {
+				$str .= ' faultactor: ' . $e->faultactor;
+			}
+
+			if (isset($e->detail)) {
+				if (is_string($e->detail)) {
+					$str .= ' detail: ' . $e->detail;
+				} elseif (is_object($e->detail) || is_array($e->detail)) {
+					$str .= ' detail: ' . $this->toJson($e->detail);
+				}
+			}
+		}
+
+		$str .= '): ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine() . ')' .
+			"\n[stacktrace]\n{$e->getTraceAsString()}\n";
+
+		return $str;
+	}
+
+	/**
 	 * Validates the configured log file path.
 	 */
 	protected function validateLogFile(): void
@@ -343,7 +467,7 @@ class LogService implements LoggerInterface
 		$message = $this->formatMessage($message);
 		$context = array_merge($this->context, $context);
 
-		$this->logger->append($this->logFile, $this->formatLogMessage($level, $message));
+		$this->logger->append($this->logFile, $this->formatLogMessage($level, $message, $context));
 
 		$this->fireLogEvent($level, $message, $context);
 	}
