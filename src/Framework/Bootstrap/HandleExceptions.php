@@ -7,7 +7,7 @@ use Exception;
 use MVPS\Lumis\Framework\Contracts\Exceptions\ExceptionHandler;
 use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Errors\FatalError;
-use MVPS\Lumis\Framework\Log\LogService;
+use MVPS\Lumis\Framework\Log\LogManager;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Throwable;
 
@@ -131,7 +131,7 @@ class HandleExceptions
 		}
 
 		try {
-			$logger = static::$app->make(LogService::class);
+			$logger = static::$app->make(LogManager::class);
 		} catch (Exception) {
 			return;
 		}
@@ -239,6 +239,6 @@ class HandleExceptions
 	 */
 	protected function shouldIgnoreDeprecationErrors(): bool
 	{
-		return ! static::$app->hasBeenBootstrapped();
+		return ! class_exists(LogManager::class) || ! static::$app->hasBeenBootstrapped();
 	}
 }
