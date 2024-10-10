@@ -19,7 +19,7 @@ use Monolog\Handler\WhatFailureGroupHandler;
 use Monolog\Logger as Monolog;
 use Monolog\Processor\ProcessorInterface;
 use Monolog\Processor\PsrLogMessageProcessor;
-use MVPS\Lumis\Framework\Contracts\Console\Application;
+use MVPS\Lumis\Framework\Contracts\Framework\Application;
 use MVPS\Lumis\Framework\Log\Traits\ParsesLogConfiguration;
 use Psr\Log\LoggerInterface;
 use Stringable;
