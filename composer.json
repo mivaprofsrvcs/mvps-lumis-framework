@@ -19,6 +19,7 @@
 		"laravel/prompts": "^0.1.24",
 		"laravel/serializable-closure": "^1.3",
 		"league/flysystem": "^3.28",
+		"monolog/monolog": "^3.7",
 		"nesbot/carbon": "^2.66",
 		"nunomaduro/termwind": "^2.0",
 		"pdeans/http": "^2.0.3",
