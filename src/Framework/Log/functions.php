@@ -8,9 +8,9 @@ if (! function_exists('MVPS\Lumis\Framework\Log\log')) {
 	 *
 	 * @param  string|null  $message
 	 * @param  array  $context
-	 * @return ($message is null ? \Illuminate\Log\LogManager : null)
+	 * @return ($message is null ? \MVPS\Lumis\Framework\Log\LogManager : null)
 	 */
-	function log(string|null $message = null, array $context = []): LogManager|null
+	function log(string|null $message = null, array $context = [])
 	{
 		return logger($message, $context);
 	}
