@@ -19,6 +19,7 @@ use MVPS\Lumis\Framework\Http\Exceptions\HttpResponseException;
 use MVPS\Lumis\Framework\Http\RedirectResponse;
 use MVPS\Lumis\Framework\Http\Request;
 use MVPS\Lumis\Framework\Http\Response;
+use MVPS\Lumis\Framework\Log\LogManager;
 use MVPS\Lumis\Framework\Routing\Redirector;
 use MVPS\Lumis\Framework\Support\HtmlString;
 use MVPS\Lumis\Framework\Support\Str;
@@ -303,6 +304,22 @@ if (! function_exists('join_paths')) {
 		}
 
 		return $basePath . implode('', $paths);
+	}
+}
+
+if (! function_exists('logger')) {
+	/**
+	 * Log a debug message to the logs.
+	 *
+	 * @return ($message is null ? \MVPS\Lumis\Framework\Log\LogManager : null)
+	 */
+	function logger(string|null $message = null, array $context = [])
+	{
+		if (is_null($message)) {
+			return app('log');
+		}
+
+		return app('log')->debug($message, $context);
 	}
 }
 
