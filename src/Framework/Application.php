@@ -52,7 +52,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.13.1';
+	public const VERSION = '2.14.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
