@@ -49,7 +49,7 @@ trait ParsesLogConfiguration
 	 *
 	 * @throws \InvalidArgumentException
 	 */
-	protected function level(array $config): int
+	protected function level(array $config): Level|int
 	{
 		$level = $config['level'] ?? 'debug';
 
