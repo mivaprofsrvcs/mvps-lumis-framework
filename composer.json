@@ -45,6 +45,7 @@
 		"files": [
 			"src/Framework/helpers.php",
 			"src/Framework/Collections/helpers.php",
+			"src/Framework/Log/functions.php",
 			"src/Framework/Support/helpers.php"
 		],
 		"psr-4": {
