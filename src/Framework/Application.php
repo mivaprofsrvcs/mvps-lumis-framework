@@ -52,7 +52,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 	 *
 	 * @var string
 	 */
-	public const VERSION = '2.13.1';
+	public const VERSION = '2.14.0';
 
 	/**
 	 * The prefixes of absolute cache paths for use during normalization.
@@ -1013,7 +1013,7 @@ class Application extends Container implements ApplicationContract, CachesConfig
 			],
 			'filesystem.disk' => [\MVPS\Lumis\Framework\Contracts\Filesystem\Filesystem::class],
 			'log' => [
-				\MVPS\Lumis\Framework\Log\LogService::class,
+				\MVPS\Lumis\Framework\Log\LogManager::class,
 				\Psr\Log\LoggerInterface::class,
 			],
 			'redirect' => [\MVPS\Lumis\Framework\Routing\Redirector::class],
